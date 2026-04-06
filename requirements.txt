@@ -1,0 +1,20 @@
+# --- API & Async Networking ---
+fastapi==0.110.1
+uvicorn==0.29.0
+pydantic==2.6.4
+aiohttp==3.9.3
+python-dotenv==1.0.1
+
+# --- Data Processing & Machine Learning ---
+pandas==2.2.1
+pyarrow==15.0.2
+numpy==1.26.4
+scikit-learn==1.4.1.post1
+
+# --- AI Models & Vector Search ---
+# [치명적 주의] SentenceTransformers v3.0 이상에서는 우리가 작성한 .fit() 파이프라인이 붕괴됩니다.
+# 따라서 2.x 버전대의 가장 안정적인 최종 버전을 강제로 고정(Pinning)합니다.
+sentence-transformers==2.6.1
+
+# FAISS는 추론용이므로 CPU 버전을 유지하여 컨테이너 용량 최적화 (GPU는 PyTorch가 독점)
+faiss-cpu==1.8.0

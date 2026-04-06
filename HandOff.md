@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.04.06 | 현재 스펙 버전: v2.2 | 현재 구현 버전: **v5.0**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.04.06 | 현재 스펙 버전: v2.2 | 현재 구현 버전: **v5.1**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -91,7 +91,7 @@ basic/
 
 ---
 
-### `profile_builder.py` — v4.0
+### `profile_builder.py` — v5.1
 
 - `detect_domain_hits` / `merge_domain_hits`: 트리 경로 기반 도메인 히트
 - `find_dependency_paths` / `parse_dependency_contents`: package.json 등에서 프레임워크 라벨 추출
@@ -99,6 +99,8 @@ basic/
 - `compute_tree_structure_stats`: 파일당 평균 LOC, `.gitignore` 여부
 - `build_profile_text`: FAISS 질의용 공고형 문장 생성
 - `readme_length_tier`: README 잔량 분기 (long/medium/short)
+- **`README_KEYWORDS`**: 도메인별 키워드 사전 (게임/웹/서버/ML·AI/모바일/인프라) — v5.1
+- **`extract_readme_keywords(readme_text)`**: README 원문 대신 도메인 키워드 압축 문장 반환. 키워드 없으면 빈 문자열 → `build_profile_text`에서 원문 300자 폴백 — v5.1
 
 ---
 
@@ -118,12 +120,18 @@ basic/
 
 ---
 
-### `run_git2value.py` — E2E 파이프라인 (v4.0)
+### `run_git2value.py` — E2E 파이프라인 (v5.1)
 
 - FAISS 인덱스(`vector/`) + `jhgan/ko-sroberta-multitask`
 - 임베딩 입력: **`profile_for_matching`** (없으면 `applicant_resume` 폴백)
 - 최종 출력: **모듈 A**(매칭+패턴) / **모듈 B**(진단) / **모듈 C**(연봉 밴드) 분리
-- `route_job_category()` 유지 (1순위 공고 제목 → 점핏 카테고리)
+- `route_job_category()`: 1순위 공고 제목 → 점핏 카테고리. **v5.1에서 `"게임 클라이언트"` / `"게임 서버"` 분기 추가** (일반 서버/백엔드 규칙보다 앞에 위치)
+- **`DOMAIN_TO_CATEGORIES`**: `detected_domains[0]` → 기대 점핏 카테고리 목록 매핑 — v5.1
+- **`merged_detected_domains_from_profile(profile)`**: `per_repo` 전체의 `detected_domains`를 빈도순 병합 — v5.1
+- **`check_domain_match_consistency(detected_domains, top_matches)`**: 도메인 감지 vs FAISS 라우팅 비교 → `consistent / warning / suggested_category` 반환 — v5.1
+- **`similarity_label(score)`**: 정규화 코사인 유사도 → 높음(≥0.75) / 보통(≥0.60) / 낮음 레이블 — v5.1
+- **모듈 A 출력**: 유사도 옆 레이블 표시, 도메인 불일치 시 경고 + 권장 직무 안내 — v5.1
+- **모듈 C 출력**: 도메인 불일치 시 `suggested_category` 기준 보조 연봉 밴드 추가 출력 — v5.1
 
 ---
 
@@ -215,6 +223,11 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 
 ## 6. 버전 이력 및 주요 결정 사항
 
+### v5.0 → v5.1 (2026.04.06)
+
+- **`profile_builder.py`**: `README_KEYWORDS` 사전 + `extract_readme_keywords()` 추가. `build_profile_text()`가 README 원문 500자를 그대로 붙이던 방식을 **도메인 키워드 압축 문장**으로 교체 (키워드 없을 때 원문 300자 폴백). Unity TCG 게임 레포가 프론트엔드 공고로 오매칭되던 실증 버그 수정.
+- **`run_git2value.py`**: `route_job_category()`에 **게임 클라이언트 / 게임 서버** 분기 추가 (기존 서버/백엔드 규칙보다 앞에 위치). `check_domain_match_consistency()` · `similarity_label()` 신규 함수 추가. 모듈 A에 유사도 레이블(높음/보통/낮음) 및 도메인 불일치 경고 출력. 모듈 C에 도메인 기반 보조 연봉 밴드 출력.
+
 ### v4.0 → v5.0 (2026.04.06)
 
 - **Contribution**: 선형 만점(LOC 1500·커밋 50) → **로그 스케일** ([`Scoring_Review.md`](Scoring_Review.md) 반영)
@@ -239,20 +252,23 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 
 ---
 
-## 7. 알려진 미해결 사항 (v5.0 이후 과제)
+## 7. 알려진 미해결 사항 (v5.1 이후 과제)
 
 1. ~~**스펙 문서와 구현 불일치**~~ ✅ v3.0~v2.2에서 정합
 2. ~~**순차 레포 평가 성능**~~ ✅ v3.0 병렬화
 3. ~~**run_git2value 연결 미완성**~~ ✅ v3.0
-4. ~~**FAISS 입력 비대칭**~~ ✅ v4.0 `build_profile_text` 1차 완화 (추가 튜닝 여지 있음)
+4. ~~**FAISS 입력 비대칭**~~ ✅ v4.0 1차 완화 → ✅ v5.1 README 키워드 압축으로 추가 완화
 5. ~~**연봉 멀티플라이어 근거 부족**~~ ✅ v4.0 밴드 독립 제공
 6. ~~**Contribution 선형 만점·변별력 부족**~~ ✅ v5.0 로그 스케일로 완화 (튜닝은 계속 가능)
 7. ~~**Quality duration 편중·CI·테스트 무력화**~~ ✅ v5.0 균등 10+10+10·활성 주
-8. **Consistency `0.5` 계수** — 여전히 임의값; 지수 감쇠 등 데이터 기반 튜닝 예정
-9. **`migrations/` ignore** — Django 등에서 의도한 마이그레이션 코드가 LOC에서 제외됨; 필요 시 경로 조정
-10. **FAISS 유사도 레이블** — 원시 유사도 → 분포 기반 "높음/보통/낮음" 미구현
-11. **게임/정보보안 등 일부 직무** — 원티드 JSON 매핑 없으면 `wanted_median` null, 점핏만으로 구간 표시
-12. **PR/이슈 협업 분석** — 추가 API 필요, 우선순위 낮음 ([`Scoring_Review.md`](Scoring_Review.md))
+8. ~~**게임 카테고리 라우팅 누락**~~ ✅ v5.1 `route_job_category()`에 게임 클라이언트/서버 분기 추가
+9. ~~**FAISS 유사도 레이블 없음**~~ ✅ v5.1 절대값 임계치 기반 높음/보통/낮음 구현 (분포 기반 정밀 튜닝은 추후)
+10. ~~**도메인 불일치 감지 없음**~~ ✅ v5.1 `check_domain_match_consistency()` + 경고 출력
+11. **Consistency `0.5` 계수** — 여전히 임의값; 지수 감쇠 등 데이터 기반 튜닝 예정
+12. **`migrations/` ignore** — Django 등에서 의도한 마이그레이션 코드가 LOC에서 제외됨; 필요 시 경로 조정
+13. **유사도 임계치 정밀화** — 현재 절대값(0.75/0.60) 기반; 전체 메타데이터 분포 분석 후 백분위 기반으로 개선 예정
+14. **게임/정보보안 등 일부 직무** — 원티드 JSON 매핑 없으면 `wanted_median` null, 점핏만으로 구간 표시
+15. **PR/이슈 협업 분석** — 추가 API 필요, 우선순위 낮음 ([`Scoring_Review.md`](Scoring_Review.md))
 
 ---
 

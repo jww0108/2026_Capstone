@@ -45,6 +45,24 @@ def route_job_category(position_title: str) -> str:
     if any(k in title_no_hyphen for k in ["크로스플랫폼", "플러터", "flutter", "reactnative"]):
         return "크로스플랫폼 앱"
 
+    # 게임 직무는 일반 서버/프론트 규칙보다 먼저 (v5.1)
+    if (
+        any(k in title for k in ["게임 클라이언트", "게임 서버"])
+        or re.search(r"\b(unity|unreal|godot)\b", title)
+        or "게임" in title
+        or re.search(r"\bgame\s+(client|server)\b", title)
+    ):
+        if (
+            "게임 서버" in title
+            or re.search(r"\bgame\s+server\b", title)
+            or (
+                ("서버" in title or "server" in title or "backend" in title or "백엔드" in title)
+                and ("게임" in title or re.search(r"\b(unity|unreal|godot)\b", title))
+            )
+        ):
+            return "게임 서버"
+        return "게임 클라이언트"
+
     if any(k in title for k in ["백엔드", "서버"]) or re.search(r'\b(backend|server|java|node\.?js|php|python|spring)\b', title):
         return "서버/백엔드"
     if any(k in title_no_hyphen for k in ["프론트엔드", "frontend", "프론트", "vue", "react"]):
@@ -64,6 +82,71 @@ def route_job_category(position_title: str) -> str:
         return "기술지원"
 
     return "SW/솔루션"
+
+
+# profile_builder.detected_domains[0]과 FAISS 라우팅 직무 정합 (v5.1)
+DOMAIN_TO_CATEGORIES: dict[str, list[str]] = {
+    "게임 개발": ["게임 클라이언트", "게임 서버", "VR/AR/3D"],
+    "웹 프론트엔드": ["프론트엔드", "웹 풀스택", "웹퍼블리셔"],
+    "서버/백엔드": ["서버/백엔드", "웹 풀스택"],
+    "ML/AI": ["인공지능/머신러닝", "빅데이터 엔지니어"],
+    "모바일 앱": ["안드로이드", "iOS", "크로스플랫폼 앱"],
+    "DevOps/인프라": ["devops/시스템 엔지니어"],
+}
+
+
+def merged_detected_domains_from_profile(profile: dict) -> list[str]:
+    """per_repo의 detected_domains를 빈도순으로 병합."""
+    c: Counter = Counter()
+    for r in profile.get("per_repo") or []:
+        for d in r.get("detected_domains") or []:
+            c[d] += 1
+    return [d for d, _ in c.most_common()]
+
+
+def check_domain_match_consistency(
+    detected_domains: list[str],
+    top_matches: list[dict],
+) -> dict:
+    """
+    도메인 감지 결과와 FAISS 상위 공고의 route_job_category 결과를 비교.
+    불일치 시 경고·권장 점핏 직무(suggested_category) 반환.
+    """
+    if not detected_domains:
+        return {"consistent": True, "warning": None, "suggested_category": None}
+
+    primary_domain = detected_domains[0]
+    expected_categories = DOMAIN_TO_CATEGORIES.get(primary_domain, [])
+    if not expected_categories:
+        return {"consistent": True, "warning": None, "suggested_category": None}
+
+    matched_categories = [m["category"] for m in top_matches]
+    overlap = [c for c in matched_categories if c in expected_categories]
+
+    if overlap:
+        return {"consistent": True, "warning": None, "suggested_category": None}
+
+    suggested = expected_categories[0]
+    uniq = sorted(set(matched_categories))
+    return {
+        "consistent": False,
+        "warning": (
+            f"도메인 감지 결과는 '{primary_domain}'이지만, "
+            f"상위 매칭 공고는 모두 다른 직무({', '.join(uniq)})입니다. "
+            f"공고 DB에 '{primary_domain}' 관련 공고가 부족하거나, "
+            f"프로필 텍스트가 다른 직무 키워드에 가까울 수 있습니다."
+        ),
+        "suggested_category": suggested,
+    }
+
+
+def similarity_label(score: float) -> str:
+    """정규화 코사인 유사도 기준 사용자 친화 레이블 (v5.1, 임계값은 추후 분포 기반으로 조정 가능)."""
+    if score >= 0.75:
+        return "높음"
+    if score >= 0.60:
+        return "보통"
+    return "낮음"
 
 
 TECH_KEYWORDS_FOR_PATTERN = [
@@ -213,6 +296,8 @@ async def run_e2e_pipeline(
         })
 
     jumpit_category = top_matches[0]["category"]
+    detected_domains_merged = merged_detected_domains_from_profile(profile)
+    domain_check = check_domain_match_consistency(detected_domains_merged, top_matches)
 
     print("\n[Step 4] 포트폴리오 진단 (룰베이스)...")
     diag_bundle = run_diagnosis(profile)
@@ -231,7 +316,7 @@ async def run_e2e_pipeline(
 
     # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v4.0] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v5.1] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
 
     print("\n[지원자 요약]")
@@ -260,10 +345,19 @@ async def run_e2e_pipeline(
     for i, match in enumerate(top_matches):
         m = match["meta"]
         rank_label = "1순위" if i == 0 else f"{i + 1}순위"
+        sim = match["similarity"]
+        label = similarity_label(sim)
         print(
             f"  [{rank_label}] [{m['company_name']}] {m['position']} "
-            f"(유사도: {match['similarity']:.4f})"
+            f"(유사도: {sim:.4f} · {label})"
         )
+    if not domain_check["consistent"]:
+        print(f"\n  ⚠️ 도메인 불일치 감지:")
+        print(f"     {domain_check['warning']}")
+        if domain_check.get("suggested_category"):
+            print(
+                f"     권장: '{domain_check['suggested_category']}' 직무로 채용 공고를 직접 검색해 보세요."
+            )
     print(f"\n  시장 밴드 라우팅 직무: '{jumpit_category}' (1순위 공고 제목 기준)")
     print(f"  공통 기술 키워드: {', '.join(top_pattern['common_tech_stack']) or '(없음)'}")
     print(f"  공고 분류 태그: {', '.join(top_pattern['company_types']) or '(없음)'}")
@@ -298,6 +392,18 @@ async def run_e2e_pipeline(
         print("  원티드(신입~3년 평균): 해당 직무 JSON 매핑 없음")
     print(f"  참고 범위       : {sr['combined_range']}")
     print(f"  출처·주의      : {msb['source']} / {msb['note']}")
+    if not domain_check["consistent"] and domain_check.get("suggested_category"):
+        sc = domain_check["suggested_category"]
+        print(f"\n  (참고: 도메인 감지 기반 '{sc}' 직무 연봉 밴드)")
+        try:
+            alt_band = val_engine.get_market_band(
+                job_category=sc,
+                years_max=3 if applicant_years <= 3 else applicant_years,
+            )
+            alt_sr = alt_band["market_salary_band"]["salary_range"]
+            print(f"    참고 범위: {alt_sr['combined_range']}")
+        except ValueError:
+            print("    해당 직무의 연봉 데이터가 없습니다.")
     print("\n  (직무 간 비교 — 점핏 junior 구간)")
     for row in (band_report.get("category_comparison") or [])[:6]:
         print(f"    - {row['category']}: {row['junior_range']}")
@@ -313,8 +419,8 @@ if __name__ == "__main__":
     TARGET_USERNAME = "tekyung" #"siheon012" 
     TARGET_REPOS = [
         #"tekyung/2025-2_java_team_project/tree/태경",
-        #"tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
-        "tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
+        "tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
+        #"tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
         #"tekyung/kyonggi-university_network-system-laboratory_webpage",
         #"siheon012/Deepsentinel",
         #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung"

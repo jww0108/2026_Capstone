@@ -1,6 +1,7 @@
 """
-Git2Value v4.0 — 프로필 텍스트 변환 레이어 (룰베이스).
+Git2Value v5.1 — 프로필 텍스트 변환 레이어 (룰베이스).
 JD 임베딩과의 문체 정합을 위해 구조화 데이터를 공고형 문장으로 변환합니다.
+v5.1: README는 키워드 압축(노이즈 완화) + 키워드 없을 때 짧은 원문 폴백.
 """
 from __future__ import annotations
 
@@ -59,6 +60,114 @@ DEPLOYMENT_PATH_MARKERS: List[str] = [
     "k8s",
     ".github/workflows",
 ]
+
+# README 원문 전체를 임베딩에 넣을 때 노이즈가 되는 경우를 줄이기 위해 도메인별 키워드만 압축 (v5.1)
+README_KEYWORDS: Dict[str, List[str]] = {
+    "게임": [
+        "게임",
+        "game",
+        "unity",
+        "유니티",
+        "unreal",
+        "언리얼",
+        "tcg",
+        "rpg",
+        "mmo",
+        "fps",
+        "moba",
+        "캐릭터",
+        "던전",
+        "퀘스트",
+        "인벤토리",
+        "sprite",
+        "tilemap",
+        "physics",
+    ],
+    "웹": [
+        "웹",
+        "web",
+        "브라우저",
+        "SPA",
+        "SEO",
+        "SSR",
+        "반응형",
+        "responsive",
+        "landing",
+    ],
+    "서버": [
+        "서버",
+        "server",
+        "API",
+        "REST",
+        "GraphQL",
+        "데이터베이스",
+        "database",
+        "인증",
+        "auth",
+    ],
+    "ML/AI": [
+        "학습",
+        "training",
+        "모델",
+        "추론",
+        "inference",
+        "데이터셋",
+        "dataset",
+        "파인튜닝",
+        "fine-tuning",
+    ],
+    "모바일": [
+        "앱",
+        "app",
+        "모바일",
+        "mobile",
+        "iOS",
+        "안드로이드",
+        "android",
+    ],
+    "인프라": [
+        "배포",
+        "deploy",
+        "컨테이너",
+        "container",
+        "쿠버네티스",
+        "kubernetes",
+        "모니터링",
+        "monitoring",
+    ],
+}
+
+
+def extract_readme_keywords(readme_text: str) -> str:
+    """
+    README에서 도메인/기술 키워드를 추출해 짧은 문장으로 압축.
+    원문을 그대로 붙이지 않고 FAISS 매칭에 유의미한 시그널만 남김 (v5.1).
+    """
+    if not readme_text or len(readme_text.strip()) < 30:
+        return ""
+
+    text_lower = readme_text.lower()
+    hit_domains: Dict[str, int] = {}
+
+    for domain, keywords in README_KEYWORDS.items():
+        hits = sum(1 for kw in keywords if kw.lower() in text_lower)
+        if hits >= 1:
+            hit_domains[domain] = hits
+
+    if not hit_domains:
+        return ""
+
+    sorted_domains = sorted(hit_domains, key=hit_domains.get, reverse=True)
+    top_domain = sorted_domains[0]
+
+    matched_keywords: List[str] = []
+    for kw in README_KEYWORDS[top_domain]:
+        if kw.lower() in text_lower and kw not in matched_keywords:
+            matched_keywords.append(kw)
+
+    if matched_keywords:
+        return f"{', '.join(matched_keywords[:6])} 관련 프로젝트"
+    return ""
 
 
 def _tree_blobs(tree_data: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -294,7 +403,11 @@ def build_profile_text(extracted_data: Dict[str, Any]) -> str:
 
     readme_summary = extracted_data.get("readme_summary") or ""
     if readme_summary and len(readme_summary) >= 200:
-        parts.append(readme_summary[:500])
+        readme_keywords = extract_readme_keywords(readme_summary)
+        if readme_keywords:
+            parts.append(readme_keywords)
+        else:
+            parts.append(readme_summary[:300])
 
     if not parts:
         return "GitHub 저장소 기반 개발 경험 (상세 메타데이터 부족)."

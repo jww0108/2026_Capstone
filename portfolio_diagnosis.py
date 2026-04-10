@@ -7,7 +7,11 @@ import re
 from typing import Any, Dict, List, Optional
 
 MEANINGLESS_COMMIT_PATTERNS = re.compile(
-    r"^(fix|update|wip|temp|test|merge|revert|chore|bump|initial commit)\b",
+    r"^("
+    r"(fix|update|wip|temp|test|merge|revert|chore|bump)\s*$"
+    r"|initial\s+commit\s*$"
+    r"|(fix|update|wip|temp|test)\s+[^:\s]"
+    r")",
     re.I,
 )
 

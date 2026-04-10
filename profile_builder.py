@@ -1,7 +1,8 @@
 """
-Git2Value v5.1 — 프로필 텍스트 변환 레이어 (룰베이스).
+Git2Value v5.3 — 프로필 텍스트 변환 레이어 (룰베이스).
 JD 임베딩과의 문체 정합을 위해 구조화 데이터를 공고형 문장으로 변환합니다.
-v5.1: README는 키워드 압축(노이즈 완화) + 키워드 없을 때 짧은 원문 폴백.
+v5.3: README는 키워드 압축만(노이즈 완화), 키워드 없을 때 원문 폴백 없음.
+      도메인·LOC 맥락 문장은 매칭용 프로필에서 제거 — 순서 보정은 run_git2value 도메인 리랭킹.
 """
 from __future__ import annotations
 
@@ -61,6 +62,16 @@ DEPLOYMENT_PATH_MARKERS: List[str] = [
     ".github/workflows",
 ]
 
+# 도메인별 공고 어휘 템플릿 (참고용; v5.3부터 build_profile_text에는 미삽입)
+DOMAIN_CONTEXT: Dict[str, str] = {
+    "게임 개발":     "Unity C# 게임 개발, 게임 콘텐츠 구현, 게임 시스템 설계, 게임 밸런싱",
+    "웹 프론트엔드":  "웹 프론트엔드 개발, 사용자 인터페이스 구현, 반응형 웹, 웹 서버 개발",
+    "서버/백엔드":    "서버 개발, API 설계, 데이터베이스 설계, 데이터베이스 운영",
+    "ML/AI":         "머신러닝 모델 개발, 데이터 분석, 모델 학습 및 추론, 데이터 수집",
+    "모바일 앱":      "모바일 앱 개발, 네이티브 앱, 크로스플랫폼 개발, 모바일 서버 개발",
+    "DevOps/인프라":  "인프라 구축, 배포 자동화, 컨테이너 운영, 인프라 운영",
+}
+
 # README 원문 전체를 임베딩에 넣을 때 노이즈가 되는 경우를 줄이기 위해 도메인별 키워드만 압축 (v5.1)
 README_KEYWORDS: Dict[str, List[str]] = {
     "게임": [
@@ -104,6 +115,13 @@ README_KEYWORDS: Dict[str, List[str]] = {
         "database",
         "인증",
         "auth",
+        "backend",
+        "백엔드",
+        "microservice",
+        "마이크로서비스",
+        "endpoint",
+        "middleware",
+        "orm",
     ],
     "ML/AI": [
         "학습",
@@ -115,6 +133,30 @@ README_KEYWORDS: Dict[str, List[str]] = {
         "dataset",
         "파인튜닝",
         "fine-tuning",
+        "ai",
+        "artificial intelligence",
+        "deep learning",
+        "딥러닝",
+        "machine learning",
+        "머신러닝",
+        "detection",
+        "recognition",
+        "classification",
+        "yolo",
+        "cnn",
+        "transformer",
+        "resnet",
+        "computer vision",
+        "영상 분석",
+        "객체 탐지",
+        "cctv",
+        "video analysis",
+        "image processing",
+        "neural network",
+        "신경망",
+        "nlp",
+        "자연어 처리",
+        "natural language",
     ],
     "모바일": [
         "앱",
@@ -134,6 +176,15 @@ README_KEYWORDS: Dict[str, List[str]] = {
         "kubernetes",
         "모니터링",
         "monitoring",
+        "docker",
+        "ci/cd",
+        "pipeline",
+        "devops",
+        "infrastructure",
+        "terraform",
+        "aws",
+        "gcp",
+        "azure",
     ],
 }
 
@@ -177,18 +228,18 @@ def _tree_blobs(tree_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 def detect_domain_hits(tree_data: Dict[str, Any]) -> Dict[str, int]:
-    """도메인별 히트 수. 최소 2히트 이상인 도메인만 포함."""
+    """도메인별 고유 키워드 종류 수. 최소 2종류 이상인 도메인만 포함."""
     blobs = _tree_blobs(tree_data)
     all_paths = [b["path"].lower().replace("\\", "/") for b in blobs]
     domain_hits: Dict[str, int] = {}
     for domain, keywords in DOMAIN_SIGNALS.items():
-        hits = 0
+        matched_keywords: Set[str] = set()
         for p in all_paths:
             for kw in keywords:
                 if kw in p:
-                    hits += 1
-        if hits >= 2:
-            domain_hits[domain] = hits
+                    matched_keywords.add(kw)
+        if len(matched_keywords) >= 2:
+            domain_hits[domain] = len(matched_keywords)
     return domain_hits
 
 
@@ -375,7 +426,7 @@ def compute_tree_structure_stats(
 
 def build_profile_text(extracted_data: Dict[str, Any]) -> str:
     """
-    공고 문체에 가까운 단일 문자열 생성.
+    공고 문체에 가까운 단일 문자열 생성 (v5.3: v5.1 스타일 유지, 매칭 순서는 run_git2value 리랭킹).
     extracted_data 키: top_languages, detected_domains, frameworks,
     has_cicd, has_tests, has_deployment, readme_summary
     """
@@ -406,8 +457,7 @@ def build_profile_text(extracted_data: Dict[str, Any]) -> str:
         readme_keywords = extract_readme_keywords(readme_summary)
         if readme_keywords:
             parts.append(readme_keywords)
-        else:
-            parts.append(readme_summary[:300])
+        # v5.3: 키워드 없을 때 원문 폴백 제거 (노이즈 재유입 방지)
 
     if not parts:
         return "GitHub 저장소 기반 개발 경험 (상세 메타데이터 부족)."

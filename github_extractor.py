@@ -638,6 +638,11 @@ class GitHubExtractor:
         domain_hit_list = [res.get("domain_hits") or {} for res in valid_results]
         merged_domains = profile_builder.merge_domain_hits(domain_hit_list)
 
+        merged_domain_hits_dict: Dict[str, int] = {}
+        for d in domain_hit_list:
+            for k, v in d.items():
+                merged_domain_hits_dict[k] = merged_domain_hits_dict.get(k, 0) + v
+
         any_cicd = any(res.get("has_cicd") for res in valid_results)
         any_tests = any(res.get("has_tests") for res in valid_results)
         any_deploy = any(res.get("has_deployment") for res in valid_results)
@@ -652,6 +657,8 @@ class GitHubExtractor:
                 "has_tests": any_tests,
                 "has_deployment": any_deploy,
                 "readme_summary": readme_blob,
+                "total_valid_loc": total_loc,        # v5.2: 프로젝트 규모 문장용
+                "scanned_repos": len(valid_results), # v5.2: 포트폴리오 규모 문장용
             }
         )
 
@@ -686,6 +693,7 @@ class GitHubExtractor:
             "score_breakdown": agg_breakdown,
             "applicant_resume": applicant_resume,
             "profile_for_matching": profile_for_matching,
+            "domain_hits_merged": merged_domain_hits_dict,
             "per_repo": per_repo,
             "metrics_summary": {
                 "total_valid_loc": total_loc,

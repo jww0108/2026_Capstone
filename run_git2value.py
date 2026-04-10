@@ -14,6 +14,7 @@ from portfolio_diagnosis import run_diagnosis
 from valuation_engine import Git2ValueEngine
 
 warnings.filterwarnings("ignore")
+os.environ["HF_HUB_OFFLINE"] = "1"
 
 
 def route_job_category(position_title: str) -> str:
@@ -63,12 +64,16 @@ def route_job_category(position_title: str) -> str:
             return "게임 서버"
         return "게임 클라이언트"
 
+    # 겸직·풀스택 공고는 백엔드/프론트 단독 분류보다 앞서 처리 (MultiDomain Step 9)
+    if any(k in title_no_hyphen for k in ["풀스택", "fullstack"]):
+        return "웹 풀스택"
+    if ("프론트" in title or "front" in title) and ("백엔드" in title or "backend" in title):
+        return "웹 풀스택"
+
     if any(k in title for k in ["백엔드", "서버"]) or re.search(r'\b(backend|server|java|node\.?js|php|python|spring)\b', title):
         return "서버/백엔드"
     if any(k in title_no_hyphen for k in ["프론트엔드", "frontend", "프론트", "vue", "react"]):
         return "프론트엔드"
-    if any(k in title_no_hyphen for k in ["풀스택", "fullstack"]):
-        return "웹 풀스택"
     if "퍼블리셔" in title:
         return "웹퍼블리셔"
 
@@ -93,6 +98,87 @@ DOMAIN_TO_CATEGORIES: dict[str, list[str]] = {
     "모바일 앱": ["안드로이드", "iOS", "크로스플랫폼 앱"],
     "DevOps/인프라": ["devops/시스템 엔지니어"],
 }
+
+# 도메인 감지와 일치하는 공고에 FAISS 유사도 가산 (v5.3 하이브리드 리랭킹)
+DOMAIN_BOOST = 0.05
+
+
+def _matches_with_baseline_scores(matches: list[dict]) -> list[dict]:
+    """FAISS 유사도만 유효 점수로 복사(가산 없음)."""
+    return [
+        {**m, "effective_score": round(float(m["similarity"]), 4), "domain_boosted": False}
+        for m in matches
+    ]
+
+
+def rerank_by_domain(
+    top_matches: list[dict],
+    detected_domains: list[str],
+    domain_hits: dict[str, int] | None = None,
+) -> tuple[list[dict], str]:
+    """
+    FAISS 상위 N개를 도메인 감지 결과로 재정렬.
+    similarity(FAISS 원본)는 보존하고 effective_score·domain_boosted를 추가.
+    다중 도메인 경합 시(1순위 히트 < 2순위 히트×2) 리랭킹을 건너뜀.
+
+    Returns:
+        (재정렬·점수 부착된 목록, 모듈 A 하단용 상태 문자열)
+    """
+    if not top_matches:
+        return [], "상위 매칭 없음 — FAISS 결과가 비어 있습니다."
+
+    if not detected_domains:
+        return _matches_with_baseline_scores(top_matches), (
+            "도메인 감지: 없음 (FAISS 유사도 순서 그대로 적용)"
+        )
+
+    primary_domain = detected_domains[0]
+    expected_categories = DOMAIN_TO_CATEGORIES.get(primary_domain, [])
+    if not expected_categories:
+        return _matches_with_baseline_scores(top_matches), (
+            f"도메인 감지: '{primary_domain}' — 점핏 카테고리 매핑 없음. FAISS 순서 유지."
+        )
+
+    # 다중 도메인 경합: 히트 상위 2개가 2배 미만 차이면 혼합 프로젝트 → 리랭킹 억제
+    if domain_hits and len(detected_domains) >= 2:
+        hits_sorted = sorted(domain_hits.values(), reverse=True)
+        if len(hits_sorted) >= 2:
+            top_hits = hits_sorted[0]
+            second_hits = hits_sorted[1]
+            if top_hits < second_hits * 2:
+                dom_preview = ", ".join(detected_domains[:3])
+                if len(detected_domains) > 3:
+                    dom_preview += ", …"
+                note = (
+                    f"다중 도메인 감지: {dom_preview} "
+                    "(히트 비율 근접) — 혼합 프로젝트로 판단, 리랭킹 미적용. FAISS 유사도 순서 유지."
+                )
+                return _matches_with_baseline_scores(top_matches), note
+
+    if not any(m["category"] in expected_categories for m in top_matches):
+        return _matches_with_baseline_scores(top_matches), (
+            f"도메인 감지: '{primary_domain}' — 상위 5개에 해당 직무 공고가 없어 "
+            "가산·재정렬을 적용하지 않았습니다."
+        )
+
+    boosted: list[dict] = []
+    for m in top_matches:
+        sim = float(m["similarity"])
+        domain_matched = m["category"] in expected_categories
+        effective = sim + (DOMAIN_BOOST if domain_matched else 0.0)
+        boosted.append(
+            {
+                **m,
+                "effective_score": round(effective, 4),
+                "domain_boosted": domain_matched,
+            }
+        )
+    boosted.sort(key=lambda x: x["effective_score"], reverse=True)
+    note = (
+        f"도메인 감지: '{primary_domain}' → 기대 직무와 일치하는 공고에 "
+        f"+{DOMAIN_BOOST} 가산 후 유효 점수로 재정렬했습니다."
+    )
+    return boosted, note
 
 
 def merged_detected_domains_from_profile(profile: dict) -> list[str]:
@@ -140,11 +226,19 @@ def check_domain_match_consistency(
     }
 
 
-def similarity_label(score: float) -> str:
-    """정규화 코사인 유사도 기준 사용자 친화 레이블 (v5.1, 임계값은 추후 분포 기반으로 조정 가능)."""
-    if score >= 0.75:
+def similarity_label(score: float, top5_scores: list[float]) -> str:
+    """
+    상위 5개 점수를 기준으로 한 상대적 레이블 (v5.2 간이 방식, v5.3은 유효 점수 기준).
+    spread < 0.02 처럼 점수가 몰려 있을 때는 전체 수준(max_s)으로 판단.
+    """
+    max_s = max(top5_scores)
+    min_s = min(top5_scores)
+    spread = max_s - min_s
+    if spread < 0.02:
+        return "높음" if max_s >= 0.70 else "보통"
+    if score >= max_s - spread * 0.1:
         return "높음"
-    if score >= 0.60:
+    if score >= max_s - spread * 0.4:
         return "보통"
     return "낮음"
 
@@ -170,29 +264,48 @@ DIAG_LABELS_KO = {
 }
 
 
-def analyze_top_matches_pattern(top_matches: list) -> dict:
-    """상위 매칭 공고에서 공통 기술·태그를 룰베이스로 집계합니다."""
-    blobs: list[str] = []
-    for m in top_matches:
-        meta = m["meta"]
-        blobs.append((meta.get("position") or "") + "\n" + (meta.get("text") or ""))
-    combined = "\n".join(blobs)
-    combined_lower = combined.lower()
-    found: list[str] = []
-    for kw in TECH_KEYWORDS_FOR_PATTERN:
-        if kw.lower() in combined_lower:
-            found.append(kw)
+def analyze_tech_match(
+    applicant_languages: str,
+    applicant_frameworks: list[str],
+    top_matches: list[dict],
+) -> dict:
+    """
+    지원자 보유 기술(언어 + 프레임워크)과 공고 요구 기술을 교차 분석 (v5.2).
+    기존 '공통 기술 키워드' 단순 나열을 보유/미보유 분리로 교체.
+    공고 분류 태그(company_types)는 유지.
+    """
+    # 지원자 보유 기술 세트 구성 (언어 통계 파싱 + 프레임워크)
+    applicant_techs: set[str] = set()
+    for token in applicant_languages.replace(",", " ").split():
+        clean = token.strip("()%0123456789").strip()
+        if clean and len(clean) >= 2:
+            applicant_techs.add(clean)
+    for fw in applicant_frameworks:
+        applicant_techs.add(fw)
+
+    # 공고 요구 기술 추출
+    combined_lower = "\n".join(
+        (m["meta"].get("position") or "") + "\n" + (m["meta"].get("text") or "")
+        for m in top_matches
+    ).lower()
+    required_techs = [kw for kw in TECH_KEYWORDS_FOR_PATTERN if kw.lower() in combined_lower]
+
+    # 교차 분석
+    applicant_lower = {t.lower() for t in applicant_techs}
+    matched = [kw for kw in required_techs if kw.lower() in applicant_lower]
+    missing = [kw for kw in required_techs if kw.lower() not in applicant_lower]
+
+    # 공고 분류 태그 (기존 company_types 유지)
     categories = [m["meta"].get("category") for m in top_matches if m["meta"].get("category")]
-    cat_counts = Counter(categories)
-    company_types = [f"{name} 유사 공고 {cnt}건" for name, cnt in cat_counts.most_common(4)]
-    if found:
-        common_req = "상위 공고에서 반복 관측된 기술 키워드: " + ", ".join(found[:12])
-    else:
-        common_req = "상위 공고 간 공통 기술 키워드가 뚜렷하지 않습니다."
+    company_types = [
+        f"{name} 유사 공고 {cnt}건"
+        for name, cnt in Counter(categories).most_common(4)
+    ]
     return {
-        "common_tech_stack": found[:15],
+        "matched": matched,
+        "missing": missing[:6],  # 최대 6개 — 너무 길면 압도적
         "company_types": company_types,
-        "common_requirements": common_req,
+        "applicant_techs": sorted(applicant_techs),
     }
 
 
@@ -295,8 +408,12 @@ async def run_e2e_pipeline(
             "category": route_job_category(meta["position"])
         })
 
-    jumpit_category = top_matches[0]["category"]
     detected_domains_merged = merged_detected_domains_from_profile(profile)
+    domain_hits_merged = profile.get("domain_hits_merged") or {}
+    top_matches, rerank_note = rerank_by_domain(
+        top_matches, detected_domains_merged, domain_hits_merged
+    )
+    jumpit_category = top_matches[0]["category"]
     domain_check = check_domain_match_consistency(detected_domains_merged, top_matches)
 
     print("\n[Step 4] 포트폴리오 진단 (룰베이스)...")
@@ -312,11 +429,21 @@ async def run_e2e_pipeline(
         print(f"  연봉 밴드 조회 오류: {e}")
         return
 
-    top_pattern = analyze_top_matches_pattern(top_matches)
+    ms = profile.get("metrics_summary", {})
+    all_frameworks = list({
+        fw
+        for r in profile.get("per_repo") or []
+        for fw in (r.get("frameworks") or [])
+    })
+    tech_result = analyze_tech_match(
+        applicant_languages=ms.get("top_languages", ""),
+        applicant_frameworks=all_frameworks,
+        top_matches=top_matches,
+    )
 
     # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v5.1] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v5.3] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
 
     print("\n[지원자 요약]")
@@ -329,7 +456,6 @@ async def run_e2e_pipeline(
         f"quality {bd.get('quality', 0)} / "
         f"consistency {bd.get('consistency', 0)}"
     )
-    ms = profile.get("metrics_summary", {})
     print(f"  분석 레포 수    : {ms.get('scanned_repos', 0)}개")
     print(f"  분석 커밋 수    : {ms.get('total_commits_analyzed', 0)}개")
     print(f"  유효 LOC        : {ms.get('total_valid_loc', 0):,} lines")
@@ -340,17 +466,25 @@ async def run_e2e_pipeline(
             print(f"    - {w}")
 
     print("\n" + "-" * 60)
-    print("[모듈 A] 직무 매칭 (FAISS) + 상위 공고 패턴")
+    print("[모듈 A] 직무 매칭 (FAISS + 도메인 리랭킹)")
     print("-" * 60)
+    top5_effective = [float(m["effective_score"]) for m in top_matches]
     for i, match in enumerate(top_matches):
         m = match["meta"]
         rank_label = "1순위" if i == 0 else f"{i + 1}순위"
-        sim = match["similarity"]
-        label = similarity_label(sim)
-        print(
-            f"  [{rank_label}] [{m['company_name']}] {m['position']} "
-            f"(유사도: {sim:.4f} · {label})"
-        )
+        sim = float(match["similarity"])
+        eff = float(match["effective_score"])
+        boosted = bool(match.get("domain_boosted"))
+        label = similarity_label(eff, top5_effective)
+        print(f"  [{rank_label}] [{m['company_name']}] {m['position']}")
+        if boosted:
+            print(
+                f"          (FAISS: {sim:.4f} + 도메인 일치: +{DOMAIN_BOOST} "
+                f"→ 유효: {eff:.4f} · {label})"
+            )
+        else:
+            print(f"          (FAISS: {sim:.4f} · {label})")
+    print(f"\n  {rerank_note}")
     if not domain_check["consistent"]:
         print(f"\n  ⚠️ 도메인 불일치 감지:")
         print(f"     {domain_check['warning']}")
@@ -359,9 +493,14 @@ async def run_e2e_pipeline(
                 f"     권장: '{domain_check['suggested_category']}' 직무로 채용 공고를 직접 검색해 보세요."
             )
     print(f"\n  시장 밴드 라우팅 직무: '{jumpit_category}' (1순위 공고 제목 기준)")
-    print(f"  공통 기술 키워드: {', '.join(top_pattern['common_tech_stack']) or '(없음)'}")
-    print(f"  공고 분류 태그: {', '.join(top_pattern['company_types']) or '(없음)'}")
-    print(f"  요약: {top_pattern['common_requirements']}")
+    print(f"  공고 분류 태그: {', '.join(tech_result['company_types']) or '(없음)'}")
+    print("\n  기술 매칭 분석:")
+    matched_str = ", ".join(tech_result["matched"]) or "(없음)"
+    missing_str = ", ".join(tech_result["missing"]) or "(없음)"
+    print(f"    보유 & 공고 일치: {matched_str}")
+    print(f"    공고 요구 중 미보유: {missing_str}")
+    if tech_result["missing"]:
+        print("    → 포트폴리오에 드러나지 않는 기술입니다. 경험이 있다면 README에 명시하세요.")
 
     print("\n" + "-" * 60)
     print("[모듈 B] 포트폴리오 진단 + 기대 수준")
@@ -416,11 +555,11 @@ if __name__ == "__main__":
 
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
-    TARGET_USERNAME = "tekyung" #"siheon012" 
+    TARGET_USERNAME = "tekyung" #"siheon012" # 
     TARGET_REPOS = [
-        #"tekyung/2025-2_java_team_project/tree/태경",
-        "tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
-        #"tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
+        #"tekyung/2025-2_java_team_project/",
+        #"tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
+        "tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
         #"tekyung/kyonggi-university_network-system-laboratory_webpage",
         #"siheon012/Deepsentinel",
         #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung"

@@ -1,8 +1,9 @@
 """
-Git2Value v5.3 — 프로필 텍스트 변환 레이어 (룰베이스).
+Git2Value v5.4 — 프로필 텍스트 변환 레이어 (룰베이스).
 JD 임베딩과의 문체 정합을 위해 구조화 데이터를 공고형 문장으로 변환합니다.
 v5.3: README는 키워드 압축만(노이즈 완화), 키워드 없을 때 원문 폴백 없음.
       도메인·LOC 맥락 문장은 매칭용 프로필에서 제거 — 순서 보정은 run_git2value 도메인 리랭킹.
+v5.4: tree 시그니처 기반 엔진 감지(detect_engine_signatures) — Unity 등 의존성 파일 없이 특정.
 """
 from __future__ import annotations
 
@@ -49,6 +50,34 @@ DEPENDENCY_FILENAMES: Set[str] = {
     "gemfile",
     "go.mod",
     "cargo.toml",
+}
+
+# GitHub tree 경로만으로 특정 가능한 엔진/프레임워크 (의존성 파싱이 커버하지 못하는 경우)
+ENGINE_SIGNATURES: Dict[str, Dict[str, Any]] = {
+    "Unity": {
+        "required_any": ["assets/"],
+        "supporting_files": [".meta", ".unity", ".prefab", ".asset"],
+        "supporting_dirs": ["projectsettings/", "packages/"],
+        "min_supporting": 1,
+    },
+    "Unreal Engine": {
+        "required_any": ["source/"],
+        "supporting_files": [".uproject", ".uasset", ".umap"],
+        "supporting_dirs": ["content/", "config/", "plugins/"],
+        "min_supporting": 1,
+    },
+    "Godot": {
+        "required_any": [],
+        "supporting_files": [".godot", ".tscn", ".tres", ".gd", ".gdshader"],
+        "supporting_dirs": [],
+        "min_supporting": 2,
+    },
+    "Flutter": {
+        "required_any": ["pubspec.yaml"],
+        "supporting_files": [],
+        "supporting_dirs": ["lib/", "android/", "ios/"],
+        "min_supporting": 1,
+    },
 }
 
 DEPLOYMENT_PATH_MARKERS: List[str] = [
@@ -225,6 +254,57 @@ def _tree_blobs(tree_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     if not tree_data or "tree" not in tree_data:
         return []
     return [i for i in tree_data["tree"] if i.get("type") == "blob" and i.get("path")]
+
+
+def _tree_all_paths_lower(tree_data: Dict[str, Any]) -> List[str]:
+    """blob·tree 항목 모두 포함 — 디렉터리 경로(예: Assets/) 감지용."""
+    if not tree_data or "tree" not in tree_data:
+        return []
+    out: List[str] = []
+    for item in tree_data["tree"]:
+        p = item.get("path")
+        if p:
+            out.append(p.lower().replace("\\", "/"))
+    return out
+
+
+def detect_engine_signatures(tree_data: Dict[str, Any]) -> List[str]:
+    """
+    파일 트리에서 엔진/프레임워크 시그니처를 감지합니다.
+    DOMAIN_SIGNALS·의존성 파싱과 독립적이며, 추가 API 호출이 없습니다.
+    """
+    if not tree_data or "tree" not in tree_data:
+        return []
+
+    all_paths = _tree_all_paths_lower(tree_data)
+    detected: List[str] = []
+
+    for name, sig in ENGINE_SIGNATURES.items():
+        has_required = False
+        req_any = sig.get("required_any") or []
+        if not req_any:
+            has_required = True
+        else:
+            for req in req_any:
+                if any(req in p for p in all_paths):
+                    has_required = True
+                    break
+
+        if not has_required:
+            continue
+
+        support_count = 0
+        for sf in sig.get("supporting_files", []):
+            if any(p.endswith(sf) for p in all_paths):
+                support_count += 1
+        for sd in sig.get("supporting_dirs", []):
+            if any(sd in p for p in all_paths):
+                support_count += 1
+
+        if support_count >= int(sig.get("min_supporting", 1)):
+            detected.append(name)
+
+    return detected
 
 
 def detect_domain_hits(tree_data: Dict[str, Any]) -> Dict[str, int]:

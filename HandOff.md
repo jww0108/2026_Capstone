@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.04.09 | 현재 스펙 버전: v2.2 | 현재 구현 버전: **v5.3.6**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.04.13 | 현재 스펙 버전: v2.2 | 현재 구현 버전: **v5.4**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -25,6 +25,7 @@ GitHub Username + 레포 URL 리스트
 GitHubExtractor (github_extractor.py)
   - API 수집 (커밋, 트리, README, 메타)
   - 의존성 파일(blob) 선택 조회 → 프레임워크 추출
+  - 트리 경로 시그니처 기반 엔진 감지(Unity/Unreal/Godot/Flutter) + 의존성 결과 합산 (v5.4)
   - 트리 경로 기반 도메인 시그널 감지
   - 균등 샘플링 + SHA dedup
   - 점수 산출 (contribution / quality / consistency, v5.0 수식)
@@ -56,16 +57,13 @@ Git2Value는 **GitHub API**(데이터 수집)를 제외하면 외부 서비스 �
 ```
 basic/
 ├── github_extractor.py      # GitHubExtractor (수집·점수·per_repo 집계)
-├── profile_builder.py       # v4.0: 도메인 감지, 의존성 파싱, build_profile_text()
-├── portfolio_diagnosis.py   # v4.0+: 진단 룰베이스 (v5.0 commit_pattern)
-├── Scoring_Review.md        # 채점 로직 리뷰·v5.0 근거
+├── profile_builder.py       # 도메인·엔진 시그니처 감지, 의존성 파싱, build_profile_text()
+├── portfolio_diagnosis.py   # 진단 룰베이스 (commit_pattern, v5.4 게임 엔진 맥락 피드백)
 ├── valuation_engine.py      # v4.0: get_market_band() (멀티플라이어 제거)
 ├── run_git2value.py         # E2E: 모듈 A/B/C 통합 출력
 ├── requirements.txt         # 의존성 (sentence-transformers==2.6.1 버전 고정 중요)
 ├── .env                     # Github_api_token 환경변수 (버전 관리 제외)
-├── Git2Value_Spec_v2.md     # 스펙 문서 v2.1 (설계 기준)
 ├── HandOff.md               # 이 파일
-├── Plan3.md                 # v4.0 설계(Phase 4.0) 참고
 │
 ├── vector/
 │   ├── git2value_faiss.index
@@ -79,7 +77,8 @@ basic/
 │   └── ...
 │
 ├── kaggle/   (비활성, 무시)
-└── used/     (비활성, 무시)
+├── used/     (비활성, 무시)
+└── md/     (과거의 계획 파일, 필요할 때만 사용)
 ```
 
 ---
@@ -88,16 +87,16 @@ basic/
 
 ### `github_extractor.py` — GitHubExtractor 클래스
 
-| 메서드                           | 역할                                                                       |
-| -------------------------------- | -------------------------------------------------------------------------- |
-| `_fetch_with_retry`              | 모든 API 호출 게이트. 403/429 시 Retry-After 파싱 + 지수 백오프 (최대 3회) |
-| `_fetch_repo_text_files`         | **v4.0** 의존성 파일 등 contents API로 텍스트 조회                           |
-| `_fetch_all_commits_paginated`   | author 필터 커밋 목록 수집. `MAX_COMMIT_PAGES=3` (최대 300커밋) 상한       |
-| `_stratified_sample_commits`     | 초기/중간/최근 각 최대 25개씩, 레포 내부 + 전역 SHA dedup                  |
-| `_cicd_and_test_ratio_from_tree` | tree blob size>200B로 CI/CD 실질성 판별, 테스트 파일 비율 계산             |
-| `_count_active_weeks`            | **v5.0** author 커밋 목록 기준 ISO 주(년+주차) 개수                          |
-| `_calc_consistency_score`        | 커밋 간격 표준편차 → `max(0, 10 - std * 0.5)`. **v5.0** 전체 목록 기준       |
-| `evaluate_repository`            | 레포 1개 완전 분석. frameworks, detected_domains, tree_stats, active_weeks |
+| 메서드                           | 역할                                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `_fetch_with_retry`              | 모든 API 호출 게이트. 403/429 시 Retry-After 파싱 + 지수 백오프 (최대 3회)                                                |
+| `_fetch_repo_text_files`         | **v4.0** 의존성 파일 등 contents API로 텍스트 조회                                                                        |
+| `_fetch_all_commits_paginated`   | author 필터 커밋 목록 수집. `MAX_COMMIT_PAGES=3` (최대 300커밋) 상한                                                      |
+| `_stratified_sample_commits`     | 초기/중간/최근 각 최대 25개씩, 레포 내부 + 전역 SHA dedup                                                                 |
+| `_cicd_and_test_ratio_from_tree` | tree blob size>200B로 CI/CD 실질성 판별, 테스트 파일 비율 계산                                                            |
+| `_count_active_weeks`            | **v5.0** author 커밋 목록 기준 ISO 주(년+주차) 개수                                                                       |
+| `_calc_consistency_score`        | 커밋 간격 표준편차 → `max(0, 10 - std * 0.5)`. **v5.0** 전체 목록 기준                                                    |
+| `evaluate_repository`            | 레포 1개 완전 분석. **`detect_engine_signatures` + `parse_dependency_contents` → frameworks**(dedup), detected_domains, tree_stats, active_weeks (**v5.4**) |
 | `extract_applicant_profile`      | LOC 가중 github_score + **`profile_for_matching`** + **`domain_hits_merged`**(레포별 `domain_hits` 합산) + **`per_repo`** |
 
 **클래스 상수:** `MAX_COMMIT_PAGES = 3`
@@ -106,8 +105,9 @@ basic/
 
 ---
 
-### `profile_builder.py` — v5.3.2
+### `profile_builder.py` — v5.4
 
+- **`ENGINE_SIGNATURES` / `detect_engine_signatures(tree_data)`** (**v5.4**): GitHub 트리 경로만으로 Unity·Unreal Engine·Godot·Flutter 등을 감지 ([`Engine_Detection_Plan.md`](Engine_Detection_Plan.md)). blob·tree 항목 경로를 모두 스캔하며, `.meta` 등은 LOC `ignore_extensions`와 무관하게 존재 여부만 판별.
 - `detect_domain_hits` / `merge_domain_hits`: 트리 경로 기반 도메인 히트. **`detect_domain_hits`는 도메인별로 경로에 등장한 고유 키워드 종류 수**를 세며, **2종류 미만이면 해당 도메인을 제외**한다 (v5.3.1: 파일·경로 반복 매칭으로 인한 과대 카운트 방지).
 - `find_dependency_paths` / `parse_dependency_contents`: package.json 등에서 프레임워크 라벨 추출
 - `has_deployment_signals`: docker-compose, Vercel 등 배포 시그널
@@ -122,21 +122,22 @@ basic/
 
 정제된 README 문자열 기준 길이로 티어를 나누고, `build_profile_text`에는 **200자 이상(long)일 때만** `extract_readme_keywords()` 결과를 붙입니다.
 
-| 잔량 | 티어 | `build_profile_text` 반영 |
-|------|------|---------------------------|
-| 200자 이상 | long | 키워드 추출 성공 시에만 압축 문장 추가 |
-| 50~199자 | medium | README 본문 미반영 (구조·언어·의존성 데이터만) |
-| 49자 이하 | short | 동일 |
+| 잔량       | 티어   | `build_profile_text` 반영                      |
+| ---------- | ------ | ---------------------------------------------- |
+| 200자 이상 | long   | 키워드 추출 성공 시에만 압축 문장 추가         |
+| 50~199자   | medium | README 본문 미반영 (구조·언어·의존성 데이터만) |
+| 49자 이하  | short  | 동일                                           |
 
 원칙: 부실 README는 프로필에 넣지 않는다. 키워드 추출 실패 시에도 **원문 폴백 없음** (v5.3).
 
 ---
 
-### `portfolio_diagnosis.py` — v5.3.3
+### `portfolio_diagnosis.py` — v5.4
 
 - `run_diagnosis(profile)`: README, 구조, 테스트, CI/CD, 커밋 메시지, **커밋 리듬(commit_pattern)**, 배포, 협업, 성장 궤적
+- **`_collect_game_engines`** (**v5.4**): `per_repo[].frameworks`에서 Unity / Unreal Engine / Godot를 수집. 테스트·CI/CD·배포 항목이 **미흡/미경험**일 때 **엔진별 action 문구**로 대체 (웹 일반 문구 편향 완화, [`Engine_Detection_Plan.md`](Engine_Detection_Plan.md) §5).
 - **`MEANINGLESS_COMMIT_PATTERNS`** (v5.3.3): Conventional Commits(`fix:`, `chore:` 등 콜론 뒤 설명)은 무의미로 보지 않음. 단독 키워드·`initial commit`만 엄격히 필터.
-- `expected_level`: Entry / Competitive / Top (룰베이스)
+- `expected_level`: Entry / Competitive / Top (룰베이스) — 게임 엔진 등급 분기는 미포함 (동일)
 
 ---
 
@@ -189,11 +190,11 @@ contribution_axis = (blend_100 / 100) * 60
 
 **CI/CD 10 + 테스트 10 + 활성 주 10** — `min(30)` 캡 제거, duration 일수 대신 **활성 ISO 주** 사용.
 
-| 항목 | 조건 | 점수 |
-|------|------|------|
-| CI/CD | 워크플로우/Dockerfile blob > 200B | 10 또는 0 |
-| 테스트 비율 | &lt; 5% | 0 / 5~20% → 5 / ≥20% → 10 |
-| 활성 주 수 | `all_author_commits`에서 커밋이 있는 ISO 주 개수 | ≥8주 → 10, ≥4주 → 5, 그 외 0 |
+| 항목        | 조건                                             | 점수                         |
+| ----------- | ------------------------------------------------ | ---------------------------- |
+| CI/CD       | 워크플로우/Dockerfile blob > 200B                | 10 또는 0                    |
+| 테스트 비율 | &lt; 5%                                          | 0 / 5~20% → 5 / ≥20% → 10    |
+| 활성 주 수  | `all_author_commits`에서 커밋이 있는 ISO 주 개수 | ≥8주 → 10, ≥4주 → 5, 그 외 0 |
 
 ### Consistency (최대 10점)
 
@@ -255,6 +256,12 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 ---
 
 ## 6. 버전 이력 및 주요 결정 사항
+
+### v5.3.6 → v5.4 (2026.04.13)
+
+- **`profile_builder.py`**: **`ENGINE_SIGNATURES`**, **`detect_engine_signatures()`**, **`_tree_all_paths_lower()`** — 트리 구조 기반 엔진/프레임워크 감지 ([`Engine_Detection_Plan.md`](Engine_Detection_Plan.md)).
+- **`github_extractor.py`**: `evaluate_repository()`에서 엔진 감지 결과를 의존성 파싱 결과 앞에 합쳐 `frameworks`에 반영 (중복 제거).
+- **`portfolio_diagnosis.py`**: Unity·Unreal·Godot가 `frameworks`에 있을 때 테스트/CI/CD/배포 **action**을 게임 개발 맥락으로 조정.
 
 ### v5.3.5 → v5.3.6 (2026.04.09)
 
@@ -324,7 +331,7 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 
 ---
 
-## 7. 알려진 미해결 사항 (v5.3 이후 과제)
+## 7. 알려진 미해결 사항 (v5.4 이후 과제)
 
 1. ~~**스펙 문서와 구현 불일치**~~ ✅ v3.0~v2.2에서 정합
 2. ~~**순차 레포 평가 성능**~~ ✅ v3.0 병렬화
@@ -337,6 +344,7 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 9. ~~**FAISS 유사도 레이블 없음**~~ ✅ v5.2 상대적 간이 방식 (v5.3은 유효 점수 기준)
 10. ~~**도메인 불일치 감지 없음**~~ ✅ v5.1 `check_domain_match_consistency()` + 경고 출력
 11. ~~**공통 기술 키워드가 지원자와 무관**~~ ✅ v5.2 `analyze_tech_match()` 보유/미보유 교차 분석으로 교체
+11b. ~~**README/의존성 없을 때 Unity 등 엔진 미특정**~~ ✅ v5.4 `detect_engine_signatures()` ([`Engine_Detection_Plan.md`](Engine_Detection_Plan.md))
 12. **Consistency `0.5` 계수** — 여전히 임의값; 지수 감쇠 등 데이터 기반 튜닝 예정
 13. **`migrations/` ignore** — Django 등에서 의도한 마이그레이션 코드가 LOC에서 제외됨; 필요 시 경로 조정
 14. **`DOMAIN_BOOST`(0.05) 튜닝** — 레포 다양성 테스트 후 필요 시 조정 ([`Domain_Reranking_Plan.md`](Domain_Reranking_Plan.md) §7)
@@ -344,6 +352,7 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 16. **게임/정보보안 등 일부 직무** — 원티드 JSON 매핑 없으면 `wanted_median` null, 점핏만으로 구간 표시
 17. **PR/이슈 협업 분석** — 추가 API 필요, 우선순위 낮음 ([`Scoring_Review.md`](Scoring_Review.md))
 18. **(선택) 공고 임베딩 재구성** — 직무명+요구기술만 추출 재임베딩 (`Similarity_TechMatch_Upgrade.md` §5)
+19. **게임 포트폴리오 `expected_level` 웹 편향** — v5.4는 진단 **피드백 문구**만 게임 맥락 조정; 등급 산정 로직은 별도 검토 ([`Engine_Detection_Plan.md`](Engine_Detection_Plan.md) §5)
 
 ---
 

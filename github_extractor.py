@@ -23,9 +23,10 @@ def _is_hard_api_error(obj: Any) -> bool:
 
 class GitHubExtractor:
     """
-    [Git2Value Core Extractor v5.0]
+    [Git2Value Core Extractor v5.4]
     GitHub API 기반 역량 추출, Rate limit 대응, 균등 커밋 샘플링, score_breakdown.
     v5.0: Contribution 로그 스케일, Quality 10+10+10(활성 주), Consistency는 전체 커밋 목록 기준.
+    v5.4: 트리 시그니처 기반 엔진 감지(profile_builder.detect_engine_signatures) → frameworks.
     """
 
     # author 커밋 목록 페이지네이션 상한 (per_page=100 × 3 = 최대 300커밋)
@@ -429,6 +430,8 @@ class GitHubExtractor:
             session, repo_url, branch_to_scan, dep_paths
         )
         frameworks = profile_builder.parse_dependency_contents(dep_contents)
+        engine_detected = profile_builder.detect_engine_signatures(tree_data)
+        frameworks = list(dict.fromkeys(engine_detected + frameworks))
         domain_hits = profile_builder.detect_domain_hits(tree_data)
         detected_domains = sorted(domain_hits.keys(), key=lambda d: domain_hits[d], reverse=True)
         has_deployment = profile_builder.has_deployment_signals(tree_data)

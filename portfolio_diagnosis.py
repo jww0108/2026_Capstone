@@ -1,10 +1,11 @@
 """
-Git2Value v4.0 — 포트폴리오 진단 체크리스트 (룰베이스).
+Git2Value v5.4 — 포트폴리오 진단 체크리스트 (룰베이스).
+v5.4: Unity/Unreal/Godot 감지 시 테스트·CI/CD·배포 피드백을 게임 개발 맥락으로 조정.
 """
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 MEANINGLESS_COMMIT_PATTERNS = re.compile(
     r"^("
@@ -18,6 +19,19 @@ MEANINGLESS_COMMIT_PATTERNS = re.compile(
 
 def _item(status: str, detail: str, action: Optional[str] = None) -> Dict[str, Any]:
     return {"status": status, "detail": detail, "action": action}
+
+
+GAME_ENGINE_LABELS: Set[str] = {"Unity", "Unreal Engine", "Godot"}
+
+
+def _collect_game_engines(per_repo: List[Dict[str, Any]]) -> Set[str]:
+    """per_repo의 frameworks에서 게임 엔진 라벨만 수집."""
+    out: Set[str] = set()
+    for r in per_repo:
+        for fw in r.get("frameworks") or []:
+            if fw in GAME_ENGINE_LABELS:
+                out.add(fw)
+    return out
 
 
 def _readme_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -79,15 +93,27 @@ def _structure_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
     )
 
 
-def _test_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _test_diagnosis(
+    per_repo: List[Dict[str, Any]],
+    game_engines: Optional[Set[str]] = None,
+) -> Dict[str, Any]:
     if not per_repo:
         return _item("미흡", "레포 데이터 없음", None)
+    ge = game_engines or set()
     with_tests = sum(1 for r in per_repo if r.get("has_tests"))
     if with_tests == 0:
+        action = "주력 프로젝트에 pytest/Jest 등 테스트를 추가하면 신뢰도가 올라갑니다."
+        if ge:
+            if "Unity" in ge:
+                action = "Unity Test Framework 또는 PlayMode 테스트 추가를 권장합니다."
+            elif "Unreal Engine" in ge:
+                action = "Unreal Automation Tests 또는 테스트 러너 추가를 권장합니다."
+            elif "Godot" in ge:
+                action = "GUT 또는 WAT 등 Godot 테스트 도구 추가를 권장합니다."
         return _item(
             "미흡",
             f"{len(per_repo)}개 레포 중 테스트 파일 비율이 낮거나 감지되지 않았습니다.",
-            "주력 프로젝트에 pytest/Jest 등 테스트를 추가하면 신뢰도가 올라갑니다.",
+            action,
         )
     if with_tests >= len(per_repo) // 2 or with_tests >= 2:
         return _item("양호", f"{with_tests}개 레포에서 테스트 코드 신호가 감지되었습니다.", None)
@@ -98,13 +124,25 @@ def _test_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
     )
 
 
-def _cicd_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _cicd_diagnosis(
+    per_repo: List[Dict[str, Any]],
+    game_engines: Optional[Set[str]] = None,
+) -> Dict[str, Any]:
+    ge = game_engines or set()
     n = sum(1 for r in per_repo if r.get("has_cicd"))
     if n == 0:
+        action = "간단한 lint/test 워크플로우라도 추가해 보세요."
+        if ge:
+            if "Unity" in ge:
+                action = "Unity Cloud Build 또는 GameCI GitHub Action을 검토해보세요."
+            elif "Unreal Engine" in ge:
+                action = "UBT·빌드 그래프 기반 CI 또는 팀 표준 빌드 파이프라인을 검토해보세요."
+            elif "Godot" in ge:
+                action = "Godot export·헤드리스 빌드를 자동화하는 CI 스크립트를 검토해보세요."
         return _item(
             "미경험",
             "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
-            "간단한 lint/test 워크플로우라도 추가해 보세요.",
+            action,
         )
     return _item("양호", f"CI/CD 신호가 {n}개 레포에서 감지되었습니다.", None)
 
@@ -168,13 +206,23 @@ def _commit_pattern_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
     )
 
 
-def _deployment_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _deployment_diagnosis(
+    per_repo: List[Dict[str, Any]],
+    game_engines: Optional[Set[str]] = None,
+) -> Dict[str, Any]:
+    ge = game_engines or set()
     n = sum(1 for r in per_repo if r.get("has_deployment"))
     if n == 0:
+        action = "배포 경험은 실무 역량 어필에 도움이 됩니다."
+        if ge:
+            if "Unity" in ge or "Unreal Engine" in ge:
+                action = "빌드 결과물(APK/EXE) 또는 itch.io 배포 경험을 README에 명시하세요."
+            elif "Godot" in ge:
+                action = "내보내기 빌드(HTML5·데스크톱 등) 또는 스토어 배포 경험을 README에 명시하세요."
         return _item(
             "미경험",
             "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
-            "배포 경험은 실무 역량 어필에 도움이 됩니다.",
+            action,
         )
     return _item("양호", f"{n}개 레포에서 배포/인프라 관련 파일이 감지되었습니다.", None)
 
@@ -278,15 +326,16 @@ def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
     extract_applicant_profile() 반환 프로필을 입력으로 진단 JSON을 생성합니다.
     """
     per_repo: List[Dict[str, Any]] = list(profile.get("per_repo") or [])
+    game_engines = _collect_game_engines(per_repo)
 
     diagnosis = {
         "readme_quality": _readme_diagnosis(per_repo),
         "project_structure": _structure_diagnosis(per_repo),
-        "test_coverage": _test_diagnosis(per_repo),
-        "cicd": _cicd_diagnosis(per_repo),
+        "test_coverage": _test_diagnosis(per_repo, game_engines),
+        "cicd": _cicd_diagnosis(per_repo, game_engines),
         "commit_quality": _commit_quality_diagnosis(per_repo),
         "commit_pattern": _commit_pattern_diagnosis(per_repo),
-        "deployment": _deployment_diagnosis(per_repo),
+        "deployment": _deployment_diagnosis(per_repo, game_engines),
         "collaboration": _collaboration_diagnosis(per_repo),
         "growth_trajectory": _growth_diagnosis(per_repo),
     }

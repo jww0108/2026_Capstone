@@ -555,14 +555,23 @@ if __name__ == "__main__":
 
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
-    TARGET_USERNAME = "tekyung" #"siheon012" # 
+    TARGET_USERNAME =  "AstroJini" #"honey766" #"seseoju" #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" #"devwooks"
     TARGET_REPOS = [
-        #"tekyung/2025-2_java_team_project/",
+        #"tekyung/2025-2_java_team_project/tree/태경",
         #"tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
-        "tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
+        #"tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
         #"tekyung/kyonggi-university_network-system-laboratory_webpage",
         #"siheon012/Deepsentinel",
-        #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung"
+        #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung",
+        #"jww0108/2026_Cap stone/tree/tekyung"
+        #"honey766/Paint",
+        #"honey766/Balls-Run",
+        #"2026TUKCOMCD/SyncLab",
+        #"Central-MakeUs/AZIT_Front/tree/develop",
+        #"Project-Guideon/guideon-backend",
+        "AstroJini/MKX-BE/tree/develop",
+        "AstroJini/SmartFridge/tree/develop",
+        "AstroJini/SmartFridge-FE/tree/develop"
     ]
     APPLICANT_YEARS = 0
     # ================================================================

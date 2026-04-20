@@ -16,6 +16,20 @@ import profile_builder
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# v5.5: 커밋 기반 LOC 중 소스 코드가 아니지만 기여 증거로 인정하는 확장자
+CONTRIBUTION_EVIDENCE_EXTENSIONS: Set[str] = {
+    ".json",
+    ".yml",
+    ".yaml",
+    ".md",
+    ".txt",
+    ".csv",
+    ".tf",
+    ".hcl",
+    ".proto",
+    ".sql",
+}
+
 # Sentinel for hard API failures after retries
 def _is_hard_api_error(obj: Any) -> bool:
     return isinstance(obj, dict) and obj.get("__error__") is True
@@ -23,10 +37,11 @@ def _is_hard_api_error(obj: Any) -> bool:
 
 class GitHubExtractor:
     """
-    [Git2Value Core Extractor v5.4]
+    [Git2Value Core Extractor v5.5]
     GitHub API 기반 역량 추출, Rate limit 대응, 균등 커밋 샘플링, score_breakdown.
     v5.0: Contribution 로그 스케일, Quality 10+10+10(활성 주), Consistency는 전체 커밋 목록 기준.
     v5.4: 트리 시그니처 기반 엔진 감지(profile_builder.detect_engine_signatures) → frameworks.
+    v5.5: 커밋 수 기반 동적 가중치(LOC/commit), Evidence LOC 보조 점수(설정·데이터 기여 보정).
     """
 
     # author 커밋 목록 페이지네이션 상한 (per_page=100 × 3 = 최대 300커밋)
@@ -44,7 +59,9 @@ class GitHubExtractor:
             '.json', '.csv', '.lock', '.md', '.txt', '.meta', '.yml', '.yaml', '.xml',
             '.unity', '.prefab', '.asset', '.mat', '.controller', '.csproj', '.sln', '.pdf',
             '.zip', '.tar.gz', '.exe', '.dll', '.bin', '.iso', '.psd', '.ai', '.sketch', '.fig', '.xd',
-            '.mp4', '.avi', '.mov', '.mkv', '.mp3', '.wav', '.flac', '.woff', '.woff2', '.ttf', '.otf'
+            '.mp4', '.avi', '.mov', '.mkv', '.mp3', '.wav', '.flac', '.woff', '.woff2', '.ttf', '.otf',
+            # v5.5: 스키마/IaC 등은 유효 소스 LOC 대신 evidence_loc로만 집계
+            '.tf', '.hcl', '.proto', '.sql',
         }
         self.ignore_paths = {
             'node_modules/', 'vendor/', 'dist/', 'build/', 'assets/plugins/', '.git/',
@@ -188,6 +205,16 @@ class GitHubExtractor:
             return False
         return True
 
+    def _is_contribution_evidence(self, filename: str) -> bool:
+        """LOC 계산에서는 제외되지만 기여 증거로 인정되는 커밋 파일 (v5.5)."""
+        lower_name = filename.lower()
+        if any(path in lower_name for path in self.ignore_paths):
+            return False
+        if lower_name.endswith("dockerfile"):
+            return True
+        ext = os.path.splitext(lower_name)[1]
+        return ext in CONTRIBUTION_EVIDENCE_EXTENSIONS
+
     def _stratified_sample_commits(
         self, all_commits: List[Dict[str, Any]], global_seen_sha: Set[str]
     ) -> List[Dict[str, Any]]:
@@ -299,13 +326,15 @@ class GitHubExtractor:
         session: aiohttp.ClientSession,
         sampled: List[Dict[str, Any]],
         global_seen_sha: Set[str],
-    ) -> Tuple[int, Dict[str, int], int]:
+    ) -> Tuple[int, Dict[str, int], int, int]:
         """
-        Returns (valid_loc, lang_stats, analyzed_count).
+        Returns (valid_loc, lang_stats, analyzed_count, evidence_loc).
         analyzed_count: 상세 조회에 성공한 커밋 수(LOC·commit_score 분모와 일치).
+        evidence_loc: 설정·데이터·IaC 등 기여 증거 additions 합 (v5.5).
         global_seen_sha에 샘플에 포함된 SHA를 추가(분석 완료 후).
         """
         valid_loc = 0
+        evidence_loc = 0
         lang_stats: Dict[str, int] = {}
         detail_objects: List[Dict[str, Any]] = []
 
@@ -324,13 +353,15 @@ class GitHubExtractor:
             detail_objects.append(detail)
             for f in detail.get("files", []) or []:
                 filename = f.get("filename", "")
+                additions = f.get("additions", 0) or 0
                 if self._is_valid_source_code(filename):
-                    additions = f.get("additions", 0) or 0
                     valid_loc += additions
                     ext = os.path.splitext(filename.lower())[1]
                     lang = self.ext_to_lang.get(ext)
                     if lang:
                         lang_stats[lang] = lang_stats.get(lang, 0) + additions
+                elif self._is_contribution_evidence(filename):
+                    evidence_loc += additions
 
         # SHA 등록: 샘플 기준(분석 성공 여부와 무관하게 샘플에 올라온 커밋은 dedup용으로 등록)
         for c in sampled:
@@ -339,7 +370,7 @@ class GitHubExtractor:
                 global_seen_sha.add(sha)
 
         analyzed_count = len(detail_objects)
-        return valid_loc, lang_stats, analyzed_count
+        return valid_loc, lang_stats, analyzed_count, evidence_loc
 
     async def evaluate_repository(
         self,
@@ -448,7 +479,7 @@ class GitHubExtractor:
                         f"repo '{repo}' 최초 커밋이 repo 생성일보다 {gap_days}일 늦음 — 오너십 확인 필요"
                     )
 
-        valid_loc, lang_stats, analyzed_commit_count = await self._analyze_sampled_commits(
+        valid_loc, lang_stats, analyzed_commit_count, evidence_loc = await self._analyze_sampled_commits(
             session, sampled, global_seen_sha
         )
 
@@ -479,16 +510,27 @@ class GitHubExtractor:
             test_pts = 10.0
         quality_axis = cicd_pts + test_pts + duration_pts
 
-        # v5.0: 로그 스케일 (만점 근사: LOC 1만 / 분석 커밋 100)
-        loc_score = min(
+        # v5.0 + v5.5: 메인 LOC + Evidence LOC(최대 50점 스케일), 커밋 수에 따른 동적 가중치
+        loc_score_main = min(
             100.0,
             math.log(valid_loc / 100.0 + 1.0) / math.log(101.0) * 100.0,
         )
+        loc_score_ev = min(
+            50.0,
+            math.log(evidence_loc / 500.0 + 1.0) / math.log(101.0) * 50.0,
+        )
+        loc_score = min(100.0, loc_score_main + loc_score_ev)
         commit_score = min(
             100.0,
             math.log(analyzed_commit_count / 5.0 + 1.0) / math.log(21.0) * 100.0,
         )
-        blend_100 = loc_score * 0.7 + commit_score * 0.3
+        if analyzed_commit_count < 5:
+            loc_w, commit_w = 0.9, 0.1
+        elif analyzed_commit_count < 15:
+            loc_w, commit_w = 0.6, 0.4
+        else:
+            loc_w, commit_w = 0.5, 0.5
+        blend_100 = loc_score * loc_w + commit_score * commit_w
         contribution_axis = round((blend_100 / 100.0) * 60.0, 1)
 
         # 일관성: 균등 샘플이 아닌 전체 author 커밋 목록 타임스탬프 (샘플링 인위 갭 제거)
@@ -507,6 +549,7 @@ class GitHubExtractor:
             "repo_name": f"{repo} ({branch_to_scan})",
             "score": repo_score,
             "valid_loc": valid_loc,
+            "evidence_loc": evidence_loc,
             "has_cicd": has_cicd,
             "has_tests": has_tests_proxy,
             "has_deployment": has_deployment,
@@ -566,6 +609,7 @@ class GitHubExtractor:
         merged_readmes: List[str] = []
         global_languages: Dict[str, int] = {}
         total_loc = 0
+        total_evidence_loc = 0
         total_commits_analyzed = 0
 
         weighted_score_sum = 0.0
@@ -578,6 +622,7 @@ class GitHubExtractor:
             sc = res["score"]
             bd = res.get("score_breakdown") or {}
             total_loc += loc
+            total_evidence_loc += int(res.get("evidence_loc", 0) or 0)
             total_commits_analyzed += int(res.get("commits_analyzed", 0))
             if res.get("readme"):
                 merged_readmes.append(f"[{res['repo_name']} 요약]: {res['readme']}")
@@ -682,6 +727,7 @@ class GitHubExtractor:
                     "commit_messages": res.get("commit_messages") or [],
                     "distinct_author_count": int(res.get("distinct_author_count") or 1),
                     "valid_loc": int(res.get("valid_loc") or 0),
+                    "evidence_loc": int(res.get("evidence_loc") or 0),
                     "is_fork": bool(res.get("is_fork")),
                     "duration_days": int(res.get("duration_days") or 0),
                     "active_weeks": int(res.get("active_weeks") or 0),
@@ -700,6 +746,7 @@ class GitHubExtractor:
             "per_repo": per_repo,
             "metrics_summary": {
                 "total_valid_loc": total_loc,
+                "total_evidence_loc": total_evidence_loc,
                 "top_languages": lang_str,
                 "scanned_repos": len(valid_results),
                 "total_commits_analyzed": total_commits_analyzed,

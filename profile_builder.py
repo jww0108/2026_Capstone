@@ -1,9 +1,10 @@
 """
-Git2Value v5.4 — 프로필 텍스트 변환 레이어 (룰베이스).
+Git2Value v5.5 — 프로필 텍스트 변환 레이어 (룰베이스).
 JD 임베딩과의 문체 정합을 위해 구조화 데이터를 공고형 문장으로 변환합니다.
 v5.3: README는 키워드 압축만(노이즈 완화), 키워드 없을 때 원문 폴백 없음.
       도메인·LOC 맥락 문장은 매칭용 프로필에서 제거 — 순서 보정은 run_git2value 도메인 리랭킹.
 v5.4: tree 시그니처 기반 엔진 감지(detect_engine_signatures) — Unity 등 의존성 파일 없이 특정.
+v5.5: Jupyter/ML 실험, Kubernetes/IaC 시그니처 추가.
 """
 from __future__ import annotations
 
@@ -77,6 +78,18 @@ ENGINE_SIGNATURES: Dict[str, Dict[str, Any]] = {
         "supporting_files": [],
         "supporting_dirs": ["lib/", "android/", "ios/"],
         "min_supporting": 1,
+    },
+    "Jupyter/ML 실험": {
+        "required_any": [],
+        "supporting_files": [".ipynb"],
+        "supporting_dirs": ["notebooks/", "experiments/"],
+        "min_supporting": 2,
+    },
+    "Kubernetes/IaC": {
+        "required_any": [],
+        "supporting_files": [".tf", ".hcl"],
+        "supporting_dirs": ["kubernetes/", "k8s/", "helm/", "terraform/"],
+        "min_supporting": 2,
     },
 }
 

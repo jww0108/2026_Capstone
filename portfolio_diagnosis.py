@@ -1,6 +1,7 @@
 """
-Git2Value v5.4 — 포트폴리오 진단 체크리스트 (룰베이스).
+Git2Value v5.5 — 포트폴리오 진단 체크리스트 (룰베이스).
 v5.4: Unity/Unreal/Godot 감지 시 테스트·CI/CD·배포 피드백을 게임 개발 맥락으로 조정.
+v5.5: 기여 유형 안내(contribution_type_note), Competitive 등급 기준 조정, 테스트 항목 문구 완화.
 """
 from __future__ import annotations
 
@@ -19,6 +20,27 @@ MEANINGLESS_COMMIT_PATTERNS = re.compile(
 
 def _item(status: str, detail: str, action: Optional[str] = None) -> Dict[str, Any]:
     return {"status": status, "detail": detail, "action": action}
+
+
+def contribution_type_note(valid_loc: int, evidence_loc: int) -> str:
+    """코드 vs 설정·데이터 기여 비율 안내 (v5.5)."""
+    total = valid_loc + evidence_loc
+    if total == 0:
+        return ""
+    code_ratio = valid_loc / total
+    if code_ratio >= 0.8:
+        return (
+            f"기여 유형: 소스 코드 중심 (코드 {valid_loc:,} LOC, 설정/데이터 {evidence_loc:,} LOC)"
+        )
+    if code_ratio >= 0.4:
+        return (
+            f"기여 유형: 코드·설정 병행 (코드 {valid_loc:,} LOC, 설정/데이터 {evidence_loc:,} LOC)"
+        )
+    return (
+        f"기여 유형: 설정/데이터 중심 (코드 {valid_loc:,} LOC, 설정/데이터 {evidence_loc:,} LOC)\n"
+        f"  → 이 레포에서는 데이터·인프라·문서 영역에 주로 기여한 것으로 보입니다. "
+        f"순수 코딩 LOC 기반 점수가 낮게 나올 수 있으며, 이는 기여 유형의 차이이지 실력의 문제가 아닙니다."
+    )
 
 
 GAME_ENGINE_LABELS: Set[str] = {"Unity", "Unreal Engine", "Godot"}
@@ -102,17 +124,29 @@ def _test_diagnosis(
     ge = game_engines or set()
     with_tests = sum(1 for r in per_repo if r.get("has_tests"))
     if with_tests == 0:
-        action = "주력 프로젝트에 pytest/Jest 등 테스트를 추가하면 신뢰도가 올라갑니다."
+        action = (
+            "테스트 코드는 Top 등급 차별화 요소입니다. "
+            "핵심 비즈니스 로직부터 단위 테스트를 추가해보세요."
+        )
         if ge:
             if "Unity" in ge:
-                action = "Unity Test Framework 또는 PlayMode 테스트 추가를 권장합니다."
+                action = (
+                    "테스트는 Top 등급 차별화 요소입니다. "
+                    "Unity Test Framework 또는 PlayMode 테스트 추가를 검토해 보세요."
+                )
             elif "Unreal Engine" in ge:
-                action = "Unreal Automation Tests 또는 테스트 러너 추가를 권장합니다."
+                action = (
+                    "테스트는 Top 등급 차별화 요소입니다. "
+                    "Unreal Automation Tests 또는 테스트 러너 추가를 검토해 보세요."
+                )
             elif "Godot" in ge:
-                action = "GUT 또는 WAT 등 Godot 테스트 도구 추가를 권장합니다."
+                action = (
+                    "테스트는 Top 등급 차별화 요소입니다. "
+                    "GUT 또는 WAT 등 Godot 테스트 도구 추가를 검토해 보세요."
+                )
         return _item(
-            "미흡",
-            f"{len(per_repo)}개 레포 중 테스트 파일 비율이 낮거나 감지되지 않았습니다.",
+            "선택 가점",
+            f"{len(per_repo)}개 레포 중 테스트 파일이 감지되지 않았습니다.",
             action,
         )
     if with_tests >= len(per_repo) // 2 or with_tests >= 2:
@@ -310,14 +344,18 @@ def expected_level(per_repo: List[Dict[str, Any]], diagnosis: Dict[str, Dict[str
             "level": "Top",
             "summary": "대형 테크·우수 스타트업 서류에서 경쟁력을 기대할 수 있는 완성도(참고 기준)입니다.",
         }
-    if readme_ok and (has_tests or has_cicd) and s >= 4:
+    # v5.5: Competitive — 테스트 조건 제외, CI/CD 또는 배포 + 멀티 프로젝트
+    if readme_ok and (has_cicd or has_deploy) and multi_proj and s >= 4:
         return {
             "level": "Competitive",
             "summary": "중견 IT·시리즈 B급 이상 스타트업에 맞설 만한 포트폴리오 완성도로 볼 수 있습니다.",
         }
     return {
         "level": "Entry",
-        "summary": "중소·SI·일반 스타트업 지원에 맞는 기본 단계입니다. 테스트·CI/CD·배포를 보강하면 체감이 커집니다.",
+        "summary": (
+            "중소·SI·일반 스타트업 지원에 맞는 기본 단계입니다. "
+            "CI/CD·배포·멀티 프로젝트를 보강하면 체감이 커집니다."
+        ),
     }
 
 
@@ -340,7 +378,12 @@ def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
         "growth_trajectory": _growth_diagnosis(per_repo),
     }
 
+    ms = profile.get("metrics_summary") or {}
+    vl = int(ms.get("total_valid_loc") or 0)
+    el = int(ms.get("total_evidence_loc") or 0)
+
     return {
         "portfolio_diagnosis": diagnosis,
         "expected_level": expected_level(per_repo, diagnosis),
+        "contribution_type": contribution_type_note(vl, el),
     }

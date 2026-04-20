@@ -328,6 +328,7 @@ def print_applicant_profile(profile: dict, username: str) -> None:
     print(f"  스캔된 레포 수        : {ms.get('scanned_repos', 0)}개")
     print(f"  분석된 총 커밋 수     : {ms.get('total_commits_analyzed', 0)}개")
     print(f"  유효 코드 라인 (LOC)  : {ms.get('total_valid_loc', 0):,} lines")
+    print(f"  기여 증거 LOC         : {ms.get('total_evidence_loc', 0):,} lines")
     print(f"  주요 기술 스택        : {ms.get('top_languages', 'N/A')}")
 
     warns = profile.get("warnings") or []
@@ -443,7 +444,7 @@ async def run_e2e_pipeline(
 
     # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v5.3] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v5.5] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
 
     print("\n[지원자 요약]")
@@ -459,6 +460,7 @@ async def run_e2e_pipeline(
     print(f"  분석 레포 수    : {ms.get('scanned_repos', 0)}개")
     print(f"  분석 커밋 수    : {ms.get('total_commits_analyzed', 0)}개")
     print(f"  유효 LOC        : {ms.get('total_valid_loc', 0):,} lines")
+    print(f"  기여 증거 LOC   : {ms.get('total_evidence_loc', 0):,} lines (설정·데이터·IaC 등)")
     print(f"  기술 스택       : {ms.get('top_languages', 'N/A')}")
     if applicant_warnings:
         print("  경고:")
@@ -507,6 +509,11 @@ async def run_e2e_pipeline(
     print("-" * 60)
     exp = diag_bundle.get("expected_level") or {}
     print(f"  기대 수준: {exp.get('level', '?')} — {exp.get('summary', '')}")
+    ct_note = (diag_bundle.get("contribution_type") or "").strip()
+    if ct_note:
+        print("  기여 유형 안내:")
+        for line in ct_note.split("\n"):
+            print(f"    {line}")
     for key, block in (diag_bundle.get("portfolio_diagnosis") or {}).items():
         label = DIAG_LABELS_KO.get(key, key)
         print(f"\n  · {label}")
@@ -555,7 +562,7 @@ if __name__ == "__main__":
 
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
-    TARGET_USERNAME =  "AstroJini" #"honey766" #"seseoju" #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" #"devwooks"
+    TARGET_USERNAME =  "AstroJini"#"chjnett"#"devwooks"#"honey766" #"seseoju" #"AstroJini"  #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" 
     TARGET_REPOS = [
         #"tekyung/2025-2_java_team_project/tree/태경",
         #"tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
@@ -569,9 +576,12 @@ if __name__ == "__main__":
         #"2026TUKCOMCD/SyncLab",
         #"Central-MakeUs/AZIT_Front/tree/develop",
         #"Project-Guideon/guideon-backend",
-        "AstroJini/MKX-BE/tree/develop",
-        "AstroJini/SmartFridge/tree/develop",
+        #"AstroJini/MKX-BE/tree/develop",
+        #"AstroJini/SmartFridge/tree/develop",
         "AstroJini/SmartFridge-FE/tree/develop"
+        #"2026TUKCOMCD/SmartWalk/tree/main",
+        #"chjnett/aws-jenkins/tree/main",
+        #"chjnett/kmong_rich_deploy/tree/main",
     ]
     APPLICANT_YEARS = 0
     # ================================================================

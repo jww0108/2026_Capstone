@@ -43,7 +43,7 @@ def route_job_category(position_title: str) -> str:
         return "안드로이드"
     if re.search(r'\bios\b', title) or any(k in title for k in ["아이폰", "애플"]):
         return "iOS"
-    if any(k in title_no_hyphen for k in ["크로스플랫폼", "플러터", "flutter", "reactnative"]):
+    if any(k in title_no_hyphen for k in ["크로스플랫폼", "플러터", "flutter", "reactnative", "expo"]):
         return "크로스플랫폼 앱"
 
     # 게임 직무는 일반 서버/프론트 규칙보다 먼저 (v5.1)
@@ -97,6 +97,10 @@ DOMAIN_TO_CATEGORIES: dict[str, list[str]] = {
     "ML/AI": ["인공지능/머신러닝", "빅데이터 엔지니어"],
     "모바일 앱": ["안드로이드", "iOS", "크로스플랫폼 앱"],
     "DevOps/인프라": ["devops/시스템 엔지니어"],
+    # v5.8: 신규 도메인 매핑
+    "블록체인": ["블록체인"],
+    "빅데이터 엔지니어": ["빅데이터 엔지니어"],
+    "도구 개발": ["프론트엔드", "SW/솔루션"],
 }
 
 # 도메인 감지와 일치하는 공고에 FAISS 유사도 가산 (v5.3 하이브리드 리랭킹)
@@ -247,7 +251,7 @@ TECH_KEYWORDS_FOR_PATTERN = [
     "Python", "Java", "JavaScript", "TypeScript", "React", "Vue", "Spring", "Spring Boot",
     "Docker", "Kubernetes", "AWS", "GCP", "Azure", "Go", "Rust", "C++", "Django", "FastAPI",
     "Node.js", "Kotlin", "Swift", "Flutter", "PyTorch", "TensorFlow", "Redis", "PostgreSQL",
-    "MySQL", "MongoDB", "GraphQL", "REST API", "Terraform",
+    "MySQL", "MongoDB", "GraphQL", "REST API", "Terraform", "Lua"
 ]
 
 
@@ -444,8 +448,17 @@ async def run_e2e_pipeline(
 
     # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v5.5] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v5.7] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
+
+    # v5.7: 레포 분류 정보
+    repo_classifications = diag_bundle.get("repo_classifications") or []
+    per_repo_data = profile.get("per_repo") or []
+    matching_count = sum(1 for r in per_repo_data if r.get("matching_included", True))
+    excluded_count = len(per_repo_data) - matching_count
+    has_mod_or_config = any(
+        rc["type"] in ("mod", "config") for rc in repo_classifications
+    )
 
     print("\n[지원자 요약]")
     print(f"  GitHub ID       : {target_username}")
@@ -457,7 +470,20 @@ async def run_e2e_pipeline(
         f"quality {bd.get('quality', 0)} / "
         f"consistency {bd.get('consistency', 0)}"
     )
-    print(f"  분석 레포 수    : {ms.get('scanned_repos', 0)}개")
+    total_repos = ms.get('scanned_repos', 0)
+    if excluded_count > 0:
+        print(f"  분석 레포 수    : {total_repos}개 (매칭 사용: {matching_count}개, 설정/취미: {excluded_count}개)")
+    else:
+        print(f"  분석 레포 수    : {total_repos}개")
+    for rc in repo_classifications:
+        rtype = rc["type"]
+        repo_nm = rc["repo_name"]
+        if rtype == "config":
+            print(f"    - {repo_nm} ({rc['label']}) — 매칭 제외됨")
+        elif rtype == "mod":
+            print(f"    - {repo_nm} ({rc['label']}) — 게임 도메인 (모드 개발)")
+        else:
+            print(f"    - {repo_nm} — 메인 프로젝트")
     print(f"  분석 커밋 수    : {ms.get('total_commits_analyzed', 0)}개")
     print(f"  유효 LOC        : {ms.get('total_valid_loc', 0):,} lines")
     print(f"  기여 증거 LOC   : {ms.get('total_evidence_loc', 0):,} lines (설정·데이터·IaC 등)")
@@ -466,6 +492,21 @@ async def run_e2e_pipeline(
         print("  경고:")
         for w in applicant_warnings:
             print(f"    - {w}")
+
+    # v5.7: 모드/설정 프로젝트 분류 안내 블록
+    if has_mod_or_config:
+        print("\n" + "-" * 60)
+        print("[프로젝트 분류 안내]")
+        print("-" * 60)
+        for rc in repo_classifications:
+            if rc["type"] in ("mod", "config") and rc.get("message"):
+                print(f"  · {rc['repo_name']}: {rc['label']}")
+                for line in rc["message"].split(". "):
+                    line = line.strip()
+                    if line:
+                        print(f"      {line}.")
+                if rc["type"] == "config":
+                    print("      (직무 매칭 입력에서 제외됨)")
 
     print("\n" + "-" * 60)
     print("[모듈 A] 직무 매칭 (FAISS + 도메인 리랭킹)")
@@ -562,7 +603,7 @@ if __name__ == "__main__":
 
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
-    TARGET_USERNAME =  "AstroJini"#"chjnett"#"devwooks"#"honey766" #"seseoju" #"AstroJini"  #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" 
+    TARGET_USERNAME =  "RWKHB"#"honey766"#"tekyung"#"bcnsrui"#"CloudChick"#"chjnett"#"devwooks"# #"seseoju" #"AstroJini"  #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" 
     TARGET_REPOS = [
         #"tekyung/2025-2_java_team_project/tree/태경",
         #"tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
@@ -572,16 +613,19 @@ if __name__ == "__main__":
         #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung",
         #"jww0108/2026_Cap stone/tree/tekyung"
         #"honey766/Paint",
-        #"honey766/Balls-Run",
+        #"honey766/Balls-Run/tree/main",
         #"2026TUKCOMCD/SyncLab",
         #"Central-MakeUs/AZIT_Front/tree/develop",
         #"Project-Guideon/guideon-backend",
         #"AstroJini/MKX-BE/tree/develop",
         #"AstroJini/SmartFridge/tree/develop",
-        "AstroJini/SmartFridge-FE/tree/develop"
+        #"AstroJini/SmartFridge-FE/tree/develop",
         #"2026TUKCOMCD/SmartWalk/tree/main",
         #"chjnett/aws-jenkins/tree/main",
         #"chjnett/kmong_rich_deploy/tree/main",
+        #"bcnsrui/KirafanTCG/tree/main",
+        "CloudChick/holoduel/tree/main",
+        #"CloudChick/project_a4/tree/master"
     ]
     APPLICANT_YEARS = 0
     # ================================================================

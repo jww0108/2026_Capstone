@@ -72,7 +72,7 @@ class GitHubExtractor:
             '.cs': 'C#', '.py': 'Python', '.js': 'JavaScript', '.ts': 'TypeScript',
             '.java': 'Java', '.cpp': 'C++', '.c': 'C', '.go': 'Go', '.rb': 'Ruby',
             '.php': 'PHP', '.swift': 'Swift', '.kt': 'Kotlin', '.dart': 'Dart',
-            '.html': 'HTML', '.css': 'CSS'
+            '.html': 'HTML', '.css': 'CSS', '.lua': 'Lua',
         }
 
     @staticmethod
@@ -411,6 +411,13 @@ class GitHubExtractor:
         all_author_commits, commits_hard_err = await self._fetch_all_commits_paginated(
             session, commits_list_url
         )
+        if not all_author_commits and not commits_hard_err:
+            repo_warnings.append(
+                f"repo '{repo}': '{username}' 이름으로 등록된 커밋이 없습니다. "
+                "GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, "
+                "실제로 해당 레포에 커밋하지 않은 경우입니다. "
+                "contribution·consistency 점수는 0으로 산출됩니다."
+            )
         if commits_hard_err:
             repo_warnings.append(
                 f"repo '{repo}' Rate Limit/API 오류로 커밋 목록이 불완전할 수 있음"
@@ -462,9 +469,31 @@ class GitHubExtractor:
         )
         frameworks = profile_builder.parse_dependency_contents(dep_contents)
         engine_detected = profile_builder.detect_engine_signatures(tree_data)
-        frameworks = list(dict.fromkeys(engine_detected + frameworks))
+        # v5.8: manifest 내용 검증이 필요한 시그너처(Expo, VS Code 확장, 브라우저 확장 등) 비동기 처리
+        async def _fetch_for_sig(r_url: str, r_ref: str, paths: List[str]) -> Dict[str, str]:
+            return await self._fetch_repo_text_files(session, r_url, r_ref, paths)
+        engine_detected_content = await profile_builder.detect_signatures_with_content(
+            tree_data, _fetch_for_sig, repo_url, branch_to_scan
+        )
+        engine_detected = list(dict.fromkeys(engine_detected + engine_detected_content))
+        # v5.7: 모드/플러그인 플랫폼 감지 (엔진 > 모드 > Lua 호스트 우선순위)
+        mod_platform = profile_builder.detect_mod_platform(tree_data)
+        # 모드 플랫폼 label을 frameworks 맨 앞에 추가 (엔진 label 다음)
+        mod_labels = [mod_platform["label"]] if mod_platform else []
+        frameworks = list(dict.fromkeys(engine_detected + mod_labels + frameworks))
         domain_hits = profile_builder.detect_domain_hits(tree_data)
         detected_domains = sorted(domain_hits.keys(), key=lambda d: domain_hits[d], reverse=True)
+        # v5.8: 엔진 시그너처에 domain 필드가 있으면 detected_domains 앞에 삽입 (미포함 시에만)
+        for eng_name in reversed(engine_detected):
+            eng_sig = profile_builder.ENGINE_SIGNATURES.get(eng_name, {})
+            eng_domain = eng_sig.get("domain")
+            if eng_domain and eng_domain not in detected_domains:
+                detected_domains = [eng_domain] + detected_domains
+        # 모드 플랫폼 도메인을 detected_domains 앞에 삽입 (미포함 시에만)
+        if mod_platform and mod_platform.get("domain"):
+            mod_domain = mod_platform["domain"]
+            if mod_domain not in detected_domains:
+                detected_domains = [mod_domain] + detected_domains
         has_deployment = profile_builder.has_deployment_signals(tree_data)
 
         created_at = datetime.strptime(repo_meta["created_at"], "%Y-%m-%dT%H:%M:%SZ")
@@ -482,6 +511,19 @@ class GitHubExtractor:
         valid_loc, lang_stats, analyzed_commit_count, evidence_loc = await self._analyze_sampled_commits(
             session, sampled, global_seen_sha
         )
+
+        # v5.6: 언어 분류 및 Lua 호스트 환경 추론
+        # v5.7: 모드 플랫폼이 감지된 경우 Lua 호스트 추론 건너뜀 (모드 플랫폼이 더 구체적)
+        lang_category = profile_builder.categorize_languages(lang_stats)
+        sub_host = None
+        if not mod_platform:
+            if any(l == "Lua" for l, _ in lang_category["sub"]):
+                sub_host = profile_builder.detect_lua_host(tree_data)
+            # 메인 없이 서브만 단독인 경우 fallback
+            if not lang_category["main"] and not sub_host and lang_category["sub"]:
+                top_sub_lang = lang_category["sub"][0][0]
+                sub_host = profile_builder.resolve_sub_language_alone(top_sub_lang, tree_data)
+        is_config_repo = bool(sub_host and sub_host.get("is_config"))
 
         pushed_at = datetime.strptime(repo_meta["pushed_at"], "%Y-%m-%dT%H:%M:%SZ")
         duration_days = (pushed_at - created_at).days
@@ -554,6 +596,10 @@ class GitHubExtractor:
             "has_tests": has_tests_proxy,
             "has_deployment": has_deployment,
             "languages": lang_stats,
+            "language_category": lang_category,       # v5.6
+            "sub_language_host": sub_host,            # v5.6
+            "is_config_repo": is_config_repo,         # v5.6
+            "mod_platform": mod_platform,             # v5.7: 모드/플러그인 플랫폼 감지 결과
             "readme": readme_content,
             "readme_has_image": readme_has_image,
             "frameworks": frameworks,
@@ -606,6 +652,18 @@ class GitHubExtractor:
             results = [r for r in raw if r is not None]
 
         valid_results = [r for r in results if r.get("valid")]
+
+        # v5.7: 설정 레포(is_config_repo=True)를 매칭 입력에서 제외
+        non_config_results = [r for r in valid_results if not r.get("is_config_repo")]
+        # 매칭에 사용할 결과 집합: 비설정 레포가 있으면 그것만, 없으면 전체(경고 추가)
+        matching_results = non_config_results if non_config_results else valid_results
+        if not non_config_results and valid_results:
+            all_warnings.append(
+                "분석된 레포지토리가 모두 에디터 설정/취미 프로젝트입니다. "
+                "직무 매칭 결과의 신뢰도가 낮을 수 있습니다. "
+                "주력 프로젝트(웹/게임/AI 등)를 추가하시기 바랍니다."
+            )
+
         merged_readmes: List[str] = []
         global_languages: Dict[str, int] = {}
         total_loc = 0
@@ -675,38 +733,70 @@ class GitHubExtractor:
 
         applicant_resume = f"주요 기술 스택: {lang_str}\n\n" + "\n\n".join(merged_readmes)
 
+        # v5.7: 매칭용 데이터는 matching_results(비설정 레포)만 사용
         all_frameworks: List[str] = []
         seen_fw: Set[str] = set()
-        for res in valid_results:
+        for res in matching_results:
             for fw in res.get("frameworks") or []:
                 if fw not in seen_fw:
                     seen_fw.add(fw)
                     all_frameworks.append(fw)
 
-        domain_hit_list = [res.get("domain_hits") or {} for res in valid_results]
+        domain_hit_list = [res.get("domain_hits") or {} for res in matching_results]
         merged_domains = profile_builder.merge_domain_hits(domain_hit_list)
 
+        # domain_hits_merged는 전체 valid_results 기준으로 집계 (진단·출력 목적)
         merged_domain_hits_dict: Dict[str, int] = {}
-        for d in domain_hit_list:
-            for k, v in d.items():
+        for d_hits in [res.get("domain_hits") or {} for res in valid_results]:
+            for k, v in d_hits.items():
                 merged_domain_hits_dict[k] = merged_domain_hits_dict.get(k, 0) + v
 
-        any_cicd = any(res.get("has_cicd") for res in valid_results)
-        any_tests = any(res.get("has_tests") for res in valid_results)
-        any_deploy = any(res.get("has_deployment") for res in valid_results)
-        readme_blob = "\n".join((res.get("readme") or "").strip() for res in valid_results).strip()
+        # v5.6: sub_language_host.domain을 merged_domains 앞에 우선 합산 (matching_results 기준)
+        first_sub_host: Optional[Dict[str, Any]] = None
+        for res in matching_results:
+            sh = res.get("sub_language_host")
+            if sh and sh.get("domain"):
+                first_sub_host = sh
+                break
+        if first_sub_host and first_sub_host.get("domain"):
+            host_domain = first_sub_host["domain"]
+            merged_domains.insert(0, host_domain)
+            # dedup: 순서 유지하며 중복 제거
+            seen_d: Set[str] = set()
+            merged_domains_dedup: List[str] = []
+            for d in merged_domains:
+                if d not in seen_d:
+                    seen_d.add(d)
+                    merged_domains_dedup.append(d)
+            merged_domains = merged_domains_dedup
+
+        # v5.6: per-repo language_category 병합 (matching_results 기준 언어 합산)
+        matching_languages: Dict[str, int] = {}
+        for res in matching_results:
+            for lang, count in res["languages"].items():
+                matching_languages[lang] = matching_languages.get(lang, 0) + count
+        merged_lang_category = profile_builder.categorize_languages(
+            matching_languages if matching_languages else global_languages
+        )
+
+        any_cicd = any(res.get("has_cicd") for res in matching_results)
+        any_tests = any(res.get("has_tests") for res in matching_results)
+        any_deploy = any(res.get("has_deployment") for res in matching_results)
+        readme_blob = "\n".join((res.get("readme") or "").strip() for res in matching_results).strip()
 
         profile_for_matching = profile_builder.build_profile_text(
             {
-                "top_languages": lang_str,
+                "language_category": merged_lang_category,   # v5.6
+                "sub_language_host": first_sub_host,         # v5.6
+                "top_languages": lang_str,                   # fallback (legacy applicant_resume용)
                 "detected_domains": merged_domains,
                 "frameworks": all_frameworks,
                 "has_cicd": any_cicd,
                 "has_tests": any_tests,
                 "has_deployment": any_deploy,
                 "readme_summary": readme_blob,
-                "total_valid_loc": total_loc,        # v5.2: 프로젝트 규모 문장용
-                "scanned_repos": len(valid_results), # v5.2: 포트폴리오 규모 문장용
+                "total_valid_loc": total_loc,
+                "scanned_repos": len(valid_results),
             }
         )
 
@@ -734,6 +824,11 @@ class GitHubExtractor:
                     "total_commits": int(res.get("total_commits") or 0),
                     "frameworks": res.get("frameworks") or [],
                     "detected_domains": res.get("detected_domains") or [],
+                    "language_category": res.get("language_category") or {},    # v5.6
+                    "sub_language_host": res.get("sub_language_host"),          # v5.6
+                    "is_config_repo": bool(res.get("is_config_repo")),          # v5.6
+                    "mod_platform": res.get("mod_platform"),                    # v5.7
+                    "matching_included": res in matching_results,               # v5.7
                 }
             )
 

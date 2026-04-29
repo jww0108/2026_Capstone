@@ -1,7 +1,11 @@
 """
-Git2Value v5.5 — 포트폴리오 진단 체크리스트 (룰베이스).
+Git2Value v5.8 — 포트폴리오 진단 체크리스트 (룰베이스).
 v5.4: Unity/Unreal/Godot 감지 시 테스트·CI/CD·배포 피드백을 게임 개발 맥락으로 조정.
 v5.5: 기여 유형 안내(contribution_type_note), Competitive 등급 기준 조정, 테스트 항목 문구 완화.
+v5.7: 모드/플러그인 플랫폼 맥락 메시지(mod_context_message), 설정 프로젝트 안내(config_repo_message),
+      run_diagnosis() 반환에 repo_classifications 추가.
+v5.8: 신규 도메인 맥락 메시지 추가 — blockchain_context_message, data_engineer_context_message,
+      tool_dev_context_message (블록체인/데이터 엔지니어링/도구 개발 프로젝트 안내).
 """
 from __future__ import annotations
 
@@ -54,6 +58,128 @@ def _collect_game_engines(per_repo: List[Dict[str, Any]]) -> Set[str]:
             if fw in GAME_ENGINE_LABELS:
                 out.add(fw)
     return out
+
+
+# ---------------------------------------------------------------------------
+# v5.7: 모드/설정 프로젝트 분류 메시지
+# ---------------------------------------------------------------------------
+
+def mod_context_message(mod_platform: Dict[str, Any]) -> str:
+    """모드/플러그인 플랫폼 프로젝트 안내 메시지."""
+    name = mod_platform.get("name", "모드")
+    if mod_platform.get("is_hobby"):
+        return (
+            f"{name} 프로젝트로 분류되었습니다. "
+            f"직무 매칭에 활용되나, 채용 시장에서 직접 매칭되는 공고는 적습니다. "
+            f"주력 프로젝트로는 게임 엔진 기반 자체 게임 개발을 권장합니다."
+        )
+    return (
+        f"{name} 프로젝트로 분류되었습니다. "
+        f"게임 분야에 대한 깊은 이해와 스크립팅 능력을 보여주는 포트폴리오입니다. "
+        f"채용 시 게임 클라이언트 공고와 매칭되며, 엔진 기반 자체 게임 프로젝트를 "
+        f"함께 보유하면 매칭 정확도가 더 올라갑니다."
+    )
+
+
+def config_repo_message(host_name: str) -> str:
+    """설정/취미 프로젝트 안내 메시지."""
+    return (
+        f"{host_name} 프로젝트로 분류되었습니다. "
+        f"에디터/도구 설정은 직무 매칭에 활용되지 않으며, 포트폴리오에서는 보조 역할입니다. "
+        f"주력 프로젝트(웹/게임/AI 등)를 추가하시기 바랍니다."
+    )
+
+
+def blockchain_context_message(label: str) -> str:
+    """블록체인/Web3 프로젝트 안내 메시지 (v5.8)."""
+    return (
+        f"{label} 프로젝트로 분류되었습니다. "
+        f"스마트 컨트랙트 개발 역량을 보여주는 포트폴리오로, 블록체인 개발자 공고에 매칭됩니다. "
+        f"채용 시장에서 블록체인 직군은 규모가 작지만 수요가 꾸준하므로, "
+        f"서버/백엔드 역량을 함께 어필하면 범용 취업에 유리합니다."
+    )
+
+
+def data_engineer_context_message(label: str) -> str:
+    """데이터 엔지니어링 프로젝트 안내 메시지 (v5.8)."""
+    return (
+        f"{label} 프로젝트로 분류되었습니다. "
+        f"데이터 파이프라인 구축·ETL 역량을 보여주는 포트폴리오로, "
+        f"빅데이터 엔지니어 및 데이터 분석 공고에 매칭됩니다. "
+        f"순수 코드 LOC는 낮게 나올 수 있으나, 이는 데이터 엔지니어링 기여 특성이며 "
+        f"Evidence LOC(YAML·SQL·설정 파일)로 기여도가 반영됩니다."
+    )
+
+
+def tool_dev_context_message(label: str) -> str:
+    """도구 개발(VS Code 확장·브라우저 확장) 프로젝트 안내 메시지 (v5.8)."""
+    return (
+        f"{label} 프로젝트로 분류되었습니다. "
+        f"개발자 도구에 대한 깊은 이해와 사용자 인터페이스 설계 능력을 보여줍니다. "
+        f"채용 시장에서 직접 매칭되는 전용 공고는 적으나, "
+        f"프론트엔드 또는 SW 개발 직무에 차별화 포트폴리오로 활용 가능합니다."
+    )
+
+
+def _build_repo_classifications(per_repo: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    per_repo 각 항목에 대해 분류(main/mod/config)와 안내 메시지를 생성.
+    Returns: [{"repo_name", "type", "label", "message", "matching_included"}, ...]
+    """
+    classifications = []
+    for r in per_repo:
+        repo_name = r.get("repo_name", "")
+        mod_platform = r.get("mod_platform")
+        is_config = r.get("is_config_repo", False)
+        sub_host = r.get("sub_language_host")
+        matching = r.get("matching_included", True)
+
+        if is_config and sub_host:
+            host_name = sub_host.get("name") or sub_host.get("label") or "설정"
+            classifications.append({
+                "repo_name": repo_name,
+                "type": "config",
+                "label": sub_host.get("label", "설정 프로젝트"),
+                "message": config_repo_message(host_name),
+                "matching_included": matching,
+            })
+        elif mod_platform:
+            classifications.append({
+                "repo_name": repo_name,
+                "type": "mod",
+                "label": mod_platform.get("label", "모드 개발"),
+                "message": mod_context_message(mod_platform),
+                "matching_included": matching,
+            })
+        else:
+            # v5.8: 엔진 시그너처 도메인 기반 맥락 메시지 (블록체인/데이터/도구 개발)
+            detected_domains = r.get("detected_domains") or []
+            frameworks = r.get("frameworks") or []
+            special_msg = None
+            special_label = None
+            blockchain_labels = {"Hardhat (Solidity)", "Foundry (Solidity)"}
+            data_eng_labels = {"dbt"}
+            tool_dev_labels = {"VS Code 확장", "Browser Extension"}
+            if "블록체인" in detected_domains or any(f in blockchain_labels for f in frameworks):
+                fw_label = next((f for f in frameworks if f in blockchain_labels), "블록체인")
+                special_label = fw_label
+                special_msg = blockchain_context_message(fw_label)
+            elif "빅데이터 엔지니어" in detected_domains or any(f in data_eng_labels for f in frameworks):
+                fw_label = next((f for f in frameworks if f in data_eng_labels), "데이터 엔지니어링")
+                special_label = fw_label
+                special_msg = data_engineer_context_message(fw_label)
+            elif "도구 개발" in detected_domains or any(f in tool_dev_labels for f in frameworks):
+                fw_label = next((f for f in frameworks if f in tool_dev_labels), "도구 개발")
+                special_label = fw_label
+                special_msg = tool_dev_context_message(fw_label)
+            classifications.append({
+                "repo_name": repo_name,
+                "type": "main",
+                "label": special_label,
+                "message": special_msg,
+                "matching_included": matching,
+            })
+    return classifications
 
 
 def _readme_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -386,4 +512,5 @@ def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
         "portfolio_diagnosis": diagnosis,
         "expected_level": expected_level(per_repo, diagnosis),
         "contribution_type": contribution_type_note(vl, el),
+        "repo_classifications": _build_repo_classifications(per_repo),  # v5.7
     }

@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.04.27 | 현재 스펙 버전: v2.2 | 현재 구현 버전: **v5.8**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.05.02 | 현재 스펙 버전: v2.2 | 현재 구현 버전: **v6.0**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -58,9 +58,10 @@ Git2Value는 **GitHub API**(데이터 수집)를 제외하면 외부 서비스 �
 basic/
 ├── github_extractor.py      # GitHubExtractor (수집·점수·per_repo 집계)
 ├── profile_builder.py       # 도메인·엔진 시그니처 감지, 의존성 파싱, build_profile_text()
-├── portfolio_diagnosis.py   # 진단 룰베이스 (commit_pattern, 게임 엔진 맥락, v5.5 등급·기여 유형 안내)
-├── valuation_engine.py      # v4.0: get_market_band() (멀티플라이어 제거)
-├── run_git2value.py         # E2E: 모듈 A/B/C 통합 출력
+├── portfolio_diagnosis.py   # 진단 룰베이스 (v6.0: 7개 항목, README 3차원, 종합 분석)
+├── valuation_engine.py      # v4.0: get_market_band() + v6.0 realistic_range
+├── experience_filter.py     # v6.0: 경력 요건 필터링 (사이드카 캐시)
+├── run_git2value.py         # E2E: 모듈 A/B/C 통합 출력 (v6.0)
 ├── requirements.txt         # 의존성 (sentence-transformers==2.6.1 버전 고정 중요)
 ├── .env                     # Github_api_token 환경변수 (버전 관리 제외)
 ├── HandOff.md               # 이 파일
@@ -68,6 +69,7 @@ basic/
 ├── vector/
 │   ├── git2value_faiss.index
 │   ├── git2value_metadata.json
+│   ├── experience_cache.json    # v6.0 자동 생성 (경력 필터 사이드카)
 │   ├── unified_jd_corpus.jsonl
 │   └── wanted_job_ids.json
 │
@@ -147,9 +149,13 @@ basic/
 
 ---
 
-### `portfolio_diagnosis.py` — v5.7
+### `portfolio_diagnosis.py` — v6.0
 
-- `run_diagnosis(profile)`: README, 구조, 테스트, CI/CD, 커밋 메시지, **커밋 리듬(commit_pattern)**, 배포, 협업, 성장 궤적. 반환에 **`contribution_type`**, **`repo_classifications`** (v5.7).
+- `run_diagnosis(profile)`: **7개 항목** (v6.0: commit_pattern·growth_trajectory·collaboration 제거). 반환에 **`contribution_type`**, **`repo_classifications`**, **`summary_block`** (v6.0) 추가.
+- **`evaluate_readme_quality(readme_text)`** (v6.0): 3차원 룰베이스 평가 (프로젝트 목적/기술 스택/결과물 시각화). 기존 길이 기반에 통합.
+- **`COMMIT_REWRITE_HINTS` / `get_rewrite_hint(msg)`** (v6.0): 무의미 커밋 → Conventional Commits 변환 힌트.
+- **`repo_classification_note(repo)`** (v6.0): 레포별 협업 여부 한 줄 요약 (협업 진단 항목 대체).
+- **`generate_summary_block(diagnosis, level_dict, github_score, primary_domain)`** (v6.0): 포지셔닝/강점/Quick wins 종합 분석.
 - **v5.7**: **`mod_context_message(mod_platform)`** — 모드 개발 프로젝트 안내 (`is_hobby` 분기). **`config_repo_message(host_name)`** — 설정/취미 프로젝트 안내. **`_build_repo_classifications(per_repo)`** — 레포별 분류(`main`/`mod`/`config`)·안내 메시지·`matching_included` 리스트 생성. `run_diagnosis()` 반환에 `repo_classifications` 추가.
 - **`_collect_game_engines`** (**v5.4**): `per_repo[].frameworks`에서 Unity / Unreal Engine / Godot를 수집. 테스트·CI/CD·배포 항목이 **미흡/미경험**일 때 **엔진별 action 문구**로 대체 (웹 일반 문구 편향 완화, [`Engine_Detection_Plan.md`](Engine_Detection_Plan.md) §5).
 - **`MEANINGLESS_COMMIT_PATTERNS`** (v5.3.3): Conventional Commits(`fix:`, `chore:` 등 콜론 뒤 설명)은 무의미로 보지 않음. 단독 키워드·`initial commit`만 엄격히 필터.
@@ -167,23 +173,32 @@ basic/
 
 ---
 
-### `run_git2value.py` — E2E 파이프라인 (v5.7)
+### `experience_filter.py` — 경력 필터 모듈 (v6.0 신규)
+
+- `extract_experience_requirement(position, text)`: 공고 제목+본문에서 경력 요건 정규식 추출
+- `load_or_build_cache(metadata, cache_path)`: 사이드카 캐시(`vector/experience_cache.json`) 로드/빌드
+- `filter_by_experience(top_matches, applicant_years, cache)`: 신입 기준 경력직 후순위 처리 (완전 제외 아님)
+
+---
+
+### `run_git2value.py` — E2E 파이프라인 (v6.0)
 
 - FAISS 인덱스(`vector/`) + `jhgan/ko-sroberta-multitask`
 - 임베딩 입력: **`profile_for_matching`** (없으면 `applicant_resume` 폴백)
-- **하이브리드 리랭킹 (v5.3) + 다중 도메인 억제 (v5.3.5)**: `merged_detected_domains_from_profile` + 프로필의 **`domain_hits_merged`**를 **`rerank_by_domain(..., domain_hits)`**에 전달. 감지 도메인이 2개 이상이고 `domain_hits` 히트 수 상위 1·2위가 **2배 미만** 비율이면 혼합 프로젝트로 보고 **가산·재정렬 생략**(FAISS 순서 유지). 그 외에는 `DOMAIN_TO_CATEGORIES` 일치 공고에 **`DOMAIN_BOOST`(0.05)** 가산 후 `effective_score` 재정렬. 원본 `similarity`는 보존
-- **`DOMAIN_BOOST`**: 도메인 일치 공고 가산 계수 (기본 0.05, [`Domain_Reranking_Plan.md`](Domain_Reranking_Plan.md) 근거)
-- **`rerank_by_domain()` 반환값** `rerank_note` 문자열: 모듈 A 하단 한 줄 설명 (경합 억제·매핑 없음·미일치·정상 가산 등 상태 포함)
-- 최종 출력: **모듈 A**(FAISS+도메인 리랭킹+기술 분석) / **모듈 B**(진단) / **모듈 C**(연봉 밴드) 분리
-- `route_job_category()`: 공고 제목 → 점핏 카테고리 (`"게임 클라이언트"` / `"게임 서버"` 등) — v5.1+ · **v5.3.6** `풀스택`/`fullstack` 및 **프론트+백엔드 동시 언급**을 서버·프론트 단독 분기보다 **앞**에서 **`웹 풀스택`**으로 라우팅 (MultiDomain Step 9)
-- **`DOMAIN_TO_CATEGORIES`**: 감지 도메인 → 기대 점핏 카테고리 목록 — v5.1, 리랭킹에 재사용 — v5.3
-- **`merged_detected_domains_from_profile(profile)`**, **`check_domain_match_consistency(...)`** — v5.1
-- **`similarity_label(score, top5_scores)`**: 상대적 레이블(v5.2). v5.3에서는 **`effective_score`** 리스트 기준
-- **`analyze_tech_match(...)`** — v5.2
-- **모듈 A 출력**: FAISS 유사도 + 도메인 가산 투명 표시, 기술 매칭 분석, 도메인 불일치 경고
-- **모듈 C 출력**: 도메인 불일치 시 보조 연봉 밴드 — v5.1
-- **모듈 B (v5.5)**: 지원자 요약에 **`total_evidence_loc`**, 진단 하단에 **`contribution_type`** 기여 유형 안내 출력
-- **v5.7**: `[지원자 요약]`에 매칭 사용/제외 레포 수 구분 표시. 모드·설정 레포가 있으면 모듈 A 직전 **`[프로젝트 분류 안내]`** 블록 출력. 버전 표기 `v5.7`로 갱신.
+- **FAISS k=20** (v6.0): 다중 도메인 균형 추천 + 경력 필터 여유분 확보
+- **경력 필터 (v6.0)**: `experience_filter.filter_by_experience()` — 신입 기준 경력직 후순위 표시
+- **다중 도메인 균형 추천 (v6.0)**: `recommend_multi_domain()` — 히트 비율 < 2배이면 도메인별 상위 1~2개씩 분리 출력
+- **단일 도메인**: 기존 +0.05 가산점 + 상위 5개 출력 (변경 없음)
+- **`route_job_category_safe()`** (v6.0): 콤마/슬래시 포함 결과 방어 래퍼
+- **`similarity_label()`** (v6.0): `tuple[str, str | None]` — spread < 0.02 시 `system_note` 포함
+- **`diagnose_domain_mismatch()`** (v6.0): db_coverage/weak_signal/consistent/ambiguous 4분기 원인 분류
+- **`analyze_tech_match()`** (v6.0): `detected_domains` 추가 — 도메인 일치 공고만 미보유 기술 추출
+- **`CATEGORY_TO_DOMAINS`** (v6.0): `DOMAIN_TO_CATEGORIES` 역매핑 (한 번 생성)
+- **`find_adjacent_categories()` / `categorize_salary_comparison()`** (v6.0): 연봉 3그룹화
+- **모듈 A 출력**: FAISS 유사도 + 경력 경고 표시 + 도메인 원인 분기 + 기술 매칭 분석
+- **모듈 B (v6.0)**: 7개 항목 + `summary_block` 종합 분석 (포지셔닝/강점/Quick wins)
+- **모듈 C (v6.0)**: realistic_range(±15%/+20%) + 내 직무/인접 직무/연봉 상위 3그룹화
+- 버전 표기 `v6.0`
 
 ---
 
@@ -303,6 +318,30 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 ---
 
 ## 6. 버전 이력 및 주요 결정 사항
+
+### v5.8 → v6.0 (2026.05.02)
+
+사용자(취준생) 관점 출력 품질 개선 + 다중 도메인 균형 추천.
+
+- **`experience_filter.py`** (신규): 경력 요건 사이드카 캐시 + `filter_by_experience()` — 신입 기준 경력직 후순위 표시 (A-2).
+- **`run_git2value.py`**:
+  - `route_job_category_safe()` 추가 — 콤마 포함 결과 방어 (A-4).
+  - FAISS k=5 → **20** 확장.
+  - `recommend_multi_domain()` 추가 — 히트 비율 < 2배 시 도메인별 1~2개 분리 추천 (A-3 신규 기능).
+  - `similarity_label()` → `tuple[str, str | None]` — spread < 0.02 시 `system_note` (A-1).
+  - `diagnose_domain_mismatch()` 추가 — db_coverage/weak_signal/consistent/ambiguous 4분기 (A-3).
+  - `analyze_tech_match()` `detected_domains` 인자 추가 → 도메인 일치 공고 기준 미보유 기술 (A-5).
+  - `CATEGORY_TO_DOMAINS` + `find_adjacent_categories()` + `categorize_salary_comparison()` 추가 (C-3).
+  - 모듈 C: `realistic_range` 표시 + 3그룹 비교 (C-1/C-2/C-3).
+  - 버전 표기 `v6.0`.
+- **`portfolio_diagnosis.py`**:
+  - 진단 항목 9→**7** (commit_pattern·growth_trajectory·collaboration 제거) (B-7/8/9).
+  - `README_QUALITY_INDICATORS` + `evaluate_readme_quality()` — 3차원 룰베이스 (B-4).
+  - `COMMIT_REWRITE_HINTS` + `get_rewrite_hint()` — 커밋 변환 힌트 (B-5).
+  - `repo_classification_note()` — 협업 항목 대체 (B-8).
+  - `generate_summary_block()` + `run_diagnosis()` 반환에 `summary_block` 추가 (B-총합).
+- **`valuation_engine.py`**: `get_market_band()` 반환에 `realistic_range` 추가 (C-1).
+- **`vector/experience_cache.json`** (신규, 자동 생성): 경력 필터 사이드카 캐시.
 
 ### v5.7 → v5.8 (2026.04.27)
 
@@ -448,6 +487,13 @@ LOC 가중 평균 (기존과 동일). **연봉 모듈 C에는 github_score를 �
 23. ~~**시그너처 오탐 (Flutter·Jupyter/ML·Love2D·OpenResty·Minecraft·Stardew Valley·Neovim)**~~ ✅ v5.8 새 키 5종 + 시그너처 강화 ([`Signature_Audit_Plan.md`](Signature_Audit_Plan.md))
 24. ~~**모바일(React Native/Expo)·블록체인(Hardhat/Foundry)·데이터(dbt)·인프라(Helm Chart)·도구 개발(VS Code 확장/Browser Extension) 오감지**~~ ✅ v5.8 `ENGINE_SIGNATURES` 8개 카테고리 추가 + `detect_signatures_with_content()` 비동기 manifest 검증 ([`Environment_Expansion_Plan.md`](Environment_Expansion_Plan.md))
 25. **블록체인·도구 개발 공고 DB 매칭 품질** — 점핏 JD 코퍼스에 블록체인·도구 개발 공고가 적을 수 있어 FAISS 유사도가 낮게 나올 수 있음. 공고 데이터 보강 또는 fallback 처리 필요.
+26. ~~**경력직 공고 신입 상위 노출**~~ ✅ v6.0 `experience_filter.py` 사이드카 캐시 + 후순위 처리.
+27. ~~**다중 도메인 프로젝트 균형 추천 없음**~~ ✅ v6.0 `recommend_multi_domain()` + FAISS k=20.
+28. ~~**진단 항목 신뢰도 낮은 항목 포함**~~ ✅ v6.0 commit_pattern·growth_trajectory·collaboration 제거, 7개로 축소.
+29. ~~**종합 행동 안내 없음**~~ ✅ v6.0 `generate_summary_block()` — 포지셔닝/강점/Quick wins.
+30. **`DOMAIN_BOOST` 0.05 튜닝** — 다중 도메인 균형 추천 도입으로 비중 감소. 데이터 기반 조정은 v7.
+31. **차등 가산점 (시그너처 vs 휴리스틱)** — 정확도 측정 후 v7 도입 검토.
+32. **LLM 도입** — 외부 API 0 원칙으로 v7 이월. 로컬 Qwen2-7B 검토 예정.
 
 ---
 

@@ -136,6 +136,17 @@ class Git2ValueEngine:
                 }
             )
 
+        # v6.0 Step 12: realistic_range — 중앙값 기준 ±15%/+20% 실제 분포 추정
+        combined_median = (
+            (jumpit_median + wanted_median) // 2 if wanted_median else jumpit_median
+        )
+        realistic_range = {
+            "median": combined_median,
+            "p25_estimate": int(combined_median * 0.85),
+            "p75_estimate": int(combined_median * 1.20),
+            "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)",
+        }
+
         return {
             "market_salary_band": {
                 "matched_category": job_category,
@@ -145,6 +156,7 @@ class Git2ValueEngine:
                     "wanted_median": wanted_median,
                     "combined_range": combined_range,
                 },
+                "realistic_range": realistic_range,
                 "source": "점핏·원티드 2025 채용공고 기반",
                 "note": "동일 직무 내에서 회사 규모, 지역, 협상력에 따라 차이가 있을 수 있습니다.",
             },

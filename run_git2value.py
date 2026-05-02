@@ -12,6 +12,7 @@ from sentence_transformers import SentenceTransformer
 from github_extractor import GitHubExtractor
 from portfolio_diagnosis import run_diagnosis
 from valuation_engine import Git2ValueEngine
+from experience_filter import load_or_build_cache, filter_by_experience
 
 warnings.filterwarnings("ignore")
 os.environ["HF_HUB_OFFLINE"] = "1"
@@ -87,6 +88,17 @@ def route_job_category(position_title: str) -> str:
         return "기술지원"
 
     return "SW/솔루션"
+
+
+def route_job_category_safe(position: str) -> str:
+    """
+    route_job_category() 방어 래퍼 (Step 1 A-4).
+    콤마나 슬래시가 섞인 결과가 나올 경우 첫 토큰만 반환.
+    """
+    result = route_job_category(position)
+    if "," in result:
+        return result.split(",")[0].strip()
+    return result
 
 
 # profile_builder.detected_domains[0]과 FAISS 라우팅 직무 정합 (v5.1)
@@ -230,21 +242,95 @@ def check_domain_match_consistency(
     }
 
 
-def similarity_label(score: float, top5_scores: list[float]) -> str:
+def similarity_label(
+    score: float, top5_scores: list[float]
+) -> tuple[str, str | None]:
     """
-    상위 5개 점수를 기준으로 한 상대적 레이블 (v5.2 간이 방식, v5.3은 유효 점수 기준).
-    spread < 0.02 처럼 점수가 몰려 있을 때는 전체 수준(max_s)으로 판단.
+    v6.0 Step 4: tuple[레이블, 시스템 안내] 반환.
+    spread < 0.02 몰림 → 분포 분석 안내 포함.
+    정상 분포 → (레이블, None).
     """
     max_s = max(top5_scores)
     min_s = min(top5_scores)
     spread = max_s - min_s
+    avg = sum(top5_scores) / len(top5_scores)
+
     if spread < 0.02:
-        return "높음" if max_s >= 0.70 else "보통"
+        if avg < 0.65:
+            note = (
+                "상위 5개 공고가 모두 비슷한 낮은 유사도에 몰려 있습니다. "
+                "프로필이 특정 직무와 강하게 매칭되지 않는 신호로, "
+                "README 보강 또는 기술 스택 명확화가 필요합니다."
+            )
+        else:
+            note = (
+                "상위 5개 공고의 유사도가 비슷한 수준입니다. "
+                "여러 직무가 일정 수준 매칭되는 다재다능한 프로필이거나, "
+                "직무 색깔이 뚜렷하지 않은 상태일 수 있습니다."
+            )
+        if score >= avg + 0.005:
+            return "높음", note
+        if score >= avg - 0.005:
+            return "보통", note
+        return "낮음", note
+
     if score >= max_s - spread * 0.1:
-        return "높음"
+        return "높음", None
     if score >= max_s - spread * 0.4:
-        return "보통"
-    return "낮음"
+        return "보통", None
+    return "낮음", None
+
+
+def diagnose_domain_mismatch(
+    detected_domains: list[str],
+    top_matches: list[dict],
+    domain_hits: dict[str, int],
+) -> dict:
+    """
+    v6.0 Step 5: 도메인 불일치 원인을 4가지로 분기.
+    db_coverage / weak_signal / consistent / ambiguous
+    """
+    if not detected_domains:
+        return {"type": "no_signal", "message": None}
+
+    primary = detected_domains[0]
+    expected = DOMAIN_TO_CATEGORIES.get(primary, [])
+    if not expected:
+        return {"type": "no_mapping", "message": None}
+
+    match_count = sum(1 for m in top_matches if m.get("category") in expected)
+    primary_hits = domain_hits.get(primary, 0)
+
+    if match_count > 0:
+        return {"type": "consistent", "message": None}
+
+    if primary_hits >= 5:
+        return {
+            "type": "db_coverage",
+            "message": (
+                f"'{primary}' 도메인이 명확히 감지되었으나 "
+                f"채용 공고 DB에 해당 직무 공고가 적습니다. "
+                f"실제 채용 시장에서 '{primary}' 공고를 별도로 검색하시기 바랍니다."
+            ),
+        }
+
+    if primary_hits < 3:
+        return {
+            "type": "weak_signal",
+            "message": (
+                f"'{primary}' 도메인 신호가 약하게 감지되었습니다. "
+                f"README에 해당 직무 키워드(기술 스택, 프로젝트 성격)를 "
+                f"명시하면 매칭 정확도가 올라갑니다."
+            ),
+        }
+
+    return {
+        "type": "ambiguous",
+        "message": (
+            f"'{primary}' 도메인과 공고 DB 매칭이 모호합니다. "
+            f"README 기술 스택 명확화를 권장합니다."
+        ),
+    }
 
 
 TECH_KEYWORDS_FOR_PATTERN = [
@@ -255,30 +341,130 @@ TECH_KEYWORDS_FOR_PATTERN = [
 ]
 
 
+# v6.0: 7개로 축소 (commit_pattern·growth_trajectory·collaboration 제거)
 DIAG_LABELS_KO = {
     "readme_quality": "README 품질",
     "project_structure": "프로젝트 구조",
     "test_coverage": "테스트",
     "cicd": "CI/CD",
     "commit_quality": "커밋 메시지",
-    "commit_pattern": "커밋 리듬",
     "deployment": "배포",
-    "collaboration": "협업",
-    "growth_trajectory": "성장 궤적",
 }
+
+
+# ---------------------------------------------------------------------------
+# v6.0 Step 3: 다중 도메인 균형 추천
+# ---------------------------------------------------------------------------
+
+def recommend_multi_domain(
+    top_matches_extended: list[dict],
+    detected_domains: list[str],
+    domain_hits: dict[str, int],
+) -> dict | None:
+    """
+    다중 도메인 프로젝트에서 도메인별 균형 추천.
+    단일 도메인이면 None 반환 (기존 +0.05 가산점 유지).
+    v5.3.1과 같은 판정 기준: hits[0] < hits[1] * 2.
+    """
+    if len(detected_domains) < 2:
+        return None
+
+    hits_sorted = sorted(domain_hits.values(), reverse=True)
+    if len(hits_sorted) < 2 or hits_sorted[0] >= hits_sorted[1] * 2:
+        return None  # 단일 우세 도메인
+
+    domain_to_picks: dict[str, list] = {}
+    for domain in detected_domains[:3]:
+        expected_cats = DOMAIN_TO_CATEGORIES.get(domain, [])
+        if not expected_cats:
+            continue
+        picks = []
+        for m in top_matches_extended:
+            if m.get("category") in expected_cats:
+                picks.append(m)
+            if len(picks) >= 2:
+                break
+        if picks:
+            domain_to_picks[domain] = picks
+
+    if not domain_to_picks:
+        return None
+
+    return {
+        "is_multi_domain": True,
+        "domain_picks": domain_to_picks,
+        "raw_top5": top_matches_extended[:5],
+    }
+
+
+# ---------------------------------------------------------------------------
+# v6.0 Step 13: 직무 비교 그룹화 (DOMAIN_TO_CATEGORIES 역매핑)
+# ---------------------------------------------------------------------------
+
+# DOMAIN_TO_CATEGORIES 역방향 (한 번만 생성)
+CATEGORY_TO_DOMAINS: dict[str, list[str]] = {}
+for _domain, _cats in DOMAIN_TO_CATEGORIES.items():
+    for _cat in _cats:
+        CATEGORY_TO_DOMAINS.setdefault(_cat, []).append(_domain)
+
+
+def find_adjacent_categories(my_category: str) -> list[str]:
+    """현재 직무와 같은 도메인에 속하는 인접 직무 도출."""
+    my_domains = CATEGORY_TO_DOMAINS.get(my_category, [])
+    adjacent: set[str] = set()
+    for domain in my_domains:
+        for cat in DOMAIN_TO_CATEGORIES.get(domain, []):
+            if cat != my_category:
+                adjacent.add(cat)
+    return sorted(adjacent)
+
+
+def categorize_salary_comparison(
+    my_category: str,
+    comparison: list[dict],
+) -> dict:
+    """
+    3그룹으로 재편: 내 직무 / 인접 직무 / 연봉 상위 직무.
+    comparison: valuation_engine의 category_comparison 리스트.
+    """
+    adjacent = find_adjacent_categories(my_category)
+    cat_map = {row["category"]: row for row in comparison}
+
+    my_row = cat_map.get(my_category)
+    similar: list[dict] = [
+        {"name": cat, "range": cat_map[cat]["junior_range"]}
+        for cat in adjacent
+        if cat in cat_map
+    ][:3]
+
+    non_adjacent = [
+        row for row in comparison
+        if row["category"] != my_category and row["category"] not in adjacent
+    ]
+    higher = [
+        {"name": row["category"], "range": row["junior_range"]}
+        for row in non_adjacent[:2]
+    ]
+
+    return {
+        "my_job": {"name": my_category, "range": my_row["junior_range"] if my_row else "N/A"},
+        "similar": similar,
+        "higher": higher,
+    }
 
 
 def analyze_tech_match(
     applicant_languages: str,
     applicant_frameworks: list[str],
     top_matches: list[dict],
+    detected_domains: list[str] | None = None,
 ) -> dict:
     """
-    지원자 보유 기술(언어 + 프레임워크)과 공고 요구 기술을 교차 분석 (v5.2).
-    기존 '공통 기술 키워드' 단순 나열을 보유/미보유 분리로 교체.
-    공고 분류 태그(company_types)는 유지.
+    v6.0 Step 6: detected_domains 인자 추가 → 도메인 일치 공고만 미보유 기술 추출.
+    일치 공고 0이면 전체 사용 (퇴행 방지).
+    Step 1 A-4: 메타 category 콤마 분리.
     """
-    # 지원자 보유 기술 세트 구성 (언어 통계 파싱 + 프레임워크)
+    # 지원자 보유 기술 세트
     applicant_techs: set[str] = set()
     for token in applicant_languages.replace(",", " ").split():
         clean = token.strip("()%0123456789").strip()
@@ -287,10 +473,19 @@ def analyze_tech_match(
     for fw in applicant_frameworks:
         applicant_techs.add(fw)
 
-    # 공고 요구 기술 추출
+    # 도메인 일치 공고 필터 (A-5)
+    relevant_matches = top_matches
+    if detected_domains:
+        primary = detected_domains[0]
+        expected_cats = DOMAIN_TO_CATEGORIES.get(primary, [])
+        domain_filtered = [m for m in top_matches if m.get("category") in expected_cats]
+        if domain_filtered:
+            relevant_matches = domain_filtered
+
+    # 공고 요구 기술 추출 (도메인 일치 공고 기준)
     combined_lower = "\n".join(
         (m["meta"].get("position") or "") + "\n" + (m["meta"].get("text") or "")
-        for m in top_matches
+        for m in relevant_matches
     ).lower()
     required_techs = [kw for kw in TECH_KEYWORDS_FOR_PATTERN if kw.lower() in combined_lower]
 
@@ -299,15 +494,23 @@ def analyze_tech_match(
     matched = [kw for kw in required_techs if kw.lower() in applicant_lower]
     missing = [kw for kw in required_techs if kw.lower() not in applicant_lower]
 
-    # 공고 분류 태그 (기존 company_types 유지)
-    categories = [m["meta"].get("category") for m in top_matches if m["meta"].get("category")]
+    # 공고 분류 태그 — Step 1 A-4: 콤마 포함 raw category를 개별 항목으로 분리
+    raw_categories: list[str] = []
+    for m in top_matches:
+        raw_cat = m["meta"].get("category") or ""
+        for part in re.split(r"[,，]", raw_cat):
+            part = part.strip()
+            if part:
+                raw_categories.append(part)
+    # 콤마 포함 키 방어 필터
+    clean_cats = [c for c in raw_categories if "," not in c]
     company_types = [
         f"{name} 유사 공고 {cnt}건"
-        for name, cnt in Counter(categories).most_common(4)
+        for name, cnt in Counter(clean_cats).most_common(4)
     ]
     return {
         "matched": matched,
-        "missing": missing[:6],  # 최대 6개 — 너무 길면 압도적
+        "missing": missing[:6],
         "company_types": company_types,
         "applicant_techs": sorted(applicant_techs),
     }
@@ -370,6 +573,7 @@ async def run_e2e_pipeline(
     current_dir = os.path.dirname(os.path.abspath(__file__))
     index_path = os.path.join(current_dir, "vector", "git2value_faiss.index")
     meta_path  = os.path.join(current_dir, "vector", "git2value_metadata.json")
+    cache_path = os.path.join(current_dir, "vector", "experience_cache.json")
 
     # ── 1. 인프라 로딩 ──────────────────────────────────────────
     print("\n[Step 1] 벡터 DB 및 연봉 엔진 로딩 중...")
@@ -378,6 +582,8 @@ async def run_e2e_pipeline(
         metadata = json.load(f)
     model = SentenceTransformer("jhgan/ko-sroberta-multitask")
     val_engine = Git2ValueEngine()
+    # v6.0: 경력 필터 사이드카 캐시 로드/빌드
+    exp_cache = load_or_build_cache(metadata, cache_path)
     print("  완료.")
 
     # ── 2. GitHub 실시간 스캔 ───────────────────────────────────
@@ -386,7 +592,6 @@ async def run_e2e_pipeline(
     extractor = GitHubExtractor()
     profile = await extractor.extract_applicant_profile(target_username, target_repos)
 
-    # 스캔 결과 전체 출력
     print_applicant_profile(profile, target_username)
 
     applicant_github_score = profile["github_score"]
@@ -396,30 +601,47 @@ async def run_e2e_pipeline(
         profile.get("applicant_resume") or ""
     )
 
-    # ── 3. FAISS JD 매칭 ────────────────────────────────────────
-    print("\n[Step 3] AI 직무 매칭 중 (Top 5 추출)...")
+    # ── 3. FAISS JD 매칭 (k=20) ─────────────────────────────────
+    print("\n[Step 3] AI 직무 매칭 중 (Top 20 추출 → 필터링)...")
     query_vector = model.encode([match_text], normalize_embeddings=True)
-    distances, indices = index.search(query_vector, 5)
+    # v6.0 Step 3: k=5 → 20 (다중 도메인 균형 추천 + 경력 필터 여유분)
+    distances, indices = index.search(query_vector, 20)
 
-    # 상위 5개 결과를 리스트에 저장
-    top_matches = []
-    for i in range(5):
+    top_matches_extended: list[dict] = []
+    for i in range(20):
         idx = indices[0][i]
+        if idx < 0 or idx >= len(metadata):
+            break
         dist = distances[0][i]
         meta = metadata[idx]
-        top_matches.append({
+        top_matches_extended.append({
             "meta": meta,
             "similarity": float(dist),
-            "category": route_job_category(meta["position"])
+            "category": route_job_category_safe(meta["position"]),  # Step 1: safe wrapper
         })
+
+    # v6.0 Step 2: 경력 필터 적용 (신입 기준, 경력직 후순위)
+    top_matches_extended = filter_by_experience(top_matches_extended, applicant_years, exp_cache)
 
     detected_domains_merged = merged_detected_domains_from_profile(profile)
     domain_hits_merged = profile.get("domain_hits_merged") or {}
-    top_matches, rerank_note = rerank_by_domain(
-        top_matches, detected_domains_merged, domain_hits_merged
+
+    # v6.0 Step 3: 다중 도메인 균형 추천 판정
+    multi_domain_result = recommend_multi_domain(
+        top_matches_extended, detected_domains_merged, domain_hits_merged
     )
-    jumpit_category = top_matches[0]["category"]
-    domain_check = check_domain_match_consistency(detected_domains_merged, top_matches)
+
+    # 단일 도메인: 상위 5개 기존 리랭킹 적용
+    top_matches_5, rerank_note = rerank_by_domain(
+        top_matches_extended[:5], detected_domains_merged, domain_hits_merged
+    )
+
+    jumpit_category = top_matches_5[0]["category"] if top_matches_5 else "SW/솔루션"
+    domain_check = check_domain_match_consistency(detected_domains_merged, top_matches_5)
+    # v6.0 Step 5: 원인 분기 진단
+    mismatch_diag = diagnose_domain_mismatch(
+        detected_domains_merged, top_matches_5, domain_hits_merged
+    )
 
     print("\n[Step 4] 포트폴리오 진단 (룰베이스)...")
     diag_bundle = run_diagnosis(profile)
@@ -440,18 +662,19 @@ async def run_e2e_pipeline(
         for r in profile.get("per_repo") or []
         for fw in (r.get("frameworks") or [])
     })
+    # v6.0 Step 6: detected_domains 전달
     tech_result = analyze_tech_match(
         applicant_languages=ms.get("top_languages", ""),
         applicant_frameworks=all_frameworks,
-        top_matches=top_matches,
+        top_matches=top_matches_5,
+        detected_domains=detected_domains_merged,
     )
 
     # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v5.7] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v6.0] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
 
-    # v5.7: 레포 분류 정보
     repo_classifications = diag_bundle.get("repo_classifications") or []
     per_repo_data = profile.get("per_repo") or []
     matching_count = sum(1 for r in per_repo_data if r.get("matching_included", True))
@@ -470,7 +693,7 @@ async def run_e2e_pipeline(
         f"quality {bd.get('quality', 0)} / "
         f"consistency {bd.get('consistency', 0)}"
     )
-    total_repos = ms.get('scanned_repos', 0)
+    total_repos = ms.get("scanned_repos", 0)
     if excluded_count > 0:
         print(f"  분석 레포 수    : {total_repos}개 (매칭 사용: {matching_count}개, 설정/취미: {excluded_count}개)")
     else:
@@ -478,12 +701,15 @@ async def run_e2e_pipeline(
     for rc in repo_classifications:
         rtype = rc["type"]
         repo_nm = rc["repo_name"]
+        # v6.0 Step 9: collab_note 표시
+        collab = rc.get("collab_note", "")
+        collab_str = f" · {collab}" if collab else ""
         if rtype == "config":
-            print(f"    - {repo_nm} ({rc['label']}) — 매칭 제외됨")
+            print(f"    - {repo_nm} ({rc['label']}) — 매칭 제외됨{collab_str}")
         elif rtype == "mod":
-            print(f"    - {repo_nm} ({rc['label']}) — 게임 도메인 (모드 개발)")
+            print(f"    - {repo_nm} ({rc['label']}) — 게임 도메인 (모드){collab_str}")
         else:
-            print(f"    - {repo_nm} — 메인 프로젝트")
+            print(f"    - {repo_nm} — 메인 프로젝트{collab_str}")
     print(f"  분석 커밋 수    : {ms.get('total_commits_analyzed', 0)}개")
     print(f"  유효 LOC        : {ms.get('total_valid_loc', 0):,} lines")
     print(f"  기여 증거 LOC   : {ms.get('total_evidence_loc', 0):,} lines (설정·데이터·IaC 등)")
@@ -493,7 +719,6 @@ async def run_e2e_pipeline(
         for w in applicant_warnings:
             print(f"    - {w}")
 
-    # v5.7: 모드/설정 프로젝트 분류 안내 블록
     if has_mod_or_config:
         print("\n" + "-" * 60)
         print("[프로젝트 분류 안내]")
@@ -508,33 +733,75 @@ async def run_e2e_pipeline(
                 if rc["type"] == "config":
                     print("      (직무 매칭 입력에서 제외됨)")
 
+    # ── 모듈 A ───────────────────────────────────────────────────
     print("\n" + "-" * 60)
-    print("[모듈 A] 직무 매칭 (FAISS + 도메인 리랭킹)")
+    if multi_domain_result:
+        print("[모듈 A] 직무 매칭 — 다중 도메인 프로젝트 (균형 추천)")
+    else:
+        print("[모듈 A] 직무 매칭 (FAISS + 도메인 리랭킹)")
     print("-" * 60)
-    top5_effective = [float(m["effective_score"]) for m in top_matches]
-    for i, match in enumerate(top_matches):
-        m = match["meta"]
-        rank_label = "1순위" if i == 0 else f"{i + 1}순위"
-        sim = float(match["similarity"])
-        eff = float(match["effective_score"])
-        boosted = bool(match.get("domain_boosted"))
-        label = similarity_label(eff, top5_effective)
-        print(f"  [{rank_label}] [{m['company_name']}] {m['position']}")
-        if boosted:
-            print(
-                f"          (FAISS: {sim:.4f} + 도메인 일치: +{DOMAIN_BOOST} "
-                f"→ 유효: {eff:.4f} · {label})"
-            )
-        else:
-            print(f"          (FAISS: {sim:.4f} · {label})")
-    print(f"\n  {rerank_note}")
-    if not domain_check["consistent"]:
-        print(f"\n  ⚠️ 도메인 불일치 감지:")
-        print(f"     {domain_check['warning']}")
-        if domain_check.get("suggested_category"):
-            print(
-                f"     권장: '{domain_check['suggested_category']}' 직무로 채용 공고를 직접 검색해 보세요."
-            )
+
+    if multi_domain_result:
+        # v6.0 Step 3: 다중 도메인 균형 추천 출력
+        print("  이 프로젝트는 여러 도메인이 혼합된 풀스택/혼합 프로젝트로 분류됩니다.")
+        print("  도메인별로 균형 추천합니다.\n")
+        for domain, picks in multi_domain_result["domain_picks"].items():
+            print(f"  ▼ {domain} 매칭")
+            for j, pick in enumerate(picks, 1):
+                m = pick["meta"]
+                sim = float(pick["similarity"])
+                exp_warn = pick.get("experience_warning")
+                exp_str = f" [⚠ {exp_warn}]" if exp_warn else ""
+                print(f"    [{j}] [{m['company_name']}] {m['position']}{exp_str}")
+                print(f"        (유사도: {sim:.4f})")
+            print()
+        # 종합 분석
+        domain_list = list(multi_domain_result["domain_picks"].keys())
+        top_domain = domain_list[0] if domain_list else "해당 도메인"
+        top_picks = multi_domain_result["domain_picks"].get(top_domain, [])
+        top_sim = float(top_picks[0]["similarity"]) if top_picks else 0
+        print(f"  종합 분석:")
+        print(f"    · 가장 강한 매칭은 {top_domain} 영역입니다 (유사도 {top_sim:.4f}).")
+        print(f"    · 풀스택 경험을 어필하려면 README에 각 영역의 기여를 명시하세요.")
+        print(f"  감지 도메인: {', '.join(detected_domains_merged[:4])}")
+    else:
+        # 단일 도메인: 기존 방식 (경력 필터 적용 포함)
+        top5_effective = [float(m["effective_score"]) for m in top_matches_5]
+        system_note_printed = False
+        for i, match in enumerate(top_matches_5):
+            m = match["meta"]
+            rank_label = "1순위" if i == 0 else f"{i + 1}순위"
+            sim = float(match["similarity"])
+            eff = float(match["effective_score"])
+            boosted = bool(match.get("domain_boosted"))
+            label, sys_note = similarity_label(eff, top5_effective)  # Step 4: tuple
+            exp_warn = match.get("experience_warning")
+            exp_str = f"  [⚠ {exp_warn} — 지원 가능 경력에 미달]" if exp_warn else ""
+            print(f"  [{rank_label}] [{m['company_name']}] {m['position']}{exp_str}")
+            if boosted:
+                print(
+                    f"          (FAISS: {sim:.4f} + 도메인 일치: +{DOMAIN_BOOST} "
+                    f"→ 유효: {eff:.4f} · {label})"
+                )
+            else:
+                print(f"          (FAISS: {sim:.4f} · {label})")
+            # 시스템 안내는 첫 번째 등장 시 한 번만 출력
+            if sys_note and not system_note_printed:
+                print(f"\n  ⚠ 매칭 분포 안내: {sys_note}")
+                system_note_printed = True
+        print(f"\n  {rerank_note}")
+
+        # v6.0 Step 5: 원인 분기 불일치 진단
+        if mismatch_diag["type"] not in ("consistent", "no_signal", "no_mapping"):
+            print(f"\n  ⚠ 도메인 불일치: {mismatch_diag['message']}")
+        elif not domain_check["consistent"]:
+            print(f"\n  ⚠ 도메인 불일치 감지:")
+            print(f"     {domain_check['warning']}")
+            if domain_check.get("suggested_category"):
+                print(
+                    f"     권장: '{domain_check['suggested_category']}' 직무로 채용 공고를 직접 검색해 보세요."
+                )
+
     print(f"\n  시장 밴드 라우팅 직무: '{jumpit_category}' (1순위 공고 제목 기준)")
     print(f"  공고 분류 태그: {', '.join(tech_result['company_types']) or '(없음)'}")
     print("\n  기술 매칭 분석:")
@@ -545,8 +812,9 @@ async def run_e2e_pipeline(
     if tech_result["missing"]:
         print("    → 포트폴리오에 드러나지 않는 기술입니다. 경험이 있다면 README에 명시하세요.")
 
+    # ── 모듈 B ───────────────────────────────────────────────────
     print("\n" + "-" * 60)
-    print("[모듈 B] 포트폴리오 진단 + 기대 수준")
+    print("[모듈 B] 포트폴리오 진단 + 기대 수준 (7개 항목)")
     print("-" * 60)
     exp = diag_bundle.get("expected_level") or {}
     print(f"  기대 수준: {exp.get('level', '?')} — {exp.get('summary', '')}")
@@ -564,36 +832,77 @@ async def run_e2e_pipeline(
         if act:
             print(f"      권장: {act}")
 
+    # v6.0 Step 11: 종합 분석 블록
+    summary_block = diag_bundle.get("summary_block", "")
+    if summary_block:
+        print(f"\n{summary_block}")
+
+    # ── 모듈 C ───────────────────────────────────────────────────
     print("\n" + "-" * 60)
     print("[모듈 C] 시장 연봉 밴드 (신입~3년 구간, GitHub 점수 미반영)")
     print("-" * 60)
     msb = band_report["market_salary_band"]
     sr = msb["salary_range"]
+    rr = msb.get("realistic_range", {})
+
+    # v6.0 Step 12: 실제 분포 우선 표시
     print(f"  매칭 직무       : {msb['matched_category']}")
+    print(f"      → 채용공고 텍스트 유사도 기준 매칭 결과입니다.")
+    if detected_domains_merged and jumpit_category not in (DOMAIN_TO_CATEGORIES.get(detected_domains_merged[0], [])):
+        suggested = DOMAIN_TO_CATEGORIES.get(detected_domains_merged[0], [None])[0]
+        if suggested:
+            print(f"  참고 직무       : {suggested}")
+            print(f"      → 레포지토리 파일 구조(도메인 감지) 기준입니다.")
+            print(f"      → 두 직무 연봉이 다를 수 있으니 둘 다 확인하세요.")
     print(f"  구간            : {msb['experience_level']}")
-    print(f"  점핏 중앙값     : {sr['jumpit_median']:,}원")
+    if rr:
+        median_manwon = rr["median"] // 10000
+        p25_manwon = rr["p25_estimate"] // 10000
+        p75_manwon = rr["p75_estimate"] // 10000
+        print(f"  시장 중앙값     : 약 {median_manwon:,}만원")
+        print(f"  실제 분포       : {p25_manwon:,}만 ~ {p75_manwon:,}만원 (회사 규모·지역·협상에 따라)")
+    print(f"  플랫폼 교차검증 (참고):")
+    print(f"    점핏: {sr['jumpit_median'] // 10000:,}만원", end="")
     wm = sr.get("wanted_median")
     if wm is not None:
-        print(f"  원티드(신입~3년 평균): {wm:,}원")
+        print(f" / 원티드: {wm // 10000:,}만원")
     else:
-        print("  원티드(신입~3년 평균): 해당 직무 JSON 매핑 없음")
-    print(f"  참고 범위       : {sr['combined_range']}")
+        print(f" / 원티드: 해당 직무 매핑 없음")
     print(f"  출처·주의      : {msb['source']} / {msb['note']}")
+
+    # v6.0 Step 13: 불일치 시 대안 밴드
     if not domain_check["consistent"] and domain_check.get("suggested_category"):
         sc = domain_check["suggested_category"]
-        print(f"\n  (참고: 도메인 감지 기반 '{sc}' 직무 연봉 밴드)")
         try:
             alt_band = val_engine.get_market_band(
                 job_category=sc,
                 years_max=3 if applicant_years <= 3 else applicant_years,
             )
-            alt_sr = alt_band["market_salary_band"]["salary_range"]
-            print(f"    참고 범위: {alt_sr['combined_range']}")
+            alt_rr = alt_band["market_salary_band"].get("realistic_range", {})
+            if alt_rr:
+                alt_m = alt_rr["median"] // 10000
+                alt_p25 = alt_rr["p25_estimate"] // 10000
+                alt_p75 = alt_rr["p75_estimate"] // 10000
+                print(f"\n  (참고 — 도메인 감지 기반 '{sc}' 직무)")
+                print(f"    중앙값: 약 {alt_m:,}만원 / 분포: {alt_p25:,}만 ~ {alt_p75:,}만원")
         except ValueError:
-            print("    해당 직무의 연봉 데이터가 없습니다.")
-    print("\n  (직무 간 비교 — 점핏 junior 구간)")
-    for row in (band_report.get("category_comparison") or [])[:6]:
-        print(f"    - {row['category']}: {row['junior_range']}")
+            pass
+
+    # v6.0 Step 13: 직무 비교 3그룹
+    sal_groups = categorize_salary_comparison(
+        jumpit_category, band_report.get("category_comparison") or []
+    )
+    print(f"\n  [내 직무]")
+    print(f"    {sal_groups['my_job']['name']}: {sal_groups['my_job']['range']}")
+    if sal_groups["similar"]:
+        print(f"\n  [인접 직무 — 현재 스택으로 지원 가능]")
+        for row in sal_groups["similar"]:
+            print(f"    {row['name']}: {row['range']}")
+    if sal_groups["higher"]:
+        print(f"\n  [참고 — 연봉 상위 직무]")
+        for row in sal_groups["higher"]:
+            print(f"    {row['name']}: {row['range']}")
+        print("    → 이 직무들은 추가 학습이 필요할 수 있습니다.")
     print("=" * 60)
 
 
@@ -603,7 +912,7 @@ if __name__ == "__main__":
 
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
-    TARGET_USERNAME =  "RWKHB"#"honey766"#"tekyung"#"bcnsrui"#"CloudChick"#"chjnett"#"devwooks"# #"seseoju" #"AstroJini"  #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" 
+    TARGET_USERNAME =  "mino0210"#"RWKHB"#"honey766"#"tekyung"#"bcnsrui"#"CloudChick"#"chjnett"#"devwooks"# #"seseoju" #"AstroJini"  #"HJIWO" #"yyuneu"# "tekyung" #"siheon012" 
     TARGET_REPOS = [
         #"tekyung/2025-2_java_team_project/tree/태경",
         #"tekyung/Ttakji_lab-mobile_development_dep/tree/gabriel",
@@ -624,8 +933,9 @@ if __name__ == "__main__":
         #"chjnett/aws-jenkins/tree/main",
         #"chjnett/kmong_rich_deploy/tree/main",
         #"bcnsrui/KirafanTCG/tree/main",
-        "CloudChick/holoduel/tree/main",
-        #"CloudChick/project_a4/tree/master"
+        #"CloudChick/holoduel/tree/main",
+        #"CloudChick/project_a4/tree/master",
+        "mino0210/JuicyMatch/tree/main",
     ]
     APPLICANT_YEARS = 0
     # ================================================================

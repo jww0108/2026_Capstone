@@ -872,7 +872,7 @@ def extract_readme_keywords(readme_text: str) -> str:
     if not hit_domains:
         return ""
 
-    sorted_domains = sorted(hit_domains, key=hit_domains.get, reverse=True)
+    sorted_domains = sorted(hit_domains, key=lambda d: hit_domains[d], reverse=True)
     top_domain = sorted_domains[0]
 
     matched_keywords: List[str] = []

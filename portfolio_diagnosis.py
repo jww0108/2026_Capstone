@@ -1,15 +1,18 @@
 """
-Git2Value v5.8 — 포트폴리오 진단 체크리스트 (룰베이스).
+Git2Value v6.0 — 포트폴리오 진단 체크리스트 (룰베이스).
 v5.4: Unity/Unreal/Godot 감지 시 테스트·CI/CD·배포 피드백을 게임 개발 맥락으로 조정.
 v5.5: 기여 유형 안내(contribution_type_note), Competitive 등급 기준 조정, 테스트 항목 문구 완화.
 v5.7: 모드/플러그인 플랫폼 맥락 메시지(mod_context_message), 설정 프로젝트 안내(config_repo_message),
       run_diagnosis() 반환에 repo_classifications 추가.
-v5.8: 신규 도메인 맥락 메시지 추가 — blockchain_context_message, data_engineer_context_message,
-      tool_dev_context_message (블록체인/데이터 엔지니어링/도구 개발 프로젝트 안내).
+v5.8: 신규 도메인 맥락 메시지 추가 — blockchain/data_engineer/tool_dev context messages.
+v6.0: 진단 항목 9→7 (commit_pattern·growth_trajectory·collaboration 제거). README 룰베이스 강화.
+      COMMIT_REWRITE_HINTS + get_rewrite_hint(). generate_summary_block() 종합 분석 추가.
+      run_diagnosis() 반환에 summary_block 추가.
 """
 from __future__ import annotations
 
 import re
+from collections import Counter
 from typing import Any, Dict, List, Optional, Set
 
 MEANINGLESS_COMMIT_PATTERNS = re.compile(
@@ -121,10 +124,20 @@ def tool_dev_context_message(label: str) -> str:
     )
 
 
+def repo_classification_note(repo: Dict[str, Any]) -> str:
+    """레포의 협업 여부를 한 줄로 요약 (Step 9: 협업 항목 대체)."""
+    distinct = int(repo.get("distinct_author_count") or 1)
+    repo_name = repo.get("repo_name", "레포")
+    if distinct >= 2:
+        return f"{repo_name}: {distinct}명이 함께 작업한 팀 프로젝트"
+    return f"{repo_name}: 단독 작업 레포"
+
+
 def _build_repo_classifications(per_repo: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     per_repo 각 항목에 대해 분류(main/mod/config)와 안내 메시지를 생성.
-    Returns: [{"repo_name", "type", "label", "message", "matching_included"}, ...]
+    v6.0: collab_note 필드 추가 (협업 항목 대체).
+    Returns: [{"repo_name", "type", "label", "message", "matching_included", "collab_note"}, ...]
     """
     classifications = []
     for r in per_repo:
@@ -134,6 +147,7 @@ def _build_repo_classifications(per_repo: List[Dict[str, Any]]) -> List[Dict[str
         sub_host = r.get("sub_language_host")
         matching = r.get("matching_included", True)
 
+        collab_note = repo_classification_note(r)
         if is_config and sub_host:
             host_name = sub_host.get("name") or sub_host.get("label") or "설정"
             classifications.append({
@@ -142,6 +156,7 @@ def _build_repo_classifications(per_repo: List[Dict[str, Any]]) -> List[Dict[str
                 "label": sub_host.get("label", "설정 프로젝트"),
                 "message": config_repo_message(host_name),
                 "matching_included": matching,
+                "collab_note": collab_note,
             })
         elif mod_platform:
             classifications.append({
@@ -150,6 +165,7 @@ def _build_repo_classifications(per_repo: List[Dict[str, Any]]) -> List[Dict[str
                 "label": mod_platform.get("label", "모드 개발"),
                 "message": mod_context_message(mod_platform),
                 "matching_included": matching,
+                "collab_note": collab_note,
             })
         else:
             # v5.8: 엔진 시그너처 도메인 기반 맥락 메시지 (블록체인/데이터/도구 개발)
@@ -178,8 +194,45 @@ def _build_repo_classifications(per_repo: List[Dict[str, Any]]) -> List[Dict[str
                 "label": special_label,
                 "message": special_msg,
                 "matching_included": matching,
+                "collab_note": collab_note,
             })
     return classifications
+
+
+# ---------------------------------------------------------------------------
+# v6.0 Step 10: README 룰베이스 3차원 평가
+# ---------------------------------------------------------------------------
+
+README_QUALITY_INDICATORS: Dict[str, List[str]] = {
+    "프로젝트 목적 명시": [
+        r"^#\s*[가-힣\w].{5,}",
+        r"##\s*(소개|introduction|overview|개요)",
+        r"##\s*(프로젝트\s*목적|purpose|goal)",
+    ],
+    "기술 스택 설명": [
+        r"##\s*(기술\s*스택|tech\s*stack|technologies|사용\s*기술|stack)",
+        r"\|\s*(언어|language|framework|기술)\s*\|",
+    ],
+    "결과물 시각화": [
+        r"!\[.*?\]\(.*?\)",
+        r"<img\s+src=",
+        r"https?://[^\s)]+\.(gif|png|jpg|jpeg|mp4|webm)",
+    ],
+}
+
+
+def evaluate_readme_quality(readme_text: str) -> Dict[str, Any]:
+    """README에서 3차원(목적/기술스택/시각화)을 룰베이스로 평가."""
+    indicators: Dict[str, bool] = {}
+    for name, patterns in README_QUALITY_INDICATORS.items():
+        found = any(re.search(p, readme_text, re.I | re.M) for p in patterns)
+        indicators[name] = found
+    found_count = sum(indicators.values())
+    if found_count >= 2:
+        return {"status": "양호", "indicators": indicators, "found_count": found_count}
+    if found_count == 1:
+        return {"status": "보통", "indicators": indicators, "found_count": found_count}
+    return {"status": "미흡", "indicators": indicators, "found_count": found_count}
 
 
 def _readme_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -195,16 +248,36 @@ def _readme_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
             avg_len += L
             n += 1
     avg = (avg_len // n) if n else 0
+
+    # v6.0: 3차원 룰베이스 품질 평가 (가장 긴 README 대상)
+    longest_readme = max(
+        (r.get("readme") or "" for r in per_repo),
+        key=len,
+        default="",
+    )
+    quality = evaluate_readme_quality(longest_readme)
+    missing_dims = [k for k, v in quality["indicators"].items() if not v]
+    missing_hint = (
+        f" (부족: {', '.join(missing_dims)})" if missing_dims else ""
+    )
+
     if long_count >= max(1, len(per_repo) // 2) and avg >= 200:
+        if quality["status"] == "양호":
+            return _item(
+                "양호",
+                f"평균 약 {avg}자, {img_count}개 레포에 이미지 포함 추정. "
+                f"목적·기술스택·시각화 항목이 포함되어 있습니다.",
+                None,
+            )
         return _item(
-            "양호",
-            f"평균 약 {avg}자, {img_count}개 레포에 이미지(스크린샷 등) 포함 추정",
-            None,
+            "개선 필요",
+            f"README 길이는 충분하지만 구성이 아쉽습니다 (평균 약 {avg}자){missing_hint}.",
+            f"README에 {', '.join(missing_dims) if missing_dims else '목적·기술 스택·스크린샷'}을 추가하면 완성도가 높아집니다.",
         )
     if avg >= 50:
         return _item(
             "개선 필요",
-            f"README가 짧거나 일부 레포만 충실합니다 (평균 약 {avg}자).",
+            f"README가 짧거나 일부 레포만 충실합니다 (평균 약 {avg}자){missing_hint}.",
             "프로젝트 목적, 기술 스택, 실행 방법, 데모 GIF/스크린샷을 README에 정리하세요.",
         )
     return _item(
@@ -307,6 +380,32 @@ def _cicd_diagnosis(
     return _item("양호", f"CI/CD 신호가 {n}개 레포에서 감지되었습니다.", None)
 
 
+# ---------------------------------------------------------------------------
+# v6.0 Step 8: 커밋 메시지 변환 힌트
+# ---------------------------------------------------------------------------
+
+COMMIT_REWRITE_HINTS: Dict[str, str] = {
+    r"^fix\s*$":               "fix: [무엇을] 수정",
+    r"^update\s*$":            "refactor: [무엇을] 개선",
+    r"^wip\s*$":               "feat: [기능명] 구현 중",
+    r"^temp\s*$":              "wip: [작업명] 임시 저장",
+    r"^test\s*$":              "test: [대상] 단위 테스트 추가",
+    r"^initial\s+commit\s*$":  "chore: 프로젝트 초기 설정",
+    r"^merge.*":               "merge: [브랜치명] 병합",
+    r"^chore\s*$":             "chore: [작업] 정리",
+    r"^bump\s*$":              "chore: 버전 업데이트",
+    r"^revert\s*$":            "revert: [대상] 되돌리기",
+}
+
+
+def get_rewrite_hint(msg: str) -> str:
+    """무의미 커밋 메시지에 대한 Conventional Commits 변환 힌트 반환."""
+    for pattern, hint in COMMIT_REWRITE_HINTS.items():
+        if re.search(pattern, msg.strip(), re.I):
+            return hint
+    return "feat/fix/refactor: 변경 내용 구체적으로 기술"
+
+
 def _commit_quality_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
     msgs: List[str] = []
     for r in per_repo:
@@ -320,9 +419,12 @@ def _commit_quality_diagnosis(per_repo: List[Dict[str, Any]]) -> Dict[str, Any]:
     bad = sum(1 for m in msgs if MEANINGLESS_COMMIT_PATTERNS.search(m.strip()))
     ratio = bad / len(msgs)
     if ratio >= 0.35:
+        bad_samples = [m for m in msgs if MEANINGLESS_COMMIT_PATTERNS.search(m.strip())][:2]
+        hint = get_rewrite_hint(bad_samples[0]) if bad_samples else "feat/fix/refactor: 변경 내용 구체적으로 기술"
+        example = f"\n      예) '{bad_samples[0]}' → 권장: '{hint}'" if bad_samples else ""
         return _item(
             "개선 필요",
-            f"샘플 커밋 중 약 {int(ratio * 100)}%가 fix/update 등 다소 무의미한 메시지입니다.",
+            f"샘플 커밋 중 약 {int(ratio * 100)}%가 무의미한 메시지입니다.{example}",
             "Conventional Commits(feat:, fix:, refactor:) 형식을 권장합니다.",
         )
     if ratio >= 0.15:
@@ -485,32 +587,132 @@ def expected_level(per_repo: List[Dict[str, Any]], diagnosis: Dict[str, Dict[str
     }
 
 
+# ---------------------------------------------------------------------------
+# v6.0 Step 11: 종합 메시지 블록 (포지셔닝/강점/Quick wins)
+# ---------------------------------------------------------------------------
+
+_DIAG_LABELS_FOR_SUMMARY: Dict[str, str] = {
+    "readme_quality": "README 품질",
+    "project_structure": "프로젝트 구조",
+    "test_coverage": "테스트",
+    "cicd": "CI/CD",
+    "commit_quality": "커밋 메시지",
+    "deployment": "배포",
+}
+
+_QUICK_WINS_POOL: List[tuple] = [
+    ("cicd", "GitHub Actions 워크플로우 1개 추가 (Python: pytest, Node: jest)"),
+    ("deployment", "Dockerfile 작성 + docker-compose.yml로 로컬 실행 가능하게 구성"),
+    ("readme_quality", "README에 프로젝트 목적 + 기술 스택 + 스크린샷 1장 추가"),
+    ("commit_quality", "다음 커밋부터 Conventional Commits 적용 (feat:/fix:/refactor:)"),
+    ("test_coverage", "핵심 비즈니스 로직 1~2개에 단위 테스트 추가"),
+]
+
+_BAD_STATUSES = {"미흡", "개선 필요", "미경험", "선택 가점"}
+
+
+def _primary_domain_from_profile(profile: Dict[str, Any]) -> Optional[str]:
+    """per_repo의 detected_domains 중 가장 빈번한 도메인 반환."""
+    c: Counter = Counter()
+    for r in profile.get("per_repo") or []:
+        for d in r.get("detected_domains") or []:
+            c[d] += 1
+    if c:
+        return c.most_common(1)[0][0]
+    return None
+
+
+def generate_summary_block(
+    diagnosis: Dict[str, Dict[str, Any]],
+    level_dict: Dict[str, Any],
+    github_score: float,
+    primary_domain: Optional[str],
+) -> str:
+    """
+    포지셔닝/강점/Quick wins 3섹션 종합 분석 문자열 생성.
+    모듈 B 출력 마지막에 붙는 사용자 행동 안내.
+    """
+    level = level_dict.get("level", "Entry")
+    pd_str = primary_domain or "개발"
+
+    if level == "Top":
+        pos_suffix = "대형 테크·우수 스타트업까지 도전 가능한 완성도입니다."
+    elif level == "Competitive":
+        pos_suffix = "주요 항목 보강 시 상위 직군 도전이 가능한 수준입니다."
+    else:
+        pos_suffix = "경쟁력 있는 지원을 위해 보강이 필요한 단계입니다."
+
+    positioning = f"{pd_str} {level} 수준 포트폴리오 — {pos_suffix}"
+
+    strengths: List[str] = []
+    for key in _DIAG_LABELS_FOR_SUMMARY:
+        if diagnosis.get(key, {}).get("status") == "양호":
+            strengths.append(_DIAG_LABELS_FOR_SUMMARY[key])
+        if len(strengths) >= 2:
+            break
+
+    quick_wins: List[str] = []
+    for key, action in _QUICK_WINS_POOL:
+        if diagnosis.get(key, {}).get("status") in _BAD_STATUSES:
+            quick_wins.append(action)
+        if len(quick_wins) >= 3:
+            break
+
+    lines = [
+        "─" * 60,
+        "[종합 분석]",
+        "─" * 60,
+        f"  포지셔닝: {positioning}",
+        "",
+        "  강점:",
+    ]
+    if strengths:
+        for s in strengths:
+            lines.append(f"    · {s}")
+    else:
+        lines.append("    · (주요 항목 보강 후 재확인 권장)")
+    lines.append("")
+    lines.append("  이번 주 실행 가능한 개선 (Quick Wins):")
+    if quick_wins:
+        for i, qw in enumerate(quick_wins, 1):
+            lines.append(f"    {i}. {qw}")
+    else:
+        lines.append("    (모든 주요 항목이 양호합니다)")
+
+    return "\n".join(lines)
+
+
 def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
     """
     extract_applicant_profile() 반환 프로필을 입력으로 진단 JSON을 생성합니다.
+    v6.0: 진단 항목 9→7 (commit_pattern·growth_trajectory·collaboration 제거),
+          summary_block(종합 분석) 추가.
     """
     per_repo: List[Dict[str, Any]] = list(profile.get("per_repo") or [])
     game_engines = _collect_game_engines(per_repo)
 
+    # v6.0: 7개 항목 (commit_pattern·growth_trajectory·collaboration 제거)
     diagnosis = {
         "readme_quality": _readme_diagnosis(per_repo),
         "project_structure": _structure_diagnosis(per_repo),
         "test_coverage": _test_diagnosis(per_repo, game_engines),
         "cicd": _cicd_diagnosis(per_repo, game_engines),
         "commit_quality": _commit_quality_diagnosis(per_repo),
-        "commit_pattern": _commit_pattern_diagnosis(per_repo),
         "deployment": _deployment_diagnosis(per_repo, game_engines),
-        "collaboration": _collaboration_diagnosis(per_repo),
-        "growth_trajectory": _growth_diagnosis(per_repo),
     }
 
     ms = profile.get("metrics_summary") or {}
     vl = int(ms.get("total_valid_loc") or 0)
     el = int(ms.get("total_evidence_loc") or 0)
 
+    level_dict = expected_level(per_repo, diagnosis)
+    primary_domain = _primary_domain_from_profile(profile)
+    github_score = float(profile.get("github_score") or 0)
+
     return {
         "portfolio_diagnosis": diagnosis,
-        "expected_level": expected_level(per_repo, diagnosis),
+        "expected_level": level_dict,
         "contribution_type": contribution_type_note(vl, el),
-        "repo_classifications": _build_repo_classifications(per_repo),  # v5.7
+        "repo_classifications": _build_repo_classifications(per_repo),
+        "summary_block": generate_summary_block(diagnosis, level_dict, github_score, primary_domain),
     }

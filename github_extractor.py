@@ -151,6 +151,32 @@ class GitHubExtractor:
             next_url = self._parse_rel_link(link, "next")
         return all_commits, False
 
+    @staticmethod
+    def _commit_author_key(commit_obj: Dict[str, Any]) -> Optional[str]:
+        """커밋 작성자를 GitHub login > email > name 순으로 안정적으로 식별."""
+        gh_author = commit_obj.get("author") or {}
+        if gh_author.get("login"):
+            return f"login:{str(gh_author['login']).lower()}"
+
+        raw_author = (commit_obj.get("commit") or {}).get("author") or {}
+        email = (raw_author.get("email") or "").strip().lower()
+        if email:
+            return f"email:{email}"
+
+        name = (raw_author.get("name") or "").strip().lower()
+        if name:
+            return f"name:{name}"
+        return None
+
+    @staticmethod
+    def _commit_author_label(commit_obj: Dict[str, Any]) -> Optional[str]:
+        """리포트 표시용 작성자 이름."""
+        gh_author = commit_obj.get("author") or {}
+        if gh_author.get("login"):
+            return str(gh_author["login"])
+        raw_author = (commit_obj.get("commit") or {}).get("author") or {}
+        return raw_author.get("name") or raw_author.get("email")
+
     async def _fetch_repo_text_files(
         self,
         session: aiohttp.ClientSession,
@@ -396,9 +422,13 @@ class GitHubExtractor:
         branch_to_scan = target_branch if target_branch else repo_meta.get("default_branch", "main")
 
         tree_url = f"{repo_url}/git/trees/{branch_to_scan}?recursive=1"
+        # 지원자 기여도 계산용: 해당 GitHub 계정이 author로 연결된 커밋만 수집
         commits_list_url = (
             f"{repo_url}/commits?author={username}&sha={branch_to_scan}&per_page=100"
         )
+        # 팀/개인 판정용: author 필터를 제거한 레포 전체 커밋을 별도로 수집
+        # 기존에는 author=username 결과만으로 작성자 수를 세어 팀 레포도 개인으로 오판했다.
+        repo_commits_list_url = f"{repo_url}/commits?sha={branch_to_scan}&per_page=100"
         readme_url = f"{repo_url}/readme?ref={branch_to_scan}"
 
         ok_tree, tree_data, _ = await self._fetch_with_retry(session, tree_url)
@@ -423,6 +453,38 @@ class GitHubExtractor:
                 f"repo '{repo}' Rate Limit/API 오류로 커밋 목록이 불완전할 수 있음"
             )
 
+        all_repo_commits, repo_commits_hard_err = await self._fetch_all_commits_paginated(
+            session, repo_commits_list_url
+        )
+        if repo_commits_hard_err:
+            repo_warnings.append(
+                f"repo '{repo}' Rate Limit/API 오류로 전체 커밋 작성자 수가 불완전할 수 있음"
+            )
+        if not all_repo_commits:
+            # 레포 전체 커밋 조회가 실패하면 기존 author 커밋으로 폴백한다.
+            all_repo_commits = list(all_author_commits)
+
+        repo_author_keys: Set[str] = set()
+        repo_author_labels: List[str] = []
+        seen_label_keys: Set[str] = set()
+        for c in all_repo_commits:
+            key = self._commit_author_key(c)
+            if key:
+                repo_author_keys.add(key)
+                label = self._commit_author_label(c)
+                if label and key not in seen_label_keys:
+                    repo_author_labels.append(str(label))
+                    seen_label_keys.add(key)
+
+        distinct_author_count = len(repo_author_keys) if repo_author_keys else 1
+        repo_type = "team" if distinct_author_count >= 2 else "personal"
+        target_commit_count = len(all_author_commits)
+        total_repo_commit_count = len(all_repo_commits)
+        target_commit_ratio = (
+            round(target_commit_count / total_repo_commit_count, 4)
+            if total_repo_commit_count > 0 else 0.0
+        )
+
         sampled = self._stratified_sample_commits(all_author_commits, global_seen_sha)
         # 분석 전에 전역 dedup: 샘플에서 global에 이미 있는 SHA 제외는 stratified에서 처리됨.
         # 재분석 시 sampled의 SHA는 _analyze 후 global에 추가됨.
@@ -433,17 +495,6 @@ class GitHubExtractor:
             line = msg.split("\n")[0].strip()[:240]
             if line:
                 commit_messages.append(line)
-
-        author_keys: Set[str] = set()
-        for c in all_author_commits:
-            au = c.get("author") or {}
-            if au.get("login"):
-                author_keys.add(str(au["login"]))
-            else:
-                cb = (c.get("commit") or {}).get("author") or {}
-                if cb.get("name"):
-                    author_keys.add(str(cb["name"]))
-        distinct_author_count = len(author_keys) if author_keys else 1
 
         ok_readme, readme_data, _ = await self._fetch_with_retry(session, readme_url)
         if not ok_readme:
@@ -529,6 +580,7 @@ class GitHubExtractor:
         duration_days = (pushed_at - created_at).days
 
         active_weeks = self._count_active_weeks(all_author_commits)
+        repo_active_weeks = self._count_active_weeks(all_repo_commits)
         if active_weeks >= 8:
             duration_pts = 10.0
         elif active_weeks >= 4:
@@ -610,10 +662,16 @@ class GitHubExtractor:
             "test_ratio": test_ratio,
             "commit_messages": commit_messages,
             "distinct_author_count": distinct_author_count,
+            "repo_type": repo_type,
+            "repo_author_names": repo_author_labels[:10],
             "is_fork": is_fork,
             "duration_days": duration_days,
             "active_weeks": active_weeks,
+            "repo_active_weeks": repo_active_weeks,
             "total_commits": len(all_author_commits),
+            "total_repo_commits": total_repo_commit_count,
+            "target_commit_count": target_commit_count,
+            "target_commit_ratio": target_commit_ratio,
             "score_breakdown": {
                 "contribution": contribution_axis,
                 "quality": round(quality_axis, 1),
@@ -816,12 +874,18 @@ class GitHubExtractor:
                     "test_ratio": float(res.get("test_ratio") or 0.0),
                     "commit_messages": res.get("commit_messages") or [],
                     "distinct_author_count": int(res.get("distinct_author_count") or 1),
+                    "repo_type": res.get("repo_type") or ("team" if int(res.get("distinct_author_count") or 1) >= 2 else "personal"),
+                    "repo_author_names": res.get("repo_author_names") or [],
                     "valid_loc": int(res.get("valid_loc") or 0),
                     "evidence_loc": int(res.get("evidence_loc") or 0),
                     "is_fork": bool(res.get("is_fork")),
                     "duration_days": int(res.get("duration_days") or 0),
                     "active_weeks": int(res.get("active_weeks") or 0),
+                    "repo_active_weeks": int(res.get("repo_active_weeks") or 0),
                     "total_commits": int(res.get("total_commits") or 0),
+                    "total_repo_commits": int(res.get("total_repo_commits") or 0),
+                    "target_commit_count": int(res.get("target_commit_count") or 0),
+                    "target_commit_ratio": float(res.get("target_commit_ratio") or 0.0),
                     "frameworks": res.get("frameworks") or [],
                     "detected_domains": res.get("detected_domains") or [],
                     "language_category": res.get("language_category") or {},    # v5.6

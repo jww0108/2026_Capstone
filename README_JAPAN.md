@@ -1,5 +1,3 @@
----
-
 # 2026_Capstone
 
 # Git2Value — プロジェクト概要書

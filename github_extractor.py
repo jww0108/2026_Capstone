@@ -42,10 +42,22 @@ class GitHubExtractor:
     v5.0: Contribution 로그 스케일, Quality 10+10+10(활성 주), Consistency는 전체 커밋 목록 기준.
     v5.4: 트리 시그니처 기반 엔진 감지(profile_builder.detect_engine_signatures) → frameworks.
     v5.5: 커밋 수 기반 동적 가중치(LOC/commit), Evidence LOC 보조 점수(설정·데이터 기여 보정).
+    v6.2: 봇 작성자 필터링 — distinct_author_count 산출 시 자동화 봇 제외.
     """
 
     # author 커밋 목록 페이지네이션 상한 (per_page=100 × 3 = 최대 300커밋)
     MAX_COMMIT_PAGES = 3
+
+    # v6.2: 봇 작성자 식별 패턴
+    _BOT_LOGIN_PATTERN = re.compile(
+        r"\[bot\]$|^dependabot$|^github-actions$|^renovate-bot$"
+        r"|^pre-commit-ci$|^codecov-commenter$|^stale\b",
+        re.IGNORECASE,
+    )
+    _BOT_EMAIL_HINTS = (
+        "[bot]@",
+        "noreply@github.com",
+    )
 
     def __init__(self, token: Optional[str] = None):
         self.token = token or os.getenv("Github_api_token")
@@ -150,6 +162,94 @@ class GitHubExtractor:
             pages_fetched += 1
             next_url = self._parse_rel_link(link, "next")
         return all_commits, False
+
+    @classmethod
+    def _is_bot_author(cls, commit_obj: Dict[str, Any]) -> bool:
+        """
+        v6.2: 커밋 작성자가 자동화 봇인지 판별.
+        - GitHub login에 [bot] suffix 또는 알려진 봇 이름 매칭
+        - 이메일이 noreply 또는 [bot]@ 패턴 (단, users.noreply.github.com은 일반 사용자 제외)
+        """
+        gh_author = commit_obj.get("author") or {}
+        login = str(gh_author.get("login") or "")
+        if login and cls._BOT_LOGIN_PATTERN.search(login):
+            return True
+
+        raw = (commit_obj.get("commit") or {}).get("author") or {}
+        email = str(raw.get("email") or "").lower()
+        if any(hint in email for hint in cls._BOT_EMAIL_HINTS):
+            if "users.noreply.github.com" in email:
+                return False
+            return True
+
+        return False
+
+    @staticmethod
+    def _calc_fork_penalty(
+        is_fork: bool,
+        target_commit_count: int,
+        total_repo_commits: int,
+        distinct_author_count: int,
+    ) -> Tuple[float, str]:
+        """
+        v6.2: Fork 레포의 contribution 패널티 계수.
+        기여 비율이 공정 기준(100% / 참여 인원 수) 이상이면 패널티 완화.
+
+        Returns: (패널티 계수, 로그 메시지)
+            - 1.0: Fork가 아닌 레포
+            - 0.7: Fork이지만 공정 기준 이상 기여 (30% 감산)
+            - 0.5: Fork, 공정 기준의 50% 이상 기여 (50% 감산)
+            - 0.3: Fork, 소극적 기여 (70% 감산, 기존값)
+        """
+        if not is_fork:
+            return 1.0, ""
+
+        if total_repo_commits <= 0 or distinct_author_count <= 0:
+            return 0.3, "Fork: 커밋 데이터 부족 → 기본 패널티 0.3"
+
+        contribution_ratio = target_commit_count / total_repo_commits
+        fair_share = 1.0 / distinct_author_count
+
+        if contribution_ratio >= fair_share:
+            return 0.7, (
+                f"Fork 패널티 완화: 기여 비율 {contribution_ratio:.1%} "
+                f">= 공정 기준 {fair_share:.1%} ({distinct_author_count}명) → 계수 0.7"
+            )
+        if contribution_ratio >= fair_share * 0.5:
+            return 0.5, (
+                f"Fork 패널티 중간: 기여 비율 {contribution_ratio:.1%} "
+                f">= 공정 기준의 50% ({fair_share * 0.5:.1%}) → 계수 0.5"
+            )
+        return 0.3, (
+            f"Fork 소극적 기여: 기여 비율 {contribution_ratio:.1%} "
+            f"< 공정 기준의 50% → 기본 패널티 0.3"
+        )
+
+    @staticmethod
+    def _commit_author_key(commit_obj: Dict[str, Any]) -> Optional[str]:
+        """커밋 작성자를 GitHub login > email > name 순으로 안정적으로 식별."""
+        gh_author = commit_obj.get("author") or {}
+        if gh_author.get("login"):
+            return f"login:{str(gh_author['login']).lower()}"
+
+        raw_author = (commit_obj.get("commit") or {}).get("author") or {}
+        email = (raw_author.get("email") or "").strip().lower()
+        if email:
+            return f"email:{email}"
+
+        name = (raw_author.get("name") or "").strip().lower()
+        if name:
+            return f"name:{name}"
+        return None
+
+    @staticmethod
+    def _commit_author_label(commit_obj: Dict[str, Any]) -> Optional[str]:
+        """리포트 표시용 작성자 이름."""
+        gh_author = commit_obj.get("author") or {}
+        if gh_author.get("login"):
+            return str(gh_author["login"])
+        raw_author = (commit_obj.get("commit") or {}).get("author") or {}
+        return raw_author.get("name") or raw_author.get("email")
 
     async def _fetch_repo_text_files(
         self,
@@ -396,9 +496,13 @@ class GitHubExtractor:
         branch_to_scan = target_branch if target_branch else repo_meta.get("default_branch", "main")
 
         tree_url = f"{repo_url}/git/trees/{branch_to_scan}?recursive=1"
+        # 지원자 기여도 계산용: 해당 GitHub 계정이 author로 연결된 커밋만 수집
         commits_list_url = (
             f"{repo_url}/commits?author={username}&sha={branch_to_scan}&per_page=100"
         )
+        # 팀/개인 판정용: author 필터를 제거한 레포 전체 커밋을 별도로 수집
+        # 기존에는 author=username 결과만으로 작성자 수를 세어 팀 레포도 개인으로 오판했다.
+        repo_commits_list_url = f"{repo_url}/commits?sha={branch_to_scan}&per_page=100"
         readme_url = f"{repo_url}/readme?ref={branch_to_scan}"
 
         ok_tree, tree_data, _ = await self._fetch_with_retry(session, tree_url)
@@ -423,6 +527,48 @@ class GitHubExtractor:
                 f"repo '{repo}' Rate Limit/API 오류로 커밋 목록이 불완전할 수 있음"
             )
 
+        all_repo_commits, repo_commits_hard_err = await self._fetch_all_commits_paginated(
+            session, repo_commits_list_url
+        )
+        if repo_commits_hard_err:
+            repo_warnings.append(
+                f"repo '{repo}' Rate Limit/API 오류로 전체 커밋 작성자 수가 불완전할 수 있음"
+            )
+        if not all_repo_commits:
+            # 레포 전체 커밋 조회가 실패하면 기존 author 커밋으로 폴백한다.
+            all_repo_commits = list(all_author_commits)
+
+        repo_author_keys: Set[str] = set()
+        repo_author_labels: List[str] = []
+        seen_label_keys: Set[str] = set()
+        bot_count = 0
+        for c in all_repo_commits:
+            # v6.2: 봇 작성자 제외 — 개인 레포가 팀 레포로 잘못 분류되는 결함 방지
+            if self._is_bot_author(c):
+                bot_count += 1
+                continue
+            key = self._commit_author_key(c)
+            if key:
+                repo_author_keys.add(key)
+                label = self._commit_author_label(c)
+                if label and key not in seen_label_keys:
+                    repo_author_labels.append(str(label))
+                    seen_label_keys.add(key)
+
+        if bot_count >= 5:
+            repo_warnings.append(
+                f"repo '{repo}' 봇 작성자 커밋 {bot_count}개 제외 (팀/개인 판정에 미반영)"
+            )
+
+        distinct_author_count = len(repo_author_keys) if repo_author_keys else 1
+        repo_type = "team" if distinct_author_count >= 2 else "personal"
+        target_commit_count = len(all_author_commits)
+        total_repo_commit_count = len(all_repo_commits)
+        target_commit_ratio = (
+            round(target_commit_count / total_repo_commit_count, 4)
+            if total_repo_commit_count > 0 else 0.0
+        )
+
         sampled = self._stratified_sample_commits(all_author_commits, global_seen_sha)
         # 분석 전에 전역 dedup: 샘플에서 global에 이미 있는 SHA 제외는 stratified에서 처리됨.
         # 재분석 시 sampled의 SHA는 _analyze 후 global에 추가됨.
@@ -433,17 +579,6 @@ class GitHubExtractor:
             line = msg.split("\n")[0].strip()[:240]
             if line:
                 commit_messages.append(line)
-
-        author_keys: Set[str] = set()
-        for c in all_author_commits:
-            au = c.get("author") or {}
-            if au.get("login"):
-                author_keys.add(str(au["login"]))
-            else:
-                cb = (c.get("commit") or {}).get("author") or {}
-                if cb.get("name"):
-                    author_keys.add(str(cb["name"]))
-        distinct_author_count = len(author_keys) if author_keys else 1
 
         ok_readme, readme_data, _ = await self._fetch_with_retry(session, readme_url)
         if not ok_readme:
@@ -529,6 +664,7 @@ class GitHubExtractor:
         duration_days = (pushed_at - created_at).days
 
         active_weeks = self._count_active_weeks(all_author_commits)
+        repo_active_weeks = self._count_active_weeks(all_repo_commits)
         if active_weeks >= 8:
             duration_pts = 10.0
         elif active_weeks >= 4:
@@ -542,7 +678,7 @@ class GitHubExtractor:
             valid_loc,
             self._is_valid_source_code,
         )
-        # v5.0: CI/CD 10 + 테스트 10 + 활성 주 10 = 최대 30 (캡 없음, duration 편중 해소)
+        # v6.2: Quality 레포 유형별 분리 배점
         cicd_pts = 10.0 if has_cicd else 0.0
         if test_ratio < 0.05:
             test_pts = 0.0
@@ -550,7 +686,28 @@ class GitHubExtractor:
             test_pts = 5.0
         else:
             test_pts = 10.0
-        quality_axis = cicd_pts + test_pts + duration_pts
+
+        if repo_type == "team":
+            # 팀 레포: CI/CD 10 + 테스트 10 + 활성 주 10 = 최대 30 (기존 그대로)
+            quality_axis = cicd_pts + test_pts + duration_pts
+        else:
+            # 개인 레포: 활성 주 중심 (최대 20점) + CI/CD·테스트는 가산점 (각 5점)
+            if active_weeks >= 8:
+                duration_personal = 20.0
+            elif active_weeks >= 4:
+                duration_personal = 12.0
+            elif active_weeks >= 2:
+                duration_personal = 6.0
+            else:
+                duration_personal = 2.0
+            cicd_bonus = 5.0 if has_cicd else 0.0
+            if test_ratio >= 0.10:
+                test_bonus = 5.0
+            elif test_ratio >= 0.05:
+                test_bonus = 3.0
+            else:
+                test_bonus = 0.0
+            quality_axis = duration_personal + cicd_bonus + test_bonus  # 최대 30점
 
         # v5.0 + v5.5: 메인 LOC + Evidence LOC(최대 50점 스케일), 커밋 수에 따른 동적 가중치
         loc_score_main = min(
@@ -578,9 +735,17 @@ class GitHubExtractor:
         # 일관성: 균등 샘플이 아닌 전체 author 커밋 목록 타임스탬프 (샘플링 인위 갭 제거)
         consistency_axis = self._calc_consistency_score(all_author_commits)
 
-        # 스펙 Phase 1-3: fork 시 기여도(contribution)만 70% 삭감(0.3배). quality·consistency는 패널티 없음.
+        # v6.2: Fork 패널티 기여 비율 기반 3단계 완화 (기존 일괄 0.3배 → 비율 연동)
+        fork_penalty, fork_log = self._calc_fork_penalty(
+            is_fork=is_fork,
+            target_commit_count=target_commit_count,
+            total_repo_commits=total_repo_commit_count,
+            distinct_author_count=distinct_author_count,
+        )
         if is_fork:
-            contribution_axis = round(contribution_axis * 0.3, 1)
+            contribution_axis = round(contribution_axis * fork_penalty, 1)
+            if fork_log:
+                repo_warnings.append(fork_log)
 
         repo_score = round(contribution_axis + quality_axis + consistency_axis, 1)
 
@@ -610,14 +775,23 @@ class GitHubExtractor:
             "test_ratio": test_ratio,
             "commit_messages": commit_messages,
             "distinct_author_count": distinct_author_count,
+            "repo_type": repo_type,
+            "repo_author_names": repo_author_labels[:10],
             "is_fork": is_fork,
+            "fork_penalty": fork_penalty,           # v6.2
+            "fork_penalty_log": fork_log,           # v6.2 (디버깅용)
             "duration_days": duration_days,
             "active_weeks": active_weeks,
+            "repo_active_weeks": repo_active_weeks,
             "total_commits": len(all_author_commits),
+            "total_repo_commits": total_repo_commit_count,
+            "target_commit_count": target_commit_count,
+            "target_commit_ratio": target_commit_ratio,
             "score_breakdown": {
                 "contribution": contribution_axis,
                 "quality": round(quality_axis, 1),
                 "consistency": consistency_axis,
+                "quality_mode": repo_type,          # v6.2: "team" 또는 "personal"
             },
             "commits_analyzed": analyzed_commit_count,
             "warnings": repo_warnings,
@@ -670,15 +844,8 @@ class GitHubExtractor:
         total_evidence_loc = 0
         total_commits_analyzed = 0
 
-        weighted_score_sum = 0.0
-        weighted_contrib_sum = 0.0
-        weighted_quality_sum = 0.0
-        weighted_consistency_sum = 0.0
-
         for res in valid_results:
             loc = res["valid_loc"]
-            sc = res["score"]
-            bd = res.get("score_breakdown") or {}
             total_loc += loc
             total_evidence_loc += int(res.get("evidence_loc", 0) or 0)
             total_commits_analyzed += int(res.get("commits_analyzed", 0))
@@ -689,36 +856,31 @@ class GitHubExtractor:
             for w in res.get("warnings") or []:
                 if w not in all_warnings:
                     all_warnings.append(w)
-            weighted_score_sum += sc * loc
-            weighted_contrib_sum += bd.get("contribution", 0) * loc
-            weighted_quality_sum += bd.get("quality", 0) * loc
-            weighted_consistency_sum += bd.get("consistency", 0) * loc
 
         if valid_results:
-            if total_loc > 0:
-                final_score = round(weighted_score_sum / total_loc, 1)
-                agg_breakdown = {
-                    "contribution": round(weighted_contrib_sum / total_loc, 1),
-                    "quality": round(weighted_quality_sum / total_loc, 1),
-                    "consistency": round(weighted_consistency_sum / total_loc, 1),
-                }
-            else:
-                n = len(valid_results)
-                final_score = round(sum(r["score"] for r in valid_results) / n, 1)
-                agg_breakdown = {
-                    "contribution": round(
-                        sum((r.get("score_breakdown") or {}).get("contribution", 0) for r in valid_results) / n,
-                        1,
-                    ),
-                    "quality": round(
-                        sum((r.get("score_breakdown") or {}).get("quality", 0) for r in valid_results) / n,
-                        1,
-                    ),
-                    "consistency": round(
-                        sum((r.get("score_breakdown") or {}).get("consistency", 0) for r in valid_results) / n,
-                        1,
-                    ),
-                }
+            # v6.2: 대표 프로젝트 중심 총점 산출 (best*0.7 + avg*0.3)
+            repo_scores = []
+            for r in valid_results:
+                bd = r.get("score_breakdown") or {}
+                total = (
+                    bd.get("contribution", 0)
+                    + bd.get("quality", 0)
+                    + bd.get("consistency", 0)
+                )
+                repo_scores.append(total)
+
+            best_score = max(repo_scores)
+            avg_score = sum(repo_scores) / len(repo_scores)
+            final_score = round(best_score * 0.7 + avg_score * 0.3, 1)
+
+            # score_breakdown은 최고 레포 기준으로 표시
+            best_idx = repo_scores.index(best_score)
+            best_bd = valid_results[best_idx].get("score_breakdown") or {}
+            agg_breakdown = {
+                "contribution": round(best_bd.get("contribution", 0), 1),
+                "quality": round(best_bd.get("quality", 0), 1),
+                "consistency": round(best_bd.get("consistency", 0), 1),
+            }
         else:
             final_score = 0.0
             agg_breakdown = {"contribution": 0.0, "quality": 0.0, "consistency": 0.0}
@@ -803,9 +965,18 @@ class GitHubExtractor:
         per_repo: List[Dict[str, Any]] = []
         for res in valid_results:
             rm = res.get("readme") or ""
+            res_bd = res.get("score_breakdown") or {}
+            res_total_score = round(
+                res_bd.get("contribution", 0)
+                + res_bd.get("quality", 0)
+                + res_bd.get("consistency", 0),
+                1,
+            )
             per_repo.append(
                 {
                     "repo_name": res.get("repo_name", ""),
+                    "repo_total_score": res_total_score,        # v6.2
+                    "score_breakdown": res_bd,                  # v6.2: 레포별 breakdown
                     "readme": rm,
                     "readme_has_image": bool(res.get("readme_has_image")),
                     "readme_tier": profile_builder.readme_length_tier(rm),
@@ -816,12 +987,18 @@ class GitHubExtractor:
                     "test_ratio": float(res.get("test_ratio") or 0.0),
                     "commit_messages": res.get("commit_messages") or [],
                     "distinct_author_count": int(res.get("distinct_author_count") or 1),
+                    "repo_type": res.get("repo_type") or ("team" if int(res.get("distinct_author_count") or 1) >= 2 else "personal"),
+                    "repo_author_names": res.get("repo_author_names") or [],
                     "valid_loc": int(res.get("valid_loc") or 0),
                     "evidence_loc": int(res.get("evidence_loc") or 0),
                     "is_fork": bool(res.get("is_fork")),
                     "duration_days": int(res.get("duration_days") or 0),
                     "active_weeks": int(res.get("active_weeks") or 0),
+                    "repo_active_weeks": int(res.get("repo_active_weeks") or 0),
                     "total_commits": int(res.get("total_commits") or 0),
+                    "total_repo_commits": int(res.get("total_repo_commits") or 0),
+                    "target_commit_count": int(res.get("target_commit_count") or 0),
+                    "target_commit_ratio": float(res.get("target_commit_ratio") or 0.0),
                     "frameworks": res.get("frameworks") or [],
                     "detected_domains": res.get("detected_domains") or [],
                     "language_category": res.get("language_category") or {},    # v5.6

@@ -24,7 +24,7 @@ export default function LandingPage({ username, setUsername, onStart }) {
       {/* hero */}
       <section style={{ maxWidth:860, margin:"0 auto", padding:"96px 48px 80px" }}>
         <div style={{ fontFamily:T.sans, fontSize:11, fontWeight:600, color:T.slate, letterSpacing:".1em", textTransform:"uppercase", marginBottom:20 }}>GitHub Career Intelligence · v5.1</div>
-        <h1 style={{ fontFamily:T.font, fontSize:"clamp(38px,5vw,60px)", fontWeight:700, lineHeight:1.08, letterSpacing:"-.03em", margin:"0 0 24px", maxWidth:680 }}>
+        <h1 style={{ fontFamily:T.font, fontSize:"clamp(38px,5vw,60px)", fontWeight:700, lineHeight:1.08, letterSpacing:"-.03em", margin:"0 0 24px", maxWidth:680, color:T.ink }}>
           당신의 코드가<br/><span style={{ color:T.amber }}>시장에서 말하는</span> 가치
         </h1>
         <p style={{ fontFamily:T.sans, fontSize:16, color:T.slate, maxWidth:520, lineHeight:1.75, margin:"0 0 44px" }}>

@@ -42,10 +42,22 @@ class GitHubExtractor:
     v5.0: Contribution 로그 스케일, Quality 10+10+10(활성 주), Consistency는 전체 커밋 목록 기준.
     v5.4: 트리 시그니처 기반 엔진 감지(profile_builder.detect_engine_signatures) → frameworks.
     v5.5: 커밋 수 기반 동적 가중치(LOC/commit), Evidence LOC 보조 점수(설정·데이터 기여 보정).
+    v6.2: 봇 작성자 필터링 — distinct_author_count 산출 시 자동화 봇 제외.
     """
 
     # author 커밋 목록 페이지네이션 상한 (per_page=100 × 3 = 최대 300커밋)
     MAX_COMMIT_PAGES = 3
+
+    # v6.2: 봇 작성자 식별 패턴
+    _BOT_LOGIN_PATTERN = re.compile(
+        r"\[bot\]$|^dependabot$|^github-actions$|^renovate-bot$"
+        r"|^pre-commit-ci$|^codecov-commenter$|^stale\b",
+        re.IGNORECASE,
+    )
+    _BOT_EMAIL_HINTS = (
+        "[bot]@",
+        "noreply@github.com",
+    )
 
     def __init__(self, token: Optional[str] = None):
         self.token = token or os.getenv("Github_api_token")
@@ -150,6 +162,93 @@ class GitHubExtractor:
             pages_fetched += 1
             next_url = self._parse_rel_link(link, "next")
         return all_commits, False
+
+    @classmethod
+    def _is_bot_author(cls, commit_obj: Dict[str, Any]) -> bool:
+        """
+        v6.2: 커밋 작성자가 자동화 봇인지 판별.
+        - GitHub login에 [bot] suffix 또는 알려진 봇 이름 매칭
+        - 이메일이 noreply 또는 [bot]@ 패턴 (단, users.noreply.github.com은 일반 사용자 제외)
+        """
+        gh_author = commit_obj.get("author") or {}
+        login = str(gh_author.get("login") or "")
+        if login and cls._BOT_LOGIN_PATTERN.search(login):
+            return True
+
+        raw = (commit_obj.get("commit") or {}).get("author") or {}
+        email = str(raw.get("email") or "").lower()
+        if any(hint in email for hint in cls._BOT_EMAIL_HINTS):
+            if "users.noreply.github.com" in email:
+                return False
+            return True
+
+        return False
+
+    @staticmethod
+    def _calc_fork_penalty(
+        is_fork: bool,
+        repo_type: str,
+        target_commit_count: int,
+        total_repo_commits: int,
+        distinct_author_count: int,
+        valid_loc: int,
+    ) -> Tuple[float, str]:
+        """
+        v6.3: Fork 레포의 개발 활동량 보정 계수.
+
+        목표:
+        - 단순 복제 fork로 인한 점수 부풀리기는 방지한다.
+        - 팀 협업·권한 분리·환경 차이 때문에 정상적으로 fork한 레포는 과도하게 감산하지 않는다.
+
+        원칙:
+        - fork 자체는 감산 사유가 아니라 "소유/활동 확인 필요" 신호로 본다.
+        - 팀 fork는 참여자 수 대비 공정 커밋 비율(fair_share)을 충족하면 감산하지 않는다.
+        - 개인 fork는 본인 커밋 수와 유효 LOC가 충분할 때만 약하게 보정한다.
+        """
+        if not is_fork:
+            return 1.0, ""
+
+        safe_repo_type = repo_type if repo_type in {"team", "personal"} else "personal"
+        safe_authors = max(1, int(distinct_author_count or 1))
+        contribution_ratio = (
+            target_commit_count / total_repo_commits
+            if total_repo_commits and total_repo_commits > 0
+            else 0.0
+        )
+        fair_share = 1.0 / safe_authors
+
+        if safe_repo_type == "team":
+            if total_repo_commits <= 0:
+                return 0.5, "Fork 팀 레포: 전체 커밋 데이터 부족 → 개발 활동량을 보수적으로 0.5배 산정"
+            if contribution_ratio >= fair_share:
+                return 1.0, (
+                    f"Fork 팀 레포: 지원자 활동 비율 {contribution_ratio:.1%}가 "
+                    f"팀 평균 기준 {fair_share:.1%} 이상 → 감산 없음"
+                )
+            if contribution_ratio >= fair_share * 0.5:
+                return 0.85, (
+                    f"Fork 팀 레포: 지원자 활동 비율 {contribution_ratio:.1%}가 "
+                    f"팀 평균 기준의 50% 이상 → 개발 활동량 0.85배 산정"
+                )
+            return 0.5, (
+                f"Fork 팀 레포: 지원자 활동 비율 {contribution_ratio:.1%}가 "
+                f"팀 평균 기준의 50% 미만 → 개발 활동량 0.5배 산정"
+            )
+
+        # 개인 fork는 원본 복제 가능성이 더 크므로, 본인 활동량이 확인될 때만 완화한다.
+        if target_commit_count >= 10 and valid_loc >= 500:
+            return 0.8, (
+                f"Fork 개인 레포: 지원자 커밋 {target_commit_count}개, "
+                f"유효 LOC {valid_loc:,}줄 확인 → 개발 활동량 0.8배 산정"
+            )
+        if target_commit_count >= 5 and valid_loc >= 200:
+            return 0.6, (
+                f"Fork 개인 레포: 일부 본인 활동 확인(커밋 {target_commit_count}개, "
+                f"유효 LOC {valid_loc:,}줄) → 개발 활동량 0.6배 산정"
+            )
+        return 0.3, (
+            f"Fork 개인 레포: 본인 활동 근거가 부족하여 개발 활동량을 0.3배로 보수 산정"
+        )
 
     @staticmethod
     def _commit_author_key(commit_obj: Dict[str, Any]) -> Optional[str]:
@@ -422,7 +521,7 @@ class GitHubExtractor:
         branch_to_scan = target_branch if target_branch else repo_meta.get("default_branch", "main")
 
         tree_url = f"{repo_url}/git/trees/{branch_to_scan}?recursive=1"
-        # 지원자 기여도 계산용: 해당 GitHub 계정이 author로 연결된 커밋만 수집
+        # 지원자 개발 활동량 계산용: 해당 GitHub 계정이 author로 연결된 커밋만 수집
         commits_list_url = (
             f"{repo_url}/commits?author={username}&sha={branch_to_scan}&per_page=100"
         )
@@ -467,7 +566,12 @@ class GitHubExtractor:
         repo_author_keys: Set[str] = set()
         repo_author_labels: List[str] = []
         seen_label_keys: Set[str] = set()
+        bot_count = 0
         for c in all_repo_commits:
+            # v6.2: 봇 작성자 제외 — 개인 레포가 팀 레포로 잘못 분류되는 결함 방지
+            if self._is_bot_author(c):
+                bot_count += 1
+                continue
             key = self._commit_author_key(c)
             if key:
                 repo_author_keys.add(key)
@@ -475,6 +579,11 @@ class GitHubExtractor:
                 if label and key not in seen_label_keys:
                     repo_author_labels.append(str(label))
                     seen_label_keys.add(key)
+
+        if bot_count >= 5:
+            repo_warnings.append(
+                f"repo '{repo}' 봇 작성자 커밋 {bot_count}개 제외 (팀/개인 판정에 미반영)"
+            )
 
         distinct_author_count = len(repo_author_keys) if repo_author_keys else 1
         repo_type = "team" if distinct_author_count >= 2 else "personal"
@@ -594,7 +703,7 @@ class GitHubExtractor:
             valid_loc,
             self._is_valid_source_code,
         )
-        # v5.0: CI/CD 10 + 테스트 10 + 활성 주 10 = 최대 30 (캡 없음, duration 편중 해소)
+        # v6.2: Quality 레포 유형별 분리 배점
         cicd_pts = 10.0 if has_cicd else 0.0
         if test_ratio < 0.05:
             test_pts = 0.0
@@ -602,7 +711,28 @@ class GitHubExtractor:
             test_pts = 5.0
         else:
             test_pts = 10.0
-        quality_axis = cicd_pts + test_pts + duration_pts
+
+        if repo_type == "team":
+            # 팀 레포: CI/CD 10 + 테스트 10 + 활성 주 10 = 최대 30 (기존 그대로)
+            quality_axis = cicd_pts + test_pts + duration_pts
+        else:
+            # 개인 레포: 활성 주 중심 (최대 20점) + CI/CD·테스트는 가산점 (각 5점)
+            if active_weeks >= 8:
+                duration_personal = 20.0
+            elif active_weeks >= 4:
+                duration_personal = 12.0
+            elif active_weeks >= 2:
+                duration_personal = 6.0
+            else:
+                duration_personal = 2.0
+            cicd_bonus = 5.0 if has_cicd else 0.0
+            if test_ratio >= 0.10:
+                test_bonus = 5.0
+            elif test_ratio >= 0.05:
+                test_bonus = 3.0
+            else:
+                test_bonus = 0.0
+            quality_axis = duration_personal + cicd_bonus + test_bonus  # 최대 30점
 
         # v5.0 + v5.5: 메인 LOC + Evidence LOC(최대 50점 스케일), 커밋 수에 따른 동적 가중치
         loc_score_main = min(
@@ -630,9 +760,19 @@ class GitHubExtractor:
         # 일관성: 균등 샘플이 아닌 전체 author 커밋 목록 타임스탬프 (샘플링 인위 갭 제거)
         consistency_axis = self._calc_consistency_score(all_author_commits)
 
-        # 스펙 Phase 1-3: fork 시 기여도(contribution)만 70% 삭감(0.3배). quality·consistency는 패널티 없음.
+        # v6.3: Fork 보정 — 팀 fork는 공정 활동 비율 충족 시 감산하지 않음
+        fork_penalty, fork_log = self._calc_fork_penalty(
+            is_fork=is_fork,
+            repo_type=repo_type,
+            target_commit_count=target_commit_count,
+            total_repo_commits=total_repo_commit_count,
+            distinct_author_count=distinct_author_count,
+            valid_loc=valid_loc,
+        )
         if is_fork:
-            contribution_axis = round(contribution_axis * 0.3, 1)
+            contribution_axis = round(contribution_axis * fork_penalty, 1)
+            if fork_log:
+                repo_warnings.append(fork_log)
 
         repo_score = round(contribution_axis + quality_axis + consistency_axis, 1)
 
@@ -665,6 +805,8 @@ class GitHubExtractor:
             "repo_type": repo_type,
             "repo_author_names": repo_author_labels[:10],
             "is_fork": is_fork,
+            "fork_penalty": fork_penalty,           # v6.3
+            "fork_penalty_log": fork_log,           # v6.3 (디버깅/설명용)
             "duration_days": duration_days,
             "active_weeks": active_weeks,
             "repo_active_weeks": repo_active_weeks,
@@ -676,6 +818,7 @@ class GitHubExtractor:
                 "contribution": contribution_axis,
                 "quality": round(quality_axis, 1),
                 "consistency": consistency_axis,
+                "quality_mode": repo_type,          # v6.2: "team" 또는 "personal"
             },
             "commits_analyzed": analyzed_commit_count,
             "warnings": repo_warnings,
@@ -728,15 +871,8 @@ class GitHubExtractor:
         total_evidence_loc = 0
         total_commits_analyzed = 0
 
-        weighted_score_sum = 0.0
-        weighted_contrib_sum = 0.0
-        weighted_quality_sum = 0.0
-        weighted_consistency_sum = 0.0
-
         for res in valid_results:
             loc = res["valid_loc"]
-            sc = res["score"]
-            bd = res.get("score_breakdown") or {}
             total_loc += loc
             total_evidence_loc += int(res.get("evidence_loc", 0) or 0)
             total_commits_analyzed += int(res.get("commits_analyzed", 0))
@@ -747,36 +883,35 @@ class GitHubExtractor:
             for w in res.get("warnings") or []:
                 if w not in all_warnings:
                     all_warnings.append(w)
-            weighted_score_sum += sc * loc
-            weighted_contrib_sum += bd.get("contribution", 0) * loc
-            weighted_quality_sum += bd.get("quality", 0) * loc
-            weighted_consistency_sum += bd.get("consistency", 0) * loc
 
+        score_policy = "대표 프로젝트(최고점) 70% + 전체 평균 30%"
         if valid_results:
-            if total_loc > 0:
-                final_score = round(weighted_score_sum / total_loc, 1)
-                agg_breakdown = {
-                    "contribution": round(weighted_contrib_sum / total_loc, 1),
-                    "quality": round(weighted_quality_sum / total_loc, 1),
-                    "consistency": round(weighted_consistency_sum / total_loc, 1),
-                }
-            else:
-                n = len(valid_results)
-                final_score = round(sum(r["score"] for r in valid_results) / n, 1)
-                agg_breakdown = {
-                    "contribution": round(
-                        sum((r.get("score_breakdown") or {}).get("contribution", 0) for r in valid_results) / n,
-                        1,
-                    ),
-                    "quality": round(
-                        sum((r.get("score_breakdown") or {}).get("quality", 0) for r in valid_results) / n,
-                        1,
-                    ),
-                    "consistency": round(
-                        sum((r.get("score_breakdown") or {}).get("consistency", 0) for r in valid_results) / n,
-                        1,
-                    ),
-                }
+            # v6.3: 대표 프로젝트 중심 총점 산출.
+            # 총점뿐 아니라 세부 축도 같은 방식으로 합성해 출력값의 합이 총점과 일치하도록 한다.
+            repo_scores: List[float] = []
+            breakdowns: List[Dict[str, float]] = []
+            for r in valid_results:
+                bd = r.get("score_breakdown") or {}
+                contrib = float(bd.get("contribution", 0) or 0)
+                quality = float(bd.get("quality", 0) or 0)
+                consistency = float(bd.get("consistency", 0) or 0)
+                total = contrib + quality + consistency
+                repo_scores.append(total)
+                breakdowns.append({
+                    "contribution": contrib,
+                    "quality": quality,
+                    "consistency": consistency,
+                })
+
+            best_idx = repo_scores.index(max(repo_scores))
+            avg_score = sum(repo_scores) / len(repo_scores)
+            final_score = round(repo_scores[best_idx] * 0.7 + avg_score * 0.3, 1)
+
+            agg_breakdown = {}
+            for key in ("contribution", "quality", "consistency"):
+                best_v = breakdowns[best_idx].get(key, 0.0)
+                avg_v = sum(b.get(key, 0.0) for b in breakdowns) / len(breakdowns)
+                agg_breakdown[key] = round(best_v * 0.7 + avg_v * 0.3, 1)
         else:
             final_score = 0.0
             agg_breakdown = {"contribution": 0.0, "quality": 0.0, "consistency": 0.0}
@@ -861,9 +996,18 @@ class GitHubExtractor:
         per_repo: List[Dict[str, Any]] = []
         for res in valid_results:
             rm = res.get("readme") or ""
+            res_bd = res.get("score_breakdown") or {}
+            res_total_score = round(
+                res_bd.get("contribution", 0)
+                + res_bd.get("quality", 0)
+                + res_bd.get("consistency", 0),
+                1,
+            )
             per_repo.append(
                 {
                     "repo_name": res.get("repo_name", ""),
+                    "repo_total_score": res_total_score,        # v6.2
+                    "score_breakdown": res_bd,                  # v6.2: 레포별 breakdown
                     "readme": rm,
                     "readme_has_image": bool(res.get("readme_has_image")),
                     "readme_tier": profile_builder.readme_length_tier(rm),
@@ -899,6 +1043,7 @@ class GitHubExtractor:
         return {
             "github_score": final_score,
             "score_breakdown": agg_breakdown,
+            "score_policy": score_policy,
             "applicant_resume": applicant_resume,
             "profile_for_matching": profile_for_matching,
             "domain_hits_merged": merged_domain_hits_dict,

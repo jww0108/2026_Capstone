@@ -132,7 +132,7 @@ def data_engineer_context_message(label: str) -> str:
         f"데이터 파이프라인 구축·ETL 역량을 보여주는 포트폴리오로, "
         f"빅데이터 엔지니어 및 데이터 분석 공고에 매칭됩니다. "
         f"순수 코드 LOC는 낮게 나올 수 있으나, 이는 데이터 엔지니어링 기여 특성이며 "
-        f"Evidence LOC(YAML·SQL·설정 파일)로 기여도가 반영됩니다."
+        f"Evidence LOC(YAML·SQL·설정 파일)로 개발 활동량이 반영됩니다."
     )
 
 
@@ -495,6 +495,9 @@ def diagnose_single_repo(repo: Dict[str, Any]) -> Dict[str, Any]:
         "target_commit_ratio": float(repo.get("target_commit_ratio") or 0.0),
         "is_fork": bool(repo.get("is_fork")),
         "context_label": context_label,
+        # v6.2: 활동 기간 비율 표시용 필드
+        "active_weeks": int(repo.get("active_weeks") or 0),
+        "repo_active_weeks": int(repo.get("repo_active_weeks") or 0),
         "core_items": {
             "readme_quality": _readme_diagnosis_single(repo),
             "project_structure": _structure_diagnosis_single(repo),
@@ -596,12 +599,37 @@ def expected_level(
             "level": "Competitive",
             "summary": "중견 IT·시리즈 B급 이상 스타트업에 맞설 만한 포트폴리오 완성도로 볼 수 있습니다.",
         }
+    # v6.2: 개인 레포 전용 Competitive 경로
+    if team_repo_count == 0 and n_repos >= 2:
+        all_core_good = all(
+            _agg_status(k, "core_items") in ("양호", "보통")
+            for k in ("readme_quality", "project_structure", "commit_quality")
+        )
+        personal_extras = sum(
+            1
+            for d in per_repo_diags
+            for k in ("test_coverage", "cicd", "deployment")
+            if d["extra_items"][k]["status"] in ("양호", "규칙적")
+        )
+        if all_core_good and personal_extras >= 2 and score >= 5:
+            return {
+                "level": "Competitive (개인)",
+                "summary": (
+                    "팀 프로젝트 경험은 감지되지 않았으나, 개인 프로젝트의 완성도가 "
+                    "Competitive 수준입니다. 팀 프로젝트 추가 시 더 강한 어필이 가능합니다."
+                ),
+            }
+        return {
+            "level": "Entry",
+            "summary": (
+                "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준. "
+                "현재 팀 프로젝트 경험이 감지되지 않아 Competitive 이상 등급에는 도달하지 않습니다. "
+                "팀 프로젝트 1개 이상 확보 시 더 높은 등급에 도전할 수 있습니다."
+            ),
+        }
     return {
         "level": "Entry",
-        "summary": (
-            "중소·SI·일반 스타트업 지원에 맞는 기본 단계입니다. "
-            "CI/CD·배포·멀티 프로젝트를 보강하면 체감이 커집니다."
-        ),
+        "summary": "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준입니다.",
     }
 
 
@@ -621,12 +649,60 @@ _DIAG_LABELS_FOR_SUMMARY: Dict[str, str] = {
 _QUICK_WINS_POOL: List[tuple] = [
     ("readme_quality", "README에 프로젝트 목적 + 기술 스택 + 스크린샷 1장 추가 (1시간 이내)"),
     ("commit_quality", "Conventional Commits 적용 (feat:/fix:/refactor:)"),
-    ("cicd", "GitHub Actions 워크플로우 1개 추가 (Python: pytest, Node: jest)"),
-    ("deployment", "Dockerfile + docker-compose.yml로 로컬 실행 가능하게 구성"),
-    ("test_coverage", "핵심 비즈니스 로직 1~2개에 단위 테스트 추가"),
+    ("cicd", "GitHub Actions 워크플로우 1개 추가"),
+    ("deployment", "실행·배포 방법을 README에 명시"),
+    ("test_coverage", "핵심 로직 1~2개에 테스트 추가"),
 ]
 
 _BAD_STATUSES = {"미흡", "개선 필요", "미경험", "선택 가점", "없음", "필수 미흡", "확인 필요"}
+
+
+def _dominant_context(per_repo_diags: List[Dict[str, Any]]) -> str:
+    labels: List[str] = []
+    for d in per_repo_diags:
+        label = str(d.get("context_label") or "")
+        if label:
+            labels.append(label)
+    joined = " / ".join(labels)
+    return joined
+
+
+def _quick_win_action(key: str, per_repo_diags: List[Dict[str, Any]]) -> str:
+    """도메인/프레임워크 맥락에 맞는 Quick Win 문구를 반환한다."""
+    ctx = _dominant_context(per_repo_diags)
+    is_unity = "Unity" in ctx
+    is_unreal = "Unreal" in ctx
+    is_godot = "Godot" in ctx
+
+    if key == "test_coverage":
+        if is_unity:
+            return "Unity Test Framework 또는 PlayMode 테스트 1개 추가"
+        if is_unreal:
+            return "Unreal Automation Test 또는 핵심 로직 테스트 1개 추가"
+        if is_godot:
+            return "GUT/WAT 등 Godot 테스트 1개 추가"
+        return "핵심 로직 1~2개에 테스트 추가"
+
+    if key == "cicd":
+        if is_unity:
+            return "GameCI GitHub Action 또는 Unity Cloud Build 설정 추가"
+        if is_unreal:
+            return "UBT 기반 빌드 확인용 GitHub Actions 워크플로우 추가"
+        if is_godot:
+            return "Godot export·헤드리스 빌드 워크플로우 추가"
+        return "GitHub Actions 워크플로우 1개 추가"
+
+    if key == "deployment":
+        if is_unity or is_unreal:
+            return "APK/EXE 빌드 결과물 또는 itch.io 링크를 README에 명시"
+        if is_godot:
+            return "HTML5/데스크톱 export 결과물 또는 배포 링크를 README에 명시"
+        return "실행·배포 방법을 README에 명시"
+
+    for pool_key, default_action in _QUICK_WINS_POOL:
+        if pool_key == key:
+            return default_action
+    return "개선 항목을 README에 명확히 반영"
 
 
 def _primary_domain_from_profile(profile: Dict[str, Any]) -> Optional[str]:
@@ -701,9 +777,9 @@ def _aggregate_quick_wins(per_repo_diags: List[Dict[str, Any]]) -> List[str]:
 
     out: List[str] = []
     used = set()
-    for key, action in _QUICK_WINS_POOL:
+    for key, _default_action in _QUICK_WINS_POOL:
         if key in bad_counter and key not in used:
-            out.append(action)
+            out.append(_quick_win_action(key, per_repo_diags))
             used.add(key)
         if len(out) >= 3:
             break
@@ -716,17 +792,25 @@ def generate_summary_block(
     github_score: float,
     score_breakdown: Dict[str, Any],
     primary_domain: Optional[str],
+    per_repo_scores: Optional[List[Dict[str, Any]]] = None,   # v6.2
 ) -> str:
     """
     종합 분석 블록 — GitHub 점수 + 레포 구성 + 강점 + Quick wins.
+    v6.2: per_repo_scores 추가 시 레포별 점수 표시.
     """
     level = level_dict.get("level", "Entry")
     pd_str = primary_domain or "개발"
 
+    # v6.2: 팀 레포 부재 + Competitive(개인) 경우 포지셔닝 문구 강화
+    team_count = sum(1 for d in per_repo_diags if d.get("repo_type") == "team")
     if level == "Top":
         pos_suffix = "대형 테크·우수 스타트업까지 도전 가능한 완성도입니다."
     elif level == "Competitive":
         pos_suffix = "주요 항목 보강 시 상위 직군 도전이 가능한 수준입니다."
+    elif level == "Competitive (개인)":
+        pos_suffix = "개인 프로젝트 완성도가 우수합니다. 팀 프로젝트 추가 시 더 강한 어필이 가능합니다."
+    elif team_count == 0:
+        pos_suffix = "경쟁력 있는 지원을 위해 팀 프로젝트 경험 확보가 권장됩니다."
     else:
         pos_suffix = "경쟁력 있는 지원을 위해 보강이 필요한 단계입니다."
 
@@ -744,9 +828,32 @@ def generate_summary_block(
         "─" * 60,
         "[종합 분석]",
         "─" * 60,
-        f"  GitHub 점수 : {github_score}점 / 100점 "
-        f"(기여도 {contrib} / 성숙도 {quality} / 일관성 {consistency})",
+        f"  GitHub 종합 점수: {github_score}점 / 100점",
+        f"    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%",
+        f"    세부 점수: 개발 활동량 {contrib} / 프로젝트 관리도 {quality} / 작업 일관성 {consistency}",
+        f"    점수 해석: 개발 활동량=유효 코드 변경량+커밋 활동량, "
+        f"프로젝트 관리도=테스트+CI/CD+개발 지속 기간, 작업 일관성=커밋 리듬",
         "",
+    ]
+
+    # v6.2: 레포별 점수 표시
+    if per_repo_scores:
+        lines.append("  레포별 점수:")
+        for i, rps in enumerate(per_repo_scores, 1):
+            name = rps.get("repo_name", f"레포 {i}")
+            rtype = rps.get("repo_type", "")
+            total = rps.get("repo_total_score", 0)
+            bd = rps.get("score_breakdown") or {}
+            type_label = "팀" if rtype == "team" else "개인"
+            lines.append(
+                f"    {i}. {name} ({type_label}): {total}점"
+                f"  (개발 활동량 {bd.get('contribution', 0)} / "
+                f"프로젝트 관리도 {bd.get('quality', 0)} / "
+                f"작업 일관성 {bd.get('consistency', 0)})"
+            )
+        lines.append("")
+
+    lines += [
         f"  포지셔닝     : {positioning}",
         "",
         "  포트폴리오 구성:",
@@ -794,8 +901,21 @@ def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
     github_score = float(profile.get("github_score") or 0)
     score_breakdown = profile.get("score_breakdown") or {}
 
+    # v6.2: per_repo에서 레포별 점수 정보 추출하여 summary_block에 전달
+    per_repo_scores = [
+        {
+            "repo_name": r.get("repo_name", ""),
+            "repo_type": r.get("repo_type", "personal"),
+            "repo_total_score": r.get("repo_total_score", 0),
+            "score_breakdown": r.get("score_breakdown") or {},
+        }
+        for r in per_repo
+        if r.get("repo_total_score") is not None or r.get("score_breakdown")
+    ] or None
+
     summary_block = generate_summary_block(
-        per_repo_diags, level_dict, github_score, score_breakdown, primary_domain
+        per_repo_diags, level_dict, github_score, score_breakdown, primary_domain,
+        per_repo_scores=per_repo_scores,
     )
 
     return {

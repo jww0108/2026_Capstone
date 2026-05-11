@@ -1,0 +1,269 @@
+{
+  "label_counts": {
+    "프론트엔드": 12,
+    "인공지능/머신러닝": 12,
+    "서버/백엔드": 10,
+    "모바일 앱": 10,
+    "빅데이터 엔지니어": 10,
+    "DevOps/시스템 엔지니어": 9,
+    "게임 개발": 9,
+    "블록체인": 8
+  },
+  "num_features": 77,
+  "feature_columns": [
+    "python_ratio",
+    "java_ratio",
+    "javascript_ratio",
+    "typescript_ratio",
+    "kotlin_ratio",
+    "dart_ratio",
+    "swift_ratio",
+    "csharp_ratio",
+    "cpp_ratio",
+    "html_ratio",
+    "css_ratio",
+    "go_ratio",
+    "php_ratio",
+    "ruby_ratio",
+    "solidity_ratio",
+    "has_spring",
+    "has_fastapi",
+    "has_django",
+    "has_flask",
+    "has_express",
+    "has_nestjs",
+    "has_react",
+    "has_nextjs",
+    "has_vue",
+    "has_flutter",
+    "has_react_native",
+    "has_unity",
+    "has_unreal",
+    "has_pytorch",
+    "has_tensorflow",
+    "has_yolo",
+    "has_opencv",
+    "has_streamlit",
+    "has_docker",
+    "has_kubernetes",
+    "has_aws",
+    "has_terraform",
+    "has_github_actions",
+    "has_jenkins",
+    "has_solidity",
+    "kw_backend",
+    "kw_api",
+    "kw_database",
+    "kw_auth",
+    "kw_orm",
+    "kw_frontend",
+    "kw_ui",
+    "kw_seo",
+    "kw_ai",
+    "kw_model",
+    "kw_cv",
+    "kw_data",
+    "kw_devops",
+    "kw_container",
+    "kw_cloud",
+    "kw_monitoring",
+    "kw_mobile",
+    "kw_flutter",
+    "kw_kotlin",
+    "kw_swift",
+    "kw_game",
+    "kw_blockchain",
+    "profile_text_len",
+    "profile_token_count",
+    "profile_keyword_count",
+    "github_score",
+    "total_valid_loc",
+    "total_evidence_loc",
+    "total_commits_analyzed",
+    "has_tests",
+    "has_cicd",
+    "has_deployment",
+    "readme_has_image",
+    "test_ratio",
+    "source_file_count",
+    "avg_loc_per_file",
+    "readme_len"
+  ],
+  "metrics": {
+    "accuracy": 0.6,
+    "labels": [
+      "DevOps/시스템 엔지니어",
+      "게임 개발",
+      "모바일 앱",
+      "블록체인",
+      "빅데이터 엔지니어",
+      "서버/백엔드",
+      "인공지능/머신러닝",
+      "프론트엔드"
+    ],
+    "confusion_matrix": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        2
+      ]
+    ]
+  },
+  "feature_importance": [
+    {
+      "feature": "profile_text_len",
+      "importance": 0.05747429654162545
+    },
+    {
+      "feature": "total_evidence_loc",
+      "importance": 0.05566396351634561
+    },
+    {
+      "feature": "source_file_count",
+      "importance": 0.05358508352844559
+    },
+    {
+      "feature": "profile_token_count",
+      "importance": 0.05004373339197293
+    },
+    {
+      "feature": "profile_keyword_count",
+      "importance": 0.03890177594441003
+    },
+    {
+      "feature": "kw_game",
+      "importance": 0.03693864621934212
+    },
+    {
+      "feature": "github_score",
+      "importance": 0.03615748309439374
+    },
+    {
+      "feature": "total_valid_loc",
+      "importance": 0.0320586181182587
+    },
+    {
+      "feature": "test_ratio",
+      "importance": 0.03155649778042278
+    },
+    {
+      "feature": "avg_loc_per_file",
+      "importance": 0.03143105939430168
+    },
+    {
+      "feature": "total_commits_analyzed",
+      "importance": 0.03092169609886339
+    },
+    {
+      "feature": "has_kubernetes",
+      "importance": 0.030411123119110414
+    },
+    {
+      "feature": "kw_blockchain",
+      "importance": 0.030155372466381888
+    },
+    {
+      "feature": "has_solidity",
+      "importance": 0.02649027174199336
+    },
+    {
+      "feature": "kw_data",
+      "importance": 0.02609330073699231
+    },
+    {
+      "feature": "readme_len",
+      "importance": 0.025658203845771506
+    },
+    {
+      "feature": "kw_mobile",
+      "importance": 0.024746833021316198
+    },
+    {
+      "feature": "kw_ai",
+      "importance": 0.02451133882421692
+    },
+    {
+      "feature": "python_ratio",
+      "importance": 0.024417369095646575
+    },
+    {
+      "feature": "has_react",
+      "importance": 0.02124794607114628
+    }
+  ]
+}

@@ -1,0 +1,3265 @@
+[
+  {
+    "repo_key": "hojunnnnn/board",
+    "username": "hojunnnnn",
+    "repo": "board",
+    "repo_url": "https://github.com/hojunnnnn/board",
+    "label": "서버/백엔드",
+    "profile_for_matching": "Java (87%), JavaScript (11%) 기반 웹 프론트엔드 경험. Spring Boot 활용 경험. 테스트 코드 작성 경험 보유. API, database, auth, 백엔드 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 4,
+      "서버/백엔드": 4
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드"
+    ],
+    "github_score": 70.0,
+    "score_breakdown": {
+      "contribution": 55.0,
+      "quality": 15.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 4755,
+      "total_evidence_loc": 575,
+      "top_languages": "Java (86%), JavaScript (10%), CSS (2%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "board (master)",
+        "readme": ":paperclip: Basic board Project > 전반적인 웹의 기본 소양이 되는 게시판 프로젝트입니다. 목차 - [들어가며](들어가며) - [프로젝트 소개](1-프로젝트-소개) - [프로젝트 기능](2-프로젝트-기능) - [사용 기술](3-사용-기술) - [백엔드](3-1-백엔드) - [프론트엔드](3-2-프론트엔드) - [실행 화면](4-실행-화면) - [구조 및 설계](구조-및-설계) - [패키지 구조](1-패키지-구조) - [DB 설계](2-db-설계) - [API 설계](3-api-설계) - [개발 내용](개발-내용) - [마치며](마치며) - [프로젝트 보완사항](1-프로젝트-보완사항) - [후기](2-후기) 들어가며 1. 프로젝트 소개 프로젝트를 시작하게 된 계기는 웹 프로그래밍의 기본 소양이라 할 수 있는 게시판을 직접 만들어보며 배우고자 시작하게 되었습니다. 독학으로 관련 기술들을 학습한 이후 제작한 개인 프로젝트이기 때문에 개인적인 만족감을 가지고 있는 프로젝트입니다. 2. 프로젝트 기능 프로젝트의 주요 기능은 다음과 같습니다. - **게시판 -** CRUD 기능, 조회수, 페이징 및 검색 처리 - **사용자 -** Security 회원가입 및 로그인, OAuth 2.0 구글, 네이버 로그인, 회원정보 수정, 회원가입시 유효성 검사 및 중복 검사 - **댓글 -** CRUD 기능 3. 사용 기술 3-1 백엔드 주요 프레임워크 / 라이브러리 - Java 11 - SpringBoot 2.5.6 - JPA(Spring Data JPA) - Spring Security - OAuth 2.0 Build Tool - Gradle 7.2 DataBase - MySQL 8.0.19 3-2 프론트엔드 - Html/Css - JavaScript - Mustache - Bootstrap 4.3.1 4. 실행 화면 게시글 관련 **1. 게시글 전체 목록** 전체 목록을 페이징 처리하여 조회할 수 있다. **2. 게시글 등록** 로그인 한 사용자만 새로운 글을 작성할 수 있고, 작성 후 목록 화면으로 redirect한다. **3. 게시글 상세보기** 본인이 작성한 글만 수정 및 삭제가 가능하다. **4. 게시글 수정 화면** 제목과 내용만 수정할 수 있게 하고, Confirm으로 수정 여부를 확인 후 상세보기 화면으로 redirect 한다. 목록 버튼을 누를 시 상세보기 화면으로 돌아간다. **5. 게시글 삭제 화면** Confirm으로 삭제할지 확인하고, 삭제 후 전체 목록 리스트 화면으로 redirect 한다. **6. 게시글 검색 화면** 검색 키워드에 포함된 글을 모두 보여준다. **6-1. 게시글 검색 후 페이징 화면** 검색된 게시글이 많을 경우 다음과 같이 페이징 처리되어 조회할 수 있다. 회원 관련 **1. 회원가입 화면** 회원가입 시 유효성 검사 및 중복확인을 진행하며 완료시 회원 정보를 저장하고 로그인 화면으로 이동한다. **2. 로그인 화면** 로그인 실패시 어떤 이유로 실패 했는지 메시지가 나오고, 로그인에 ",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 62,
+          "avg_loc_per_file": 76.7,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": true,
+        "has_deployment": false,
+        "test_ratio": 0.11290322580645161,
+        "commit_messages": [
+          "Update README.md",
+          "230527_002 댓글 수정,삭제 postsId 추가",
+          "230527_001 영문 닉네임 대문자 가능 하도록 변경",
+          "Update README.md",
+          "2022/06/11 Security 회원가입 중복검사 validator 클래스 리팩토링",
+          "2022/05/21 Security 로그인 세션 관련 이슈 >",
+          "2022-04-15 오타 수정 및 네임 변경",
+          "2022-03-29 Class Name 변경, BaseTimeEntity 패키지 이동",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "BaseTimeEntity의 접근제어자 public -> default 변경",
+          "Update README.md",
+          "2022-03-12 DDD Layered Architecture 패키지 변경",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "..",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "DTO 클래스 리팩토링 ->",
+          "Rest api 게시글의 댓글 전체 목록 보기 구현완료",
+          "댓글 수정 및 삭제 자바스크립트 후처리 구현완료",
+          "댓글 수정 및 삭제 구현 완료 ++ >",
+          "Posts와 comment의 양방향 참조로 인한 무한참조 발생 (해결)",
+          "댓글 작성 및 목록 조회 구현 (90%완료)",
+          "1.Posts와 User 클래스 연관관계 매핑으로 글 작성자만 수정 및 삭제 가능 하도록 구현",
+          "소셜로그인시 이미 등록된 회원이라면 수정날짜만 업데이트 해주고 기존 데이터는 그대로 보존하도록 예외처리 구현",
+          "Security OAuth 2.0 구글, 네이버 로그인 구현완료",
+          "회원가입시 아이디, 닉네임, 이메일 중복체크 에러처리 완료",
+          "@Valid 사용 회원가입시 유효성 검사 구현 (중복체크, 로그인 검사 미구현)",
+          "커스텀 어노테이션으로 중복 코드 개선",
+          "mustache csrf 적용 및 게시글 관련 rest api는 csrf 예외처리",
+          "Spring Security 일부 구현 ( 회원가입, 로그인 ) mustache csrf, 세션 중복코드, 에러메시지 출력 구현 및 보완하기",
+          "logout",
+          "회원가입 및 로그인 완료  (Security 추가 예정)",
+          "게시글 작성, 수정시 공백 및 빈 문자열 체크 로직 추가",
+          "User 엔티티 클래스 추가 / 댓글 구현은 사용자 구현 이후에",
+          "TimeEntity Date Format 변경",
+          "게시글 상세/수정/글작성 페이지 UI 변경 / 댓글 UI 구현중 (미완성) / js 게시글 수정/삭제 처리 부분수정",
+          "Comments Entity Class 추가",
+          "JPA 검색 기능 및 검색 후 페이징 처리 구현 완료",
+          "코드 리팩토링",
+          "페이지 번호 리스트 추가 및 코드 리팩토링",
+          "Paging 처리 구현완료",
+          "Posts DELETE 구현 완료",
+          "Posts Update / Views Counting 구현 완료",
+          "게시글 조회 구현 / 수정 구현 중",
+          "게시글 등록 구현 / 조회 미구현",
+          "Posts cnt 컬럼(조회수) 추가 / PostsDto dto 데이터 추가",
+          "PostsRepository, TimeEntity 엔티티 클래스 생성 및 테스트",
+          "Spring Boot - DataBase 연동 완료",
+          "Create README.md",
+          "프로젝트 생성"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 4755,
+        "evidence_loc": 575,
+        "is_fork": false,
+        "duration_days": 560,
+        "active_weeks": 22,
+        "total_commits": 85,
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드",
+          "서버/백엔드"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Java",
+              86.78884026258206
+            ],
+            [
+              "JavaScript",
+              10.667396061269146
+            ]
+          ],
+          "sub": [
+            [
+              "CSS",
+              2.5437636761487967
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "HSU-README/ReadMeBackend",
+    "username": "HSU-README",
+    "repo": "ReadMeBackend",
+    "repo_url": "https://github.com/HSU-README/ReadMeBackend",
+    "label": "서버/백엔드",
+    "profile_for_matching": "Spring Boot 활용 경험. 테스트 코드 작성 경험 보유. 웹, web 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 2,
+      "서버/백엔드": 3
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드"
+    ],
+    "github_score": 5.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 5.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'ReadMeBackend': 'HSU-README' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "ReadMeBackend (main)",
+        "readme": "리드미 포트폴리오 작성부터 채용 공고 확인까지 한 번에 가능한 취업 지원 솔루션 📝 작품소개 학생들은 자기 경험을 포트폴리오로 표현해냅니다. 하지만 포트폴리오를 제작하는 것은 희망하는 분야에 따라 매우 다양하고 어렵기에, 저희는 대학생들이 더욱 쉽게 포트폴리오를 디자인할 수 있고 관심 분야와 연관된 다른 사람들의 디자인을 제공하고자 했습니다. 추가로 기업 채용공고 등록시스템을 도입하여 리드미에서 손쉽게 원하는 분야의 채용 공고를 확인하거나 등록 & 관리할 수 있습니다. 🌁 프로젝트 배경 대학생 때 인턴이나 정규직에 지원할 때, 이직을 할 때에도 대부분의 회사들은 자유 형식의 포트폴리오를 제출하게 됩니다. 포트폴리오를 작성하는데 익숙하지 않은 학생들은 레이아웃을 구성하고 디자인하는데 큰 어려움을 겪게 되고 방대한 양의 포트폴리오 양식 중 자신에게 맞는 포트폴리오 양식을 찾기 어렵습니다. 기존의 타 서비스들은 단순한 문서 작업 및 웹 사이트를 만드는 목적에만 집중되어 있을 뿐 사용자 맞춤형 포트폴리오 양식을 제공하는 경우가 없었습니다. |서비스명|플랫폼 유형|특징|단점| |---|---|---|---| |아임 웹(Imweb)|WEB|개발에 전문적인 지식이 없어도 디자인 블록을 활용하여 웹사이트를 만들 수 있음.|웹사이트 개발에 맞추어져 있어 문서를 만드는 것에는 불필요.| |파워포인트 / 워드|WEB / EXE|다양한 문서를 만들 수 있는 기능을 제공.|작성할 수 있는 디자인 기능이 방대하여, 디자인에 어려움을 느끼는 학생들이 접근하기 어려움.| |잡코리아|WEB|취업에 알맞은 자소서를 작성할 수 있게 양식 제공.|취업에 특화된 웹사이트로 자기소개서 양식만을 제공.| |구글 문서|WEB|실시간으로 다수의 사용자와 수정 및 작성 가능.|제공되는 양식 및 디자인 도구가 매우 부족.| 따라서 이 문제를 해결하기 위해 누구나 손쉽게 접근하여 자신만의 포트폴리오를 작성하는 웹 서비스를 제공하고자 합니다. 단순하게 포트폴리오를 만드는 기능뿐만 아니라 학과별 포트폴리오 양식을 제공하여 취업을 준비하고 있는 학생들에게 포트폴리오 작성의 애로사항을 줄여 줄 수 있을 것입니다. 채용공고 등록 시스템을 도입하여 원하는 기업의 채용공고를 확인하여 즉각적으로 적합한 포트폴리오를 작성할 수 있습니다. 🎞 Demo [리뉴얼 전 리드미 시연영상보기](https://www.youtube.com/watch?v=X-rooURijag) [리뉴얼 후 리드미 시연영상보기](https://www.youtube.com/watch?v=o1WqMeW8qFM&ab_channel=LINKER) ⭐ 주요 기능 - **메인페이지** : 인기 포트폴리오, 전체 포트폴리오, 채용공고 제공 - **양식 선택** : 새 양식, 기본 포트폴리오 양식 선택 - **양식 미리보기** : 양식 미리보기 후 불러오기가 가능하며, 좋아요 기능 적용 - **양식 제작** : Drag&Drop 방식으로 이미지, 텍스트, 구분선, 표, 아이콘 등을 이용하여 포트폴리오 제작 - **양식 PDF저장/생성** : 생성한 ",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 103,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": true,
+        "has_deployment": false,
+        "test_ratio": 0.05825242718446602,
+        "commit_messages": [],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 508,
+        "active_weeks": 0,
+        "total_commits": 0,
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "spaniac/Portfolio_Manager_Web",
+    "username": "spaniac",
+    "repo": "Portfolio_Manager_Web",
+    "repo_url": "https://github.com/spaniac/Portfolio_Manager_Web",
+    "label": "서버/백엔드",
+    "profile_for_matching": "Spring Boot 활용 경험. 테스트 코드 작성 경험 보유. 배포, kubernetes, monitoring, docker, aws 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 5.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 5.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'Portfolio_Manager_Web': 'spaniac' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Portfolio_Manager_Web (master)",
+        "readme": "포트폴리오와 이력 관리 웹 서비 -진행 상황- 현재 시스템 설계 단계. 상세 서비스 설계 구현 예정. 1. 개요 18년 8월부터 취업 준비를 하면서 개발자의 포트폴리오와 이력 관리가 아주 중요하다는 사실을 느끼면서 이번 프로젝트를 구상하게 되었다. 또한, 내가 관심있는 주제에 대한 포스팅, 개발 일지 등을 같이 작성하는 기능 등을 추가로 구상 중이다. 2. 목적 본 프로젝트를 진행함에 있어 다음과 같은 목표가 있다. * '클린 코드' 서적을 읽고 이를 적용하여 가독성 높은 코드를 구현한다. * '테스트 주도 개발' 서적을 읽고 이를 적용하여 단위 테스트가 쉬운 코드를 구현하여 애플리케이션의 안정성을 높인다. * AWS EC2에 배포함으로써 실제로 사용할 목적으로 개발한다. * EC2, ELB, Docker Swarm, Kubernetes 등을 도입하여 새로운 기술을 배운다. 필요하다면 토이 프로젝트를 진행한다. * 인프라 구축과 관련된 운영체제, 네트워크 지식을 공부한다. 3. 설계 기술 | 분류 | 사용 기술 | |---:|---| | 서버 | AWS EC2 (Back, Front) | | 언어 / 프레임워크 | Java / Spring Boot(Back) React(Front) | | DB | MySQL(Docker) | | Cache | Redis(Docker) | | Containter | Docker | | Orchastration | Kubernetes | | VCS | GitHub | | CI | Jenkins (미정) | | Monitoring | 미정 | 시스템 구조 세부 기능 설계 중. * 이력 * 포트폴리오 * 포스팅 * 일기",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 7,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": true,
+        "has_deployment": false,
+        "test_ratio": 0.14285714285714285,
+        "commit_messages": [],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 9,
+        "active_weeks": 0,
+        "total_commits": 0,
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "YooGyeongMo/CollaB",
+    "username": "YooGyeongMo",
+    "repo": "CollaB",
+    "repo_url": "https://github.com/YooGyeongMo/CollaB",
+    "label": "서버/백엔드",
+    "profile_for_matching": "Kotlin (100%) 기반 웹 프론트엔드 경험. Spring Boot 활용 경험. 서버, API, 백엔드 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 2,
+      "웹 프론트엔드": 5,
+      "서버/백엔드": 4,
+      "모바일 앱": 4
+    },
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "모바일 앱"
+    ],
+    "github_score": 56.1,
+    "score_breakdown": {
+      "contribution": 47.0,
+      "quality": 0.0,
+      "consistency": 9.1
+    },
+    "metrics_summary": {
+      "total_valid_loc": 11458,
+      "total_evidence_loc": 596,
+      "top_languages": "Kotlin (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 23
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "CollaB (main)",
+        "readme": "🌟 CollaB > **IT 취업난을 해결하는 프로젝트 매칭 플랫폼** 📋 앱 소개 **CollaB**는 IT 취업을 희망하는 초보 개발자와 스타트업을 연결해주는 앱입니다. 실질적인 프로젝트 경험을 제공함으로써 사용자들이 자신의 역량을 성장시키고 IT 취업에 한 걸음 더 가까워질 수 있도록 돕습니다. 🇰🇷 CollaB의 비전 \"사람에 의한, 사람을 위한 IT 취업 솔루션을 제공하여 차별화된 경쟁력을 갖춘 개발자를 양성합니다.\" --- 📖 목차 1. [프로젝트 목적](-프로젝트-목적) 2. [개발 동기](-개발-동기) 3. [R&R](rr) 4. [린 캔버스](린-캔버스) 5. [유저 페르소나](-유저-페르소나) 6. [프로젝트 주요 기능](-주요-기능) 7. [기술 스택](-기술-스택) 8. [실행 화면](-실행-화면) 9. [설치 및 실행 방법](-설치-및-실행-방법) 10. [개발 도메인](-개발-도메인) 11. [문제 해결 과정](-문제-해결-과정) 12. [서버 아키텍처](-서버-아키텍처) 13. [사용 API](-사용-api) 14. [기대 효과](-기대-효과) --- 🎯 프로젝트 목적 프로젝트 진입 장벽 완화 사용자 기술 스택 기반의 매칭 시스템과 직관적인 프로필 카드로 팀 구성을 지원하여 **효율적이고 신뢰성 있는 팀 매칭**을 제공합니다. 효율적인 프로젝트 관리 GitHub, Jira, Notion 등 **다양한 협업 도구 통합**으로 프로젝트 관리의 복잡성을 줄이고, 실시간 채팅과 알림을 통해 원활한 협업 환경을 만듭니다. 실무 역량 및 소통 능력 강화 프로젝트를 통해 실무 중심의 개발 경험을 제공하며, 팀원 간의 **소통 및 협업 능력 향상**을 돕습니다. IT 취업 경쟁력 강화 프로젝트 경험을 기반으로 포트폴리오를 작성하고, 코딩 테스트와 피드백을 통해 기술 역량을 강화하여 **취업 경쟁력을 극대화**합니다. --- 💁‍♂️ R&R | 이름 | 역할 | 주요 기여 | | ---------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | | **유경모** | 팀장, 안드로이드 네이티브 개발 리드 | UI/UX 설계, MVVM 설계, 주요 기능 구현( 로그인, 프로필, 파이페이지, 팀원 및 프로젝트 매칭, 프로젝트 관리, 실시간 채팅, 실시간 알람, 친구관리 ) | | **김대환** | 안드로이드 개발 | 로그아웃, 회원가입 온보딩,마이페이지 구현 | | **정세곤** | 백엔드 개발 | 로그인, 알람, 프로필, 친구관리 | | **양경빈** | 백엔드 개발 | 채팅, 피어리뷰, 투두, 매칭, 프로젝트 | | **이승윤** | 백엔드 개발 | 매칭, 프로젝트 | | **서세환** | 서버 관리 | 쿠버네티스, 무중단 CI/CD 파이프라인 구축,",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 544,
+          "avg_loc_per_file": 21.1,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.01838235294117647,
+        "commit_messages": [
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix:README.md",
+          "fix: README.md",
+          "fix:README.md",
+          "fix: README.md",
+          "README fix",
+          "README fix",
+          "readme fix",
+          "gif pixel fix",
+          "Add Project files",
+          "Update README",
+          "add README.md",
+          "ADD ignore",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 11458,
+        "evidence_loc": 596,
+        "is_fork": false,
+        "duration_days": 14,
+        "active_weeks": 3,
+        "total_commits": 23,
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "모바일 앱",
+          "게임 개발"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Kotlin",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "Hongsinwon/2022ver_portfolio",
+    "username": "Hongsinwon",
+    "repo": "2022ver_portfolio",
+    "repo_url": "https://github.com/Hongsinwon/2022ver_portfolio",
+    "label": "프론트엔드",
+    "profile_for_matching": "JavaScript (77%) 기반 웹 프론트엔드 경험. React 활용 경험. web 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 2
+    },
+    "detected_domains": [
+      "웹 프론트엔드"
+    ],
+    "github_score": 58.1,
+    "score_breakdown": {
+      "contribution": 44.1,
+      "quality": 5.0,
+      "consistency": 9.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 1447,
+      "total_evidence_loc": 28120,
+      "top_languages": "JavaScript (76%), CSS (18%), HTML (5%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 16
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "2022ver_portfolio (main)",
+        "readme": "[개인 프로젝트] 2022.02.22 ~ 2022.02.26 2022년 홍신원 개인 포트폴리오 https://sinwon-portfolio.web.app/ 페이지 구성 1. PROJECTS - 작업한 프로젝트 2. ABOUT ME - 홍신원 소개, 스킬 활용 기술 1. html 2. css 3. React.js 4. firebase -------------------------------------------- 완성된 페이지 1. PROJECTS 2. ABOUT ME",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 51,
+          "avg_loc_per_file": 28.4,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "이미지",
+          "Update README.md",
+          "-",
+          "Update README.md",
+          "포트폴리오 정리",
+          "Delete package-lock.json",
+          "sruptube 주소 추가",
+          "project 데이터 수정",
+          "scrollTopBtn & scroll시 스크롤 값에 따라 nav보이기",
+          "1차 배포",
+          "Merge branch 'main' of https://github.com/Hongsinwon/2022ver_portfolio",
+          "배포 수정",
+          "Update index.css",
+          "프로젝트 리스트 수정",
+          "Project 리스트 수정",
+          "first commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 1447,
+        "evidence_loc": 28120,
+        "is_fork": false,
+        "duration_days": 19,
+        "active_weeks": 4,
+        "total_commits": 16,
+        "frameworks": [
+          "React"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "JavaScript",
+              76.6546329723225
+            ]
+          ],
+          "sub": [
+            [
+              "CSS",
+              18.170878459687124
+            ],
+            [
+              "HTML",
+              5.174488567990373
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "kimsh322/portfolio-react",
+    "username": "kimsh322",
+    "repo": "portfolio-react",
+    "repo_url": "https://github.com/kimsh322/portfolio-react",
+    "label": "프론트엔드",
+    "profile_for_matching": "TypeScript (95%) 기반 웹 프론트엔드 경험. React 활용 경험.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 4
+    },
+    "detected_domains": [
+      "웹 프론트엔드"
+    ],
+    "github_score": 68.9,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 5.0,
+      "consistency": 6.6
+    },
+    "metrics_summary": {
+      "total_valid_loc": 2916,
+      "total_evidence_loc": 6178,
+      "top_languages": "TypeScript (94%), HTML (5%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "portfolio-react (main)",
+        "readme": "Portfolio 프론트엔드 개발자 포트폴리오 입니다. 반응형으로 구현되어 있습니다. 배포 링크 Link : https://kimsh322.github.io/portfolio-react/ 사용 Stack React, Vite, Typescript, Styled-Component",
+        "readme_has_image": false,
+        "readme_tier": "medium",
+        "tree_stats": {
+          "source_file_count": 77,
+          "avg_loc_per_file": 37.9,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.012987012987012988,
+        "commit_messages": [
+          "Fix : 헤더 컴포넌트 이름 수정",
+          "Fix : 프로젝트 상세설면 paddding-left 조정",
+          "Fix : meta 데이터 수정",
+          "Feat : 메타데이터 추가, favicon추가",
+          "Style : 프로젝트 상세설명 모바일 화면 padding left 추가",
+          "Style : 반응형 디자인 수정",
+          "Docs : Readme 링크 수정",
+          "Docs : Readme 링크 수정",
+          "Docs : Readme 수정",
+          "Chore : 배포용 설정 추가",
+          "빌드파일 추가",
+          "Chore : Github page 배포 준비",
+          "Fix : 헤더 색 변경, archive hover 문구 삭제",
+          "Style : 프로젝트 반응형 스타일 추가",
+          "Style : stacks 반응형 디자인 추가",
+          "Style : 헤더 반응형 디자인 추가",
+          "Style : About 페이지 반응형 디자인 추가",
+          "Feat : 헤더의 버튼 클릭시 해당 컴포넌트로 이동하는 기능 추가",
+          "Feat : 스크롤 다운시 헤더 색 바뀌는 기능 추가",
+          "Fix : 프로젝트 링크 key prop 추가",
+          "Feat : Intro, Footer 컴포넌트 추가",
+          "Fix : 프로젝트 링크 버그 수정",
+          "Style : transition 삭제",
+          "Style : 캐러셀 배경색 변경",
+          "Docs : 나만의 친환경 프로젝트 컨텐츠 추가",
+          "Fix : ProjectInfoLink 컴포넌트 수정",
+          "Fix : 프로젝트 이미지 캐러셀 크기조정",
+          "Docs : todolist 프로젝트 컨텐츠 추가",
+          "Chore : project contents를 assets 폴더로 이동",
+          "Style : 모드 아이콘 추가, 사용하지 않는 글로벌 변수 삭제, infocard 글자크기 조정",
+          "Style : 전체 색감 조정",
+          "Style : Stack 스타일 수정",
+          "Docs : stack 설명 추가",
+          "Style : 폰트 크기조정, 전체 레이아웃 조정",
+          "Feat : Project Description 컴포넌트 작성",
+          "Docs : 타자연습게임 상세설명 수정",
+          "Chore : 헤더 문구 변경, 사이트 이름 변경",
+          "Refactor : ProjectInfo 컴포넌트 분리",
+          "Feat : project 기능설명 추가",
+          "Feat : project info 컴포넌트 완성",
+          "Feat : 이미지 번호 기능 작성",
+          "Fix : 캐러셀 transition 단위 수정",
+          "Chore : project img데이터추가",
+          "Fix : 변수 이름 수정, project image props 변경",
+          "Refactor : Carousel 컴포넌트에서 CarouselContents 부분 새로운 컴포넌트로 작성",
+          "Feat : 캐러셀 구현 완료",
+          "Rename : Project -> ProjectBox로 컴포넌트 이름 변경",
+          "Chore : project content - 타자연습게임 작성",
+          "Feat : Project 레이아웃 작성",
+          "Fix : DropDown 컴포넌트 border 굵기 비율 조정",
+          "Style : 전체 폰트 변경",
+          "Feat : Stacks 탭 컴포넌트 완성",
+          "Feat : Stack 부분 tab 형식으로 변경예정",
+          "Feat : info박스 내부 archive hover 기능 추가",
+          "Style : about 레이아웃 조정, 아이콘 추가",
+          "Remove : router 코드 제거",
+          "Remove : 필요없는 모듈 제거",
+          "Feat : 오전작업",
+          "Feat : 페이지 하나로 합침, About 이미지제거, info box 추가",
+          "Feat : 페이지 이동시 효과 추가",
+          "Fix : dropDown, Header 컴포넌트 관련",
+          "Fix : dropDown 컴포넌트 약간 수정",
+          "Feat : Dropdown 구현",
+          "Feat : 현재 path active 효과 추가",
+          "Feat : header 스타일 적용",
+          "Fix : Navbar를 Header로 변경",
+          "Style : Archive Style 수정",
+          "Feat : Archive 탭 구조 완성",
+          "Feat : Stack 카드 효과 추가",
+          "Feat : stack description 추가",
+          "Feat : Stacks 아이콘 삽입",
+          "Feat : Stacks 카드 UI 추가",
+          "Feat : 웹 전체 구조 및 라우터 작성",
+          "Docs : Readme.md 추가",
+          "Init : vite 초기세팅"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 2916,
+        "evidence_loc": 6178,
+        "is_fork": false,
+        "duration_days": 103,
+        "active_weeks": 6,
+        "total_commits": 81,
+        "frameworks": [
+          "React"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "TypeScript",
+              94.53781512605042
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              5.46218487394958
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "many-yun/my-portfolio",
+    "username": "many-yun",
+    "repo": "my-portfolio",
+    "repo_url": "https://github.com/many-yun/my-portfolio",
+    "label": "프론트엔드",
+    "profile_for_matching": "JavaScript (30%) 기반 게임 개발 경험. React 활용 경험. ai 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 2,
+      "웹 프론트엔드": 2
+    },
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드"
+    ],
+    "github_score": 52.5,
+    "score_breakdown": {
+      "contribution": 46.6,
+      "quality": 5.0,
+      "consistency": 0.9
+    },
+    "metrics_summary": {
+      "total_valid_loc": 4537,
+      "total_evidence_loc": 29624,
+      "top_languages": "CSS (45%), JavaScript (30%), HTML (24%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 22
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "my-portfolio (main)",
+        "readme": "프론트엔드 개발자 포트폴리오 | 김다윤 > React 라이브러리를 사용하여 제작한 포트폴리오 사이트입니다. > 소개글, 프로젝트 모음, 연락처로 구성되어있으며 pc에서 실행 가능합니다. > 페이지마다 애니메이션 효과를 넣어 독특하고 재미있는 효과를 더하려 했습니다. 배포 주소 : https://many-yun.github.io/my-portfolio/ 기술 스택 설치 및 실행 ``` & git clone https://github.com/many-yun/my-portfolio.git & npm i & npm start ``` 폴더 구조 ``` ├─ public └─ src ├─ asstes ├─ components │ ├─ portfolio │ │ ├─ Design.jsx │ │ ├─ JsReact.jsx │ │ └─ Publishing.jsx │ ├─ GithubLink.jsx │ ├─ HambergerMenu.jsx │ ├─ PageTitle.jsx │ └─ ScrollInfo.jsx ├─ pages │ ├─ AboutMe.jsx │ ├─ Contect.jsx │ ├─ Portfolio.jsx │ └─ Main.jsx ├─ styles │ └─ reset.js ├─ utils │ └─ theme.js ├─ App.js └─ index.js ``` Figma https://www.figma.com/file/rcT8sBg0H8d1Rv0Cvx5YNd/%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4?type=design&node-id=0-1&t=KalfqSLyZSmPJ1AS-0 어려웠던 점.. - Router를 사용하니 배포 후 새로고침&뒤로가기 시 404 에러. 해결법 : browser router, 404.html 사용 출처 : https://hell-of-company-builder.tistory.com/m/275 - Link or useNavigate 사용하여 링크 넘어갈 시 props 넘기기 https://rrecoder.tistory.com/101",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 41,
+          "avg_loc_per_file": 110.7,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "[FIX] 메인페이지 바이닐 회전 각도 수정",
+          "Update README.md",
+          "[ADD] 이메일 전송폼 추가",
+          "[ADD] 모바일 화면 경고 문구 추가",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "[FIX] 노트북 해상도 반응형 수정, 서브메뉴 링크 오류 수정",
+          "[FIX] console.log 삭제",
+          "[FIX] 이미지 오류 수정, 메인페이지 서브타이틀 클릭시 페이징 오류 수정",
+          "[FIX] 이미지 오류 수정",
+          "[ADD] 404 html 추가",
+          "[FIX] browser router 수정",
+          "[FIX] router 404 에러 수정",
+          "[FIX] 깃허브 링크 수정",
+          "[FIX] font family 적용 오류 변경",
+          "[FIX] 라우터 basename 추가",
+          "Update README.md",
+          "[DEL] gitignore",
+          "[DEL]package-lock.json",
+          "[ADD] 포트폴리오 사이트 제작",
+          "Initialize project using Create React App"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 4537,
+        "evidence_loc": 29624,
+        "is_fork": false,
+        "duration_days": 69,
+        "active_weeks": 4,
+        "total_commits": 22,
+        "frameworks": [
+          "React"
+        ],
+        "detected_domains": [
+          "게임 개발",
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "JavaScript",
+              30.078125
+            ]
+          ],
+          "sub": [
+            [
+              "CSS",
+              45.1171875
+            ],
+            [
+              "HTML",
+              24.8046875
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "kimminseoung/PortFolio",
+    "username": "kimminseoung",
+    "repo": "PortFolio",
+    "repo_url": "https://github.com/kimminseoung/PortFolio",
+    "label": "프론트엔드",
+    "profile_for_matching": "TypeScript (51%) 기반 웹 프론트엔드 경험. React 활용 경험. SEO, 반응형 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 7
+    },
+    "detected_domains": [
+      "웹 프론트엔드"
+    ],
+    "github_score": 63.3,
+    "score_breakdown": {
+      "contribution": 50.5,
+      "quality": 5.0,
+      "consistency": 7.8
+    },
+    "metrics_summary": {
+      "total_valid_loc": 3633,
+      "total_evidence_loc": 35124,
+      "top_languages": "TypeScript (50%), HTML (49%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 35
+    },
+    "warnings": [
+      "repo 'PortFolio' 최초 커밋이 repo 생성일보다 39일 늦음 — 오너십 확인 필요"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "PortFolio (main)",
+        "readme": "안녕하세요 신입 프론트엔드 개발자 김민성입니다. URL: https://kimminseoung.github.io/PortFolio/ Animation_Library: React,framer-motion CSS: styled-component Database: firebase Library: React State management: Recoil Use_language: typescript,javascript 사용하여 제작하였습니다. 2022-09-07 1. firebase을 이용하여 게시판 추가 2. 다크모드 기능 추가 2022-09-13 1. firebase을 이용하여 게시판 (글쓰기,글보기)완성 2022-09-15 2. 반응형으로 제작",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 53,
+          "avg_loc_per_file": 68.5,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Delete .env",
+          "project 설명글 추가",
+          "2022-10-12",
+          "2022-09-18",
+          "2022-09-18",
+          "2022-09-18",
+          "2022-09-18",
+          "2022-09-17",
+          "2022-09-15",
+          "2022-09-15",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-13",
+          "2022-09-09",
+          "2022-09-08",
+          "2022-09-08",
+          "2022-09-07",
+          "2022-09-07",
+          "2022-09-07",
+          "20220903",
+          "Merge branch 'main' of https://github.com/kimminseoung/PortFolio",
+          "2022-09-03",
+          "Update README.md",
+          "2022-09-03",
+          "2022-09-03",
+          "2022-09-03",
+          "Update README.md",
+          "Update README.md",
+          "20220830"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 3633,
+        "evidence_loc": 35124,
+        "is_fork": false,
+        "duration_days": 98,
+        "active_weeks": 6,
+        "total_commits": 35,
+        "frameworks": [
+          "React"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "TypeScript",
+              50.617283950617285
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              49.382716049382715
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "audgns722/react_portfolio2023",
+    "username": "audgns722",
+    "repo": "react_portfolio2023",
+    "repo_url": "https://github.com/audgns722/react_portfolio2023",
+    "label": "프론트엔드",
+    "profile_for_matching": "JavaScript (28%) 기반 웹 프론트엔드 경험. Express, React 활용 경험. 배포 환경 구성 경험. 서버, server 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 4
+    },
+    "detected_domains": [
+      "웹 프론트엔드"
+    ],
+    "github_score": 67.0,
+    "score_breakdown": {
+      "contribution": 52.7,
+      "quality": 5.0,
+      "consistency": 9.3
+    },
+    "metrics_summary": {
+      "total_valid_loc": 16413,
+      "total_evidence_loc": 3686,
+      "top_languages": "CSS (71%), JavaScript (28%), HTML (0%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 45
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "react_portfolio2023 (main)",
+        "readme": "👓Developer Mhun Portfolio(react.ver) 프론트엔드 개발자 이명훈의 포트폴리오 사이트입니다. 스크롤을 내려 이미지를 클릭하시면 자세한 소스코드 및 기능 구현 정보를 확인하실수 있습니다. 제작기간 23.12.20 ~ 24.01.08 완성작 보기 미리보기 : 사용 스택 Front-End - React, GSAP, Framer Motion, axios Back-End - Node.js, Express, MongoDB, mongoose Deploy fly.io Etc-Tool - moment.js react-router-dom, react-highlight와 highlight.js 라이브러리 설치 서버 ```javascript npm init -y npm install express npm install nodemon --save npm install path --save npm install mongoose --save ``` 클라이언트 ```javascript npm create-react-app . npm install sass npm install gsap npm install react-router-dom npm install @studio-freight/lenis npm install gsap split-type npm install react-icons --save npm install react-highlight --save npm install highlight.js npm install moment npm install framer-motion ``` `npm run dev` 실행하기 프로젝트 구성 📦client ``` ┣ 📂public ┃ ┣ 📜favicon.svg ┃ ┗ 📜index.html ┣ 📂src ┃ ┣ 📂assets ┃ ┃ ┣ 📂css ┃ ┃ ┃ ┣ 📂popup ┃ ┃ ┃ ┣ 📂section ┃ ┃ ┃ ┣ 📂setting ┃ ┃ ┃ ┗ 📜style.css ┃ ┃ ┣ 📂fonts ┃ ┃ ┗ 📂img ┃ ┣ 📂components ┃ ┃ ┣ 📂layout ┃ ┃ ┣ 📂popup ┃ ┃ ┣ 📂sections ┃ ┃ ┗ 📂utils ┃ ┣ 📂pages ┃ ┣ 📂utils ┃ ┣ 📜App.js ┃ ┣ 📜index.js ┃ ┗ 📜setupProxy.js ┣ 📜.gitignore ┣ 📜package-lock.json ┗ 📜package.json ``` 📦server ``` 📦App ┣ 📂server ┃ ┣ 📂config ┃ ┃ ┣ 📜dev.js ┃ ┃ ┣ 📜key.js ┃ ┃ ┗ 📜production.js ┃ ┣ 📂model ┃ ┃ ┣ 📜Comment.js ┃ ┃ ┗ 📜Counter.js ┃ ┗ 📜.gitignore ┣ 📜.dockerignore ┣ 📜Dockerfile ┣ 📜fly.toml ┣ 📜index.js ┣ 📜package-lock.json ┣ 📜package.json ┗ 📜Procfile ``` 주요 기능 및 기술 client 로딩 상태 관리 - useState를 사용하여 로딩 상태(isLoa",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 95,
+          "avg_loc_per_file": 172.8,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "build",
+          "마우스 및 반응형 수정",
+          "portlistupdate",
+          "Merge branch 'main' of https://github.com/audgns722/react_portfolio2023",
+          "comment수정",
+          "Update README.md",
+          "썸네일추가",
+          "Merge branch 'main' of https://github.com/audgns722/react_portfolio2023",
+          "댓글수정",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "readme정리",
+          "build 배포준비",
+          "섹션7 추가",
+          "240108",
+          "11",
+          "로딩소스수정",
+          "make it better",
+          "make it better",
+          "index server",
+          "11",
+          "loading소스추가",
+          "make it better",
+          "make it better",
+          "make it better",
+          "make it better",
+          "make it better",
+          "server배포셋팅",
+          "240102",
+          "포트폴리오수정240101",
+          "1229",
+          "12",
+          "12",
+          "1229오전",
+          "11",
+          "1122",
+          "1228집",
+          "1227오후",
+          "homeupdate",
+          "Merge branch 'main' of https://github.com/audgns722/react_portfolio-sever.ver-",
+          "11",
+          "1212",
+          "server업데이트",
+          "first commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 16413,
+        "evidence_loc": 3686,
+        "is_fork": false,
+        "duration_days": 30,
+        "active_weeks": 5,
+        "total_commits": 45,
+        "frameworks": [
+          "Express",
+          "React"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "JavaScript",
+              28.0776389258176
+            ]
+          ],
+          "sub": [
+            [
+              "CSS",
+              71.31082159000266
+            ],
+            [
+              "HTML",
+              0.6115394841797395
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "yejipark0514/Yeji-Park",
+    "username": "yejipark0514",
+    "repo": "Yeji-Park",
+    "repo_url": "https://github.com/yejipark0514/Yeji-Park",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "Python (100%) 기반 개발 경험. 모델, ai, 딥러닝, 머신러닝, detection, classification 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 66.1,
+    "score_breakdown": {
+      "contribution": 56.1,
+      "quality": 10.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 16436,
+      "total_evidence_loc": 300,
+      "top_languages": "Python (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 66
+    },
+    "warnings": [
+      "repo 'Yeji-Park' 최초 커밋이 repo 생성일보다 531일 늦음 — 오너십 확인 필요"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Yeji-Park (main)",
+        "readme": "📜 박예지 포트폴리오 > 박예지(Yeji Park) - Yeji Park's Portfolio 👋 Intro > 안녕하세요! ***\"목표를 위해 포기하지 않는 인재\"*** 박예지입니다! > > 다양한 머신러닝과 딥러닝 프로젝트를 진행하며 데이터 사이언티스트의 필요 역량을 길러왔습니다. ⚒️Languages & Tools 📝Projects 1. 🌫️ CO2 Emissions Forecasting > 시계열분석 모델을 활용하여 미국의 미래 10년 CO2 배출량 예측 > > - 개발기간 : 2024.01.10 - 2024.04.03 > - Language : python > - Model: Panel OLS, Exponential Smoothing, Lasso Regression, Ridge Regression > > [프로젝트 상세 설명](https://github.com/yejipark0514/TimeSeriesAnalysis_CO2) 2. 🌫️ 2024 기상청 빅데이터 콘테스트 > 기상현상과 화재발생에 대한 상관분석 > > - 개발기간 : 2024.06 - 진행중 > - Language : python 3. 🚦 Traffic Signs Image Classification > LeNet 아키텍쳐를 활용한 교통 표지판 이미지 분류 > > - 개발기간 : 2023.12.27 - 2024.02.03 > - Language: python >> >> [프로젝트 상세 설명](https://github.com/yejipark0514/Yeji-Park/blob/main/TrafficSigns_Classification_LeNet.ipynb) 4. 👗 Fashion Class Classification > CNN을 활용한 패션 클래스 이미즈 분류 > > - 개발기간 : 2023.11.02 - 2023.12.05 > - Language : python > > [프로젝트 상세 설명](https://github.com/yejipark0514/Yeji-Park/blob/main/FashionClass_Classification_Park.ipynb) 5. 📝 Plagiarism Detection > 표절 탐지기 > > - 개발기간 : 2022.10.14 - 2022.12.29 > - 핵심 역할 : Jaccard Similarity와 Cosine Similarity 알고리즘 작성 > - Language : python > > [프로젝트 상세 설명](https://github.com/yejipark0514/Yeji-Park/blob/main/Plagiarism_Detection.ipynb) 6. 💧 Predicting pH after Extreme Weather Events > 기상 사건 후 수질 변화 분석 on HPC > > - 개발기간 : 2024.03.05 - 2024.04.15 > - 핵심 역할 : 데이터 전처리, 데이터 모델링 > - Language : PySpark > - Model: Multivariate Linear Regression, Decisio",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 10,
+          "avg_loc_per_file": 1643.6,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Rename Water_Quality_Presentation to Water_Quality_Presentation.pdf",
+          "Rename Project_Presentation.pptx.pdf to Water_Quality_Presentation",
+          "Add files via upload",
+          "Rename FINAL_DS410_Project_Cluster.py to Water_Quality",
+          "Add files via upload",
+          "Delete Water_Quality_Cluster",
+          "Rename FINAL_DS410_Project_Cluster.ipynb to Water_Quality_Cluster",
+          "Add files via upload",
+          "Update README.md",
+          "Delete Kaggle Competition Report",
+          "Delete Time_Series_CO2.ipynb",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Rename KaggleCompetition2.ipynb to KaggleCompetition_Classification.ipynb",
+          "Rename DS310_PA2.ipynb to KaggleCompetition2.ipynb",
+          "Add files via upload",
+          "Update README.md",
+          "Update README.md",
+          "Rename PA 1 Report - DS310.pdf to Kaggle Competition Report",
+          "Add files via upload",
+          "Update README.md",
+          "Add files via upload",
+          "Update README.md",
+          "Rename PA1_Team6.ipynb to KaggleCompetition_Regression.ipynb",
+          "Add files via upload",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Rename FasionClass_Classification_Park.ipynb to FashionClass_Classification.ipynb",
+          "Add files via upload",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Add files via upload",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Add files via upload",
+          "Update README.md",
+          "Add files via upload",
+          "Add files via upload",
+          "Update README.md",
+          "Update README.md",
+          "Update Personal_Finances_Vote_Choice",
+          "Create Personal_Finances_Vote_Choice",
+          "Created using Colaboratory"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 16436,
+        "evidence_loc": 300,
+        "is_fork": false,
+        "duration_days": 873,
+        "active_weeks": 15,
+        "total_commits": 66,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "suy379/Portfolio_sy",
+    "username": "suy379",
+    "repo": "Portfolio_sy",
+    "repo_url": "https://github.com/suy379/Portfolio_sy",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "모델, ai, 딥러닝, 머신러닝 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 16.4,
+    "score_breakdown": {
+      "contribution": 6.6,
+      "quality": 0.0,
+      "consistency": 9.8
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 56,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 6
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Portfolio_sy (main)",
+        "readme": "Su-yeon Choi's project portfolio 데이터 분석가를 꿈꾸는 **최수연**의 프로젝트 포트폴리오입니다. --- 01. 관광지 리뷰 데이터를 활용한 분류 모델링 및 관광지별 특징 추출(2019) - 2019년도 1학기 Growth Hackers 내부 프로젝트 - 프로젝트 소개 - 서울의 유명 관광지를 선정, TripAdvisor 내 영어 리뷰를 크롤링해 관광지 리뷰 데이터를 바탕으로 해당 리뷰가 긍정 리뷰인지, 부정 리뷰인지 분류하는 모델링 - 긍정, 부정 리뷰들을 바탕으로 외국인 관광객이 해당 관광지에 어떤 매력이 있다고 생각하는지, 그리고 어떤 불편함이 있다고 생각하는지 워드클라우드, 토픽 모델링으로 알아보았음 - [발표자료 다운로드](https://github.com/suy379/Portfolio_sy/blob/main/2019-1_GH_%EB%82%B4%EB%B6%80%ED%94%8C%EC%A0%9D_%EC%B5%9C%EC%A2%85%EB%B0%9C%ED%91%9C.pdf) 02. SOCAR 고객 정보 데이터를 활용한 마케팅 전략 개발(2019) - 2019.07.~08. - 프로젝트 소개 - 쏘카의 운영 데이터를 분석하여, 보다 효율적인 사업 운영을 위한 인사이트를 도출하는 프로젝트 - 특정 zone의 차종 비율 가설검정, 클러스터링을 활용한 User의 패턴 나누기, 패턴을 활용하여 특정 이용 패턴에 할증을 적용하는 시나리오 구성 및 시뮬레이션 - [프로젝트 GitHub](https://github.com/suy379/19_summer) 03. 맥주 추천 알고리즘 개발 프로젝트(2019) - 2019년도 2학기 '통계학세미나' 수업 팀 프로젝트 - 프로젝트 소개 - 머신러닝 기법과 딥러닝 기법을 활용하여, 개인에게 맞춤형 맥주를 추천해줄 수 있는 맥주 추천 알고리즘 개발 - [프로젝트 GitHub](https://github.com/statseminar/Beer-recommendation-system) / [발표자료 다운로드](https://github.com/suy379/Portfolio_sy/blob/main/2019-2_%EB%A7%A5%EC%A3%BC_%EC%B5%9C%EC%A2%85%EB%B0%9C%ED%91%9C(%EC%99%84%EC%84%B1%EB%B3%B8).pdf) 04. IGA Works 광고 채널 기여도 분석 모델 연구 (2019) - 2019년도 2학기 Growth Hackers X IGA Works 외부 프로젝트 - 프로젝트 소개 - 광고주에게 매체별 기여도가 어떤지를 알려주는 IGA Works 사의 data-driven attribution 모델 연구 프로젝트 - 고객의 접속 path 구축 및 최종 매체별 기여도 판단을 위해 기존에 사용되는 single-touch 방법 이외의 multi-touch 방법인 Shapely와 Markov 모델 적용 05. 고양시 자전거대여소 입지 분석 공모전 -장려상 수상(2020) - 2020.07.~08. - 프로젝트 소개 - COMPAS에서 주최한 ",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 0,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 56,
+        "is_fork": false,
+        "duration_days": 1,
+        "active_weeks": 1,
+        "total_commits": 6,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "hyunsookim0813/Portfolio_hs",
+    "username": "hyunsookim0813",
+    "repo": "Portfolio_hs",
+    "repo_url": "https://github.com/hyunsookim0813/Portfolio_hs",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "모델, ai, 머신러닝, cctv 관련 프로젝트.",
+    "domain_hits_merged": {
+      "ML/AI": 4
+    },
+    "detected_domains": [
+      "ML/AI"
+    ],
+    "github_score": 75.7,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 10.0,
+      "consistency": 8.4
+    },
+    "metrics_summary": {
+      "total_valid_loc": 31578,
+      "total_evidence_loc": 119709,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Portfolio_hs (main)",
+        "readme": "Hyunsoo Kim's project portfolio 데이터 분석가를 꿈꾸는 **김현수**의 프로젝트 포트폴리오입니다. --- 01. CCTV 영상분석을 통한 도시침수 조기감지 서비스(2022) - 2022.07 ~ 2022.08 - 프로젝트 소개 - DETECTRON2를 이용하여 침수 여부를 확인하여 인명피해를 줄이기 위한 인사이트를 제공한 프로젝 - CCTV 영상 및 하천의 유량, 강수량 등의 API를 기반으로 침수 예측 서비스 제공 - 수상 내역 - 2022 데이터 청년 캠퍼스 프로젝트 **대상** - 과학기술정보통신부 장관상 - 빅리더 AI 아카데미 표창장 - 한국수자원공사 공사장상 - [프로젝트 GitHub](https://github.com/hyunsookim0813/Portfolio_hs/tree/main/Project1) 02. 배달 음식 주문 데이터 분석 프로젝트(2022) - 2022년도 1학기 '데이터시각화' 수업 개인 프로젝트 - 프로젝트 소개 - 맑은 날과 비가 오는 날의 평균 배달 음식 주문 수 비교 시각화 프로젝트 - [프로젝트 GitHub](https://github.com/hyunsookim0813/Portfolio_hs/tree/main/Project2) 03. 제주도 도로 교통량 예측 AI 경진대회(2022) - 2022년도 2학기 '머신러닝' 수업 팀 프로젝트 - 프로젝트 소개 - DACON에서 주최한 제주도의 교통체증 문제를 해결하기 위해 교통 정보로부터 도로 교통량 회귀 예측하는 프로젝트 - [프로젝트 GitHub](https://github.com/hyunsookim0813/Portfolio_hs/tree/main/Project3) 04. 경기도 GenAI·공공데이터 창업경진대회(2023) - 2023.05 ~ 2023.06 - 프로젝트 소개 - 생성형AI 및 공공데이터를 활용한 창의적 아이디어 기획 프로젝트 - 교통 데이터 수집과 분석을 통해 최적의 루틴 추천하는 서비스 기획 - 어린이 보호 구역등 인명사고 방지를 위한 경고 서비스를 통해 안전환경 조성 기획 - [프로젝트 GitHub](https://github.com/hyunsookim0813/Portfolio_hs/tree/main/Project4) 05. 지역사회 문제해결형 빅데이터/AI활용 공모전(2023) - 2023.12 - 프로젝트 소개 - 대전광역시에서 수집할 수 있는 공공데이터를 사용해 사회 현안을 풀 수 있는 머신러닝 모델을 구축하는 경진대회 - 대전시 대중교통 통행수요 예측 - 수상 내역 - 지역사회 문제해결형 빅데이터/AI활용 공모전 동상 - [프로젝트 GitHub](https://github.com/hyunsookim0813/Portfolio_hs/tree/main/Project5) 06. 서울시 상권 분석 시각 프로젝트(2024) - 2024.01 - 프로젝트 소개 - 서울시 공공데이터를 통해 서울시 상권분석 및 태블로를 활용한 대시보드 생성 - [프로젝트 GitHub](https://github.com/hyunso",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 394,
+          "avg_loc_per_file": 80.1,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.02284263959390863,
+        "commit_messages": [
+          "Merge branch 'main' of https://github.com/hyunsookim0813/Portfolio_hs",
+          "project init",
+          "README.md 업데이트",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "project init",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Delete Project6/기말프로젝트.pdf",
+          "Update README.md",
+          "README.md 업데이트",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "project init",
+          "Update README.md",
+          "project init",
+          "Update README.md",
+          "Merge branch 'main' of https://github.com/hyunsookim0813/Portfolio_hs",
+          "project init",
+          "Update README.md",
+          "project init",
+          "Update README.md",
+          "Update README.md",
+          "Merge branch 'main' of https://github.com/hyunsookim0813/Portfolio_hs",
+          "project init",
+          "Update README.md",
+          "project init",
+          "proejct init",
+          "Create README.md",
+          "Update README.md",
+          "Merge branch 'main' of https://github.com/hyunsookim0813/Portfolio_hs",
+          "proejct init",
+          "Delete Project7/text",
+          "Create README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Delete Project6/data/csv",
+          "project init",
+          "project init",
+          "Create csv",
+          "Delete Project6/text",
+          "Create README.md",
+          "Update README.md",
+          "Create text",
+          "Create text",
+          "Create text",
+          "Create text",
+          "Create text",
+          "Create text",
+          "Create text",
+          "Delete Project1/data/csv",
+          "Create csv",
+          "Delete project1",
+          "Create project1",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 31578,
+        "evidence_loc": 119709,
+        "is_fork": false,
+        "duration_days": 102,
+        "active_weeks": 9,
+        "total_commits": 133,
+        "frameworks": [],
+        "detected_domains": [
+          "ML/AI"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "yorsing/Portfolio",
+    "username": "yorsing",
+    "repo": "Portfolio",
+    "repo_url": "https://github.com/yorsing/Portfolio",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "학습, 모델, ai, deep learning, 딥러닝, recognition 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 1.5,
+    "score_breakdown": {
+      "contribution": 1.5,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 31,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 4
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Portfolio (main)",
+        "readme": "Deep Learning Portfoilo > 송다은의 딥러닝 프로젝트 포트폴리오입니다. 🙋‍♀️ Intro > 대학교 4학년때부터 시작하여 석사과정 기간동안 진행했던 프로젝트 및 논문에 대한 소개입니다. :bulb: 1. 인공지능 얼굴 표정 인식 기반 음악 재생 웹 개발 :page_with_curl: 프로젝트 소개 1. **제작 기간**: 2021.07.12 ~ 11.29 2. **개발 목적**: 얼굴 표정을 분석하여 사용자의 기분에 맞는 음악을 들을 수 있는 딥러닝 기반 웹 사이트 구현 3. **수행 역할** * 얼굴 표정 데이터 수집 및 전처리, CNN 모델별 학습 및 하이퍼 파라미터 최적화 * 웹 브라우저에서 학습된 모델을 호출하고 이미지를 텐서형태로 입력받아 예측할 수 있도록 구현 * 잘못 분류되는 얼굴 표정 재학습 및 모델의 예측 성능 검증 후 웹 서버에 서빙 - **Language**: Python, Javascript - **Skill**: Tensorflow, Keras, Tensorflow.js > 자세히 보기: [AI 얼굴 표정 인식 기반 음악 재생](https://github.com/yorsing/AI_Face-recognition_music)",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 0,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 31,
+        "is_fork": false,
+        "duration_days": 83,
+        "active_weeks": 3,
+        "total_commits": 4,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "moon19ht/SeSac-AI-Developer-Notes-2025",
+    "username": "moon19ht",
+    "repo": "SeSac-AI-Developer-Notes-2025",
+    "repo_url": "https://github.com/moon19ht/SeSac-AI-Developer-Notes-2025",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "Python (36%), JavaScript (9%) 기반 서버/백엔드 경험. TensorFlow, PyTorch, Django, Flask, FastAPI, Streamlit, Hugging Face Transformers, Uvicorn, Spring Boot 활용 경험. API, REST, database, backend 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 4,
+      "서버/백엔드": 5,
+      "ML/AI": 3,
+      "모바일 앱": 3
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "ML/AI",
+      "모바일 앱"
+    ],
+    "github_score": 76.9,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 10.0,
+      "consistency": 9.6
+    },
+    "metrics_summary": {
+      "total_valid_loc": 60088,
+      "total_evidence_loc": 15982,
+      "top_languages": "HTML (48%), Python (35%), JavaScript (8%), CSS (7%), Java (0%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "SeSac-AI-Developer-Notes-2025 (main)",
+        "readme": "🌱 SeSac-AI-Developer-Notes-2025 > **2025년 SeSac 데이터 인공지능 개발자 과정**에서 학습한 내용과 과제를 정리한 복습형 기술 포트폴리오입니다. > > 🎯 **목표**: AI/ML 엔지니어로서의 역량 강화 및 실무 프로젝트 수행 능력 배양 --- 🚀 About This Repository 이 저장소는 **5개월간의 집중적인 AI 개발자 교육 과정**을 통해 습득한 지식과 프로젝트를 체계적으로 정리한 포트폴리오입니다. 📌 주요 특징 - **체계적인 학습 정리**: 이론부터 실습까지 단계별 학습 내용 정리 - **실전 프로젝트**: 각 과정별 실습 프로젝트 및 과제 포함 - **코드 품질**: Clean Code 원칙을 적용한 읽기 쉬운 코드 - **지속적 성장**: 학습 내용을 바탕으로 한 개인 프로젝트 진행 --- 💻 기술 스택 **Languages & Frameworks** - **Python 3.11**: NumPy, Pandas, Matplotlib, Scikit-learn, SciPy - **Deep Learning**: TensorFlow/Keras 2.15+, PyTorch 2.0+, OpenCV - **Web Development**: Django 5.0+, Flask 3.0+, FastAPI, Django REST Framework - **Frontend**: React 19+, Vite, React Router, Bootstrap, Axios - **Mobile & Frontend**: React Native, Redux, JavaScript ES6+ - **Backend & Enterprise**: Spring Boot, Java - **Database**: MySQL, pymysql, SQLAlchemy, MongoDB, pymongo, DBUtils - **Data Visualization**: Plotly, Bokeh, Seaborn, Altair **Tools & Environment** - **Version Control**: Git, GitHub - **IDE**: VSCode, Jupyter Notebook, IPython - **Package Management**: Conda, pip - **Web Scraping**: BeautifulSoup4, Selenium, Requests - **Optimization**: Optuna, XGBoost - **Collaboration**: GitHub Projects, Issues --- 📚 목차 - [🌱 SeSac-AI-Developer-Notes-2025](-sesac-ai-developer-notes-2025) - [🚀 About This Repository](-about-this-repository) - [📌 주요 특징](-주요-특징) - [💻 기술 스택](-기술-스택) - [**Languages \\& Frameworks**](languages--frameworks) - [**Tools \\& Environment**](",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 6699,
+          "avg_loc_per_file": 9.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0017913121361397223,
+        "commit_messages": [
+          "Rename MongoDB connection scripts and update README",
+          "Update .gitattributes for Python file detection",
+          "Update docs for SQL, MongoDB, React, and Spring Boot",
+          "Move MySQL files to SQL and add MongoDB Python examples",
+          "Add CLAUDE.md and update README for PyTorch completion",
+          "Move SpringBoot project out of demo subdirectory",
+          "Add .metadata to .gitignore",
+          "Add React Native and Redux CRUD project examples",
+          "Add PyTorch practice notebooks and summaries",
+          "Add FastAPI backend with board and predict APIs",
+          "Remove Web Crawling Guide documentation",
+          "Add full stack board and score management features",
+          "Restructure backend Django projects and add FastAPI/React examples",
+          "Add deep learning project summary for Korean sentiment analysis",
+          "Add Korean sentiment analysis and Selenium tutorials",
+          "Uncomment .bin files in .gitignore",
+          "Update DL summary with Korean NLP practices",
+          "Add end-to-end NSMC sentiment analysis pipeline",
+          "Add Korean NLP practice notebooks and update ignore files",
+          "Add Fashion-MNIST CNN practice notebook and update summaries",
+          "Add insurance dataset and DL practice notebook",
+          "Add SECOM ML notebook and update dependencies",
+          "Run and display outputs for DL practice notebook",
+          "Add deep learning data and notebooks; update .gitignore",
+          "Rename and update DL practice notebook outputs",
+          "Update 0703 딥러닝 실습.ipynb",
+          "Update 0708",
+          "Update and expand Python dependencies in requirements.txt",
+          "Update 0707",
+          "Update README and notebook minor details",
+          "Update README.md",
+          "Add datetime, calendar, regex, and NLP Python examples",
+          "Update deep learning notebooks and enhance README",
+          "Add new feature to process user input",
+          "Add new feature to user profile page",
+          "Add new feature to process user input",
+          "Add pandas introduction and remove duplicate notebook",
+          "Add new feature to user profile page",
+          "Add pandas DataFrame examples and update progress",
+          "최근 작업 내용 일괄 커밋: 실습, 정리, 과제 파일 등 추가 및 수정",
+          "Add Django and JavaScript/JQuery documentation files",
+          "Add new feature to user profile page",
+          "Initial commit",
+          "Rename SQL markdown files and update TOC",
+          "Add new feature to process user input",
+          "사용자 입력을 처리하는 새로운 기능 추가",
+          "Python 연습문제를 .py에서 .ipynb 노트북으로 마이그레이션",
+          "Google Drive 문서 추가",
+          "Python 실습 파일 재정리",
+          "폴더명 변경",
+          "파일 정리",
+          "중간 정리",
+          "여러부분 수정",
+          "0423 추가 및 수정",
+          "0424 문서 완료",
+          "Update README.md",
+          "일자별 내용 정리",
+          "Update README.md",
+          "중간 정리",
+          "Update README.md",
+          "Update README.md",
+          "수정",
+          "Update README.md",
+          "Update README.md",
+          "재배치",
+          "Update README.md",
+          "Delete Folder \"Final_Project\"",
+          "Create sample.md",
+          "구조화",
+          "Update README.md",
+          "Merge branch 'main' of https://github.com/moon19ht/MySesacDevelop",
+          "전체 구조화",
+          "Update README.md",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 60088,
+        "evidence_loc": 15982,
+        "is_fork": false,
+        "duration_days": 105,
+        "active_weeks": 16,
+        "total_commits": 253,
+        "frameworks": [
+          "TensorFlow",
+          "PyTorch",
+          "Django",
+          "Flask",
+          "FastAPI",
+          "Streamlit",
+          "Hugging Face Transformers",
+          "Uvicorn",
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "웹 프론트엔드",
+          "ML/AI",
+          "모바일 앱"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              35.66398390342052
+            ],
+            [
+              "JavaScript",
+              8.511066398390343
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              48.03319919517103
+            ],
+            [
+              "CSS",
+              7.344064386317907
+            ]
+          ],
+          "trivial": [
+            [
+              "Java",
+              0.44768611670020125
+            ]
+          ]
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "Kuneosu/bracket_helper",
+    "username": "Kuneosu",
+    "repo": "bracket_helper",
+    "repo_url": "https://github.com/Kuneosu/bracket_helper",
+    "label": "모바일 앱",
+    "profile_for_matching": "Dart (95%) 기반 모바일 앱 경험. Unreal Engine, Flutter 활용 경험. 서버, 데이터베이스 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 2,
+      "웹 프론트엔드": 3,
+      "서버/백엔드": 3,
+      "모바일 앱": 5
+    },
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "모바일 앱"
+    ],
+    "github_score": 72.0,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 5.0,
+      "consistency": 9.7
+    },
+    "metrics_summary": {
+      "total_valid_loc": 99438,
+      "total_evidence_loc": 2510,
+      "top_languages": "Dart (94%), Python (4%), HTML (0%), Swift (0%), Kotlin (0%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "bracket_helper (main)",
+        "readme": "대진 도우미 > **아마추어 스포츠·소규모 대회를 위한 오프라인 대진표 빌더 & 매니저** --- ✨ 프로젝트 개요 **대진 도우미**는 배드민턴·탁구·테니스 등 생활 체육 동호회나 학교·사내 친선전을 쉽고 빠르게 운영할 수 있도록 돕는 모바일 앱입니다. 인터넷 연결이 없더라도 대진표 생성, 경기 결과 입력, 순위 집계, 이미지 공유까지 **모두 기기 내에서** 처리합니다. 🎯 개발 목적 - **개인 학습** : Flutter·Clean Architecture 실습 및 포트폴리오 구축 - **실사용** : 현재 활동 중인 클럽 경기 운영에 즉시 활용 📂 레포지토리 목적 - Git을 통한 **버전 관리** - 기능 추가·수정 내역 **기록 및 추적** --- 🔑 주요 기능 | 카테고리 | 기능 | |-----------|------| | 대진표 생성 | 3‑단계 마법사로 대회 정보·선수·대진표 설정 | | 선수 관리 | 선수 목록 저장, 폴더별 그룹 관리, 빠른 불러오기 | | 대진표 편집 | 자동 생성·드래그&드롭 수정, 랜덤 재생성 | | 경기 진행 | 점수 입력, 실시간 순위 계산, 다중 정렬 | | 공유 | 대진표·순위표 이미지 캡처 후 시스템 공유 | | 완전 오프라인 | Drift(SQLite) 로컬 DB — 서버 불필요 | --- 📸 스크린샷 --- 📁 프로젝트 구조 (요약) ``` lib/ ├─ core/ 공통 상수, 테마, 유틸 ├─ data/ Drift 테이블, DAO, Repository 구현 ├─ domain/ 엔티티, UseCase ├─ presentation/ UI 화면 / 상태 └─ main.dart 엔트리 포인트 ``` --- 🏗️ 기술 스택 - **Flutter 3.29.2** · **Dart 3.7.2** - **GetIt** – 의존성 주입·상태 관리 - **GoRouter** – 네비게이션 - **Drift (SQLite)** – 로컬 데이터베이스 - **Clean Architecture + MVVM** --- 🗂️ 아키텍처 ``` Presentation ↔ ViewModel ↔ UseCase ↔ Repository ↔ Drift(DB) ``` 단방향 의존성으로 테스트와 유지보수를 용이하게 합니다. --- 🗓️ 버전 규칙 `v ..` 예) `v 1.2516.19` --- 📜 라이선스 ``` MIT License Copyright (c) 2025 Kuneosu ``` --- 📬 연락처 - Email: **brackethelper@gmail.com** > 피드백과 기여를 언제든 환영합니다!",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 354,
+          "avg_loc_per_file": 280.9,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.002824858757062147,
+        "commit_messages": [
+          "[1.2518.8] Release",
+          "Merge pull request #37 from Kuneosu/dev",
+          "Merge pull request #36 from Kuneosu/BH-45",
+          "[BH-45] 한/영에 따른 UI 지원",
+          "[BH-45] 한/영 지원",
+          "Merge pull request #35 from Kuneosu/BH-44",
+          "[BH-44] 통신 기능 구현 완료",
+          "[BH-44] 업데이트 확인 기능 구현",
+          "[BH-44] 기여자 목록 데이터 로드 로직 추가",
+          "Merge branch 'dev' of https://github.com/Kuneosu/bracket_helper into dev",
+          "Merge pull request #34 from Kuneosu/BH-43",
+          "[BH-43] 지정 파트너 매칭 이슈 해결",
+          "[BH-43] 지정 파트너 매칭 구현 완료",
+          "[BH-43] 재생성, 섞어서 다시 돌리기 로직 수정",
+          "[BH-43] Tournament 데이터 모델에 파트너 쌍 정보 저장",
+          "[BH-43] 이름 수정 버그 해결",
+          "[BH-43] 지정 파트너 매칭 구현, 일부 수정 필요",
+          "[BH-43] CreatePartnerTournament 뼈대 구현",
+          "[BH-43] 지정 파트너 매칭 대진표 메뉴 카드 추가",
+          "ci_post_clone.sh 수정",
+          "[1.2517.4] Release",
+          "Merge pull request #33 from Kuneosu/dev",
+          "Merge pull request #32 from Kuneosu/BH-41",
+          "1.2517.4 Update",
+          "[BH-41] MatchScreen 점수 저장 로직 추가, 안내 문구 추가",
+          "Merge pull request #21 from Kuneosu/bugfix/BH-28",
+          "[BH-28] 하단 영역 잘림 버그 해결",
+          "[0.2516.2] 비공개 테스트 배포",
+          "[Release] 0.2516.1",
+          "Merge pull request #19 from Kuneosu/BH-26",
+          "[BH-26] AddPlayerScreen 키보드 액션 추가, privacy_policy.html 작성",
+          "Merge pull request #18 from Kuneosu/BH-25",
+          "[BH-25] 모든 텍스트 상수화 (app_strings.dart), 앱 버전 규칙 변경 X.YYWEEKS.X",
+          "Merge pull request #17 from Kuneosu/BH-24",
+          "[BH-24] 그룹 목록 선수명으로 검색 기능 추가",
+          "[BH-24] HomeScreen 최근 경기 순서 변경",
+          "[BH-24] GroupDetailScreen 선수 추가 시 중복 구분",
+          "[BH-24] AddPlayerScreen 오버플로 해결, 선수 추가시 탭 전환",
+          "[BH-24] GroupListScreen 디자인 수정",
+          "[BH-24] HomeScreen 미구현 기능 표시",
+          "[BH-24] 경기 수 조정, 단식 비활성화",
+          "Merge pull request #16 from Kuneosu/BH-22",
+          "[BH-22] SettingScreen 구현, 일부 기능 비활성화",
+          "[Hotfix] 대진 수정 시 선수가 한꺼번에 삭제되던 문제 해결",
+          "Merge pull request #15 from Kuneosu/BH-21",
+          "[BH-21] MatchScreen 기능 및 UI 구현 완료",
+          "[BH-21] 대진표 섞어서 다시 돌리기 기능 구현",
+          "[BH-21] 점수에 따라 현재 순위 반영되도록 구현",
+          "[BH-21] 1차 로직, 위젯 분리",
+          "[BH-21] 대진표 공유 기능 구현",
+          "[BH-15] MatchInfoScreen UI 구현",
+          "[BH-15] CreateMatchScreen 뼈대 구성, 라우팅 연결, buildProcessHeader 구현",
+          "[BH-15] Primary 컬러 추가, 기존 색상 비활성화, 상태바 색상 변경",
+          "Merge pull request #8 from Kuneosu/BH-13",
+          "[BH-13] GroupListScreen, GroupDetailScreen 및 여러 컴포넌트 UI 구현 및 네비게이션 연결",
+          "[BH-12] CreateGroupScreen 구현",
+          "Merge pull request #7 from Kuneosu/BH-12",
+          "[BH-12] HomeScreen, HomeRoot UI 구현, MainScreen Navigation 일부 수정",
+          "[BH-12] default_menu_card 구현",
+          "[BH-12] recent_tournament_card 구현",
+          "Merge pull request #6 from Kuneosu/BH-11",
+          "[BH-11] Splash Screen 구현 : flutter_native_splash",
+          "Merge pull request #5 from Kuneosu/BH-9",
+          "[BH-9] Database, repository(4개) 테스트 코드 작성, test_guide 작성",
+          "Merge pull request #4 from Kuneosu/BH-7",
+          "[BH-7] 기본 UseCase, Repository, Drfit Database 생성, get_it 을 통한 의존성 관리, DbTestScreen 구현, data_guide 작성",
+          "Merge pull request #3 from Kuneosu/BH-4",
+          "[BH-4] 기본 데이터 클래스 생성, freezed 사용",
+          "Merge pull request #2 from Kuneosu/BH-3",
+          "[BH-3] 기본 화면 생성 및 라우터 연결, 테마 파일 정의",
+          "Merge pull request #1 from Kuneosu/BH-2",
+          "[BH-2] 클린 아키텍처 구조 설계",
+          "Flutter 프로젝트 생성 및 불필요 파일(macos, linux, windows,tests 등) 제거",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 99438,
+        "evidence_loc": 2510,
+        "is_fork": false,
+        "duration_days": 23,
+        "active_weeks": 4,
+        "total_commits": 143,
+        "frameworks": [
+          "Unreal Engine",
+          "Flutter"
+        ],
+        "detected_domains": [
+          "모바일 앱",
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "게임 개발"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Dart",
+              94.81506870657152
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              0.5920294145140684
+            ]
+          ],
+          "trivial": [
+            [
+              "Python",
+              4.529544345080443
+            ],
+            [
+              "Swift",
+              0.05193240478193583
+            ],
+            [
+              "Kotlin",
+              0.011425129052025883
+            ]
+          ]
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "JUGGUM/mealfit",
+    "username": "JUGGUM",
+    "repo": "mealfit",
+    "repo_url": "https://github.com/JUGGUM/mealfit",
+    "label": "모바일 앱",
+    "profile_for_matching": "Kotlin (100%) 기반 서버/백엔드 경험. Spring Boot 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 테스트 코드 작성 경험 보유. 배포 환경 구성 경험. API, REST, 인증 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 2,
+      "서버/백엔드": 4,
+      "DevOps/인프라": 2
+    },
+    "detected_domains": [
+      "게임 개발",
+      "서버/백엔드",
+      "DevOps/인프라"
+    ],
+    "github_score": 78.3,
+    "score_breakdown": {
+      "contribution": 49.4,
+      "quality": 25.0,
+      "consistency": 3.9
+    },
+    "metrics_summary": {
+      "total_valid_loc": 2886,
+      "total_evidence_loc": 899,
+      "top_languages": "Kotlin (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 52
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "mealfit (master)",
+        "readme": "🥗 MealFit **AI 기반 개인 맞춤형 식단 추천 서비스** MealFit는 사용자의 건강 정보와 식습관을 분석하여 OpenAI GPT 모델을 활용한 맞춤형 식단을 제공하는 웹 서비스입니다. **클린 아키텍처(Clean Architecture)**와 **이벤트 기반 아키텍처(Event-Driven Architecture)**를 적용하여 확장성, 유지보수성, 테스트 용이성을 극대화했습니다. > 🍽️ \"식생활, 이제 기술로 바꿉니다.\" --- 🔗 배포 주소 - **Render 배포 버전**: [https://mealfit.onrender.com/login](https://mealfit.onrender.com/login) - **Swagger API 문서**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) (로컬) - **AWS 무중단 롤링 배포 전략** (예정) --- 📋 목차 - [프로젝트 개요](-프로젝트-개요) - [기술적 하이라이트](-기술적-하이라이트) - [기술 스택](️-기술-스택) - [아키텍처](️-아키텍처) - [주요 기능](-주요-기능) - [프로젝트 구조](-프로젝트-구조) - [실행 방법](-실행-방법) - [설계 패턴](-설계-패턴) - [성능 최적화](-성능-최적화) - [향후 계획](️-향후-계획) --- 🧩 프로젝트 개요 | 항목 | 설명 | |------|------| | **프로젝트명** | MealFit - AI 기반 식단 추천 서비스 | | **개발 기간** | 2025.06 ~ 진행 중 | | **개발 인원** | 1인 (개인 프로젝트) | | **설계 방식** | DDD (Domain-Driven Design) + Clean Architecture | | **아키텍처** | Event-Driven Architecture (Kafka 기반) | | **인증 방식** | JWT (Access Token + Refresh Token) | | **비동기 처리** | Apache Kafka + Spring Event + @Async | | **동시성 제어** | Redisson 분산 락 | | **AI 통합** | OpenAI GPT-4o-mini API | --- 💡 기술적 하이라이트 1. 🏗️ Clean Architecture 적용 계층별 명확한 역할 분리로 비즈니스 로직의 독립성을 확보했습니다. ``` Presentation Layer → Controller (REST API) Application Layer → UseCase, Service, Event Handler Domain Layer → Entity, Value Object, Domain Event Infrastructure Layer → Repository, External API Client, Messaging ``` - **의존성 역전 원칙(DIP)**: 도메인 계층이 인프라에 의존하지 않도록 포트-어댑터 패턴 적용 - **단일 책임 원칙(S",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 79,
+          "avg_loc_per_file": 36.5,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": true,
+        "has_deployment": true,
+        "test_ratio": 0.05063291139240506,
+        "commit_messages": [
+          "Merge pull request #1 from JUGGUM/claude/project-review-analysis-BR3c6",
+          "Update README.md",
+          "Integrate OpenAI API for meal recommendation feature",
+          "Update : email 인증",
+          "Merge remote-tracking branch 'origin/master'",
+          "Update : userName -> Email 로 변경",
+          "Feat : add application configuration for PostgreSQL and update Docker setup",
+          "Update README.md",
+          "Update : jwt secret 변경",
+          "Update : cors 허용범위 설정",
+          "Update : db 설정변경",
+          "Update : 주석",
+          "Update : jwtAuthenticationFilter 적용 및 에러처리",
+          "Update : jwt name 변경",
+          "Update : application.yml",
+          "Update : jwt",
+          "Update : Jwt/Auth",
+          "Update README.md",
+          "Update : kafka 주석",
+          "Update : redis 주석",
+          "Update : redis dependency 주석",
+          "Update : jwt 변수 추가",
+          "Update : UserCacheRepository 주석",
+          "Update : redis 주석",
+          "Update : kafka redis 임시주석",
+          "Update : postgresql",
+          "Feat : application 환경별분리",
+          "Update : SignUp",
+          "Feat : implement DietSurvey service with initial survey creation and Kafka consumer for user signup",
+          "Feat : add Kafka and Redis configuration classes with error handling and Redis template setup",
+          "Feat : implement user signup functionality with caching and event handling",
+          "Refactor : reorganize error handling classes into common package",
+          "Feat : implement refresh token management with Redis storage",
+          "Update README.md",
+          "Update README.md",
+          "Feat : update docker-compose to include PostgreSQL and Kafka services",
+          "Feat : implement JWT authentication with token generation and validation",
+          "Feat : implement user signup functionality with email validation and Kafka integration",
+          "Update : DDD & 클린아키텍처",
+          "Create README.md",
+          "Feat : Auth",
+          "Fix : update PostgreSQL datasource URL for Docker compatibility",
+          "Feat : add application configuration for PostgreSQL and update Docker setup",
+          "Feat : configure PostgreSQL datasource and update Docker setup for application",
+          "Fix : comment out initialization method in clearAccounts for testing purposes",
+          "Fix : update deployment branch from main to master in deploy.yml",
+          "Feat : add Dockerfile for multi-stage build and application deployment",
+          "Create deploy.yml",
+          "Feat : add balance management controller and in-memory database for account operations",
+          "Feat : implement login strategies and controller for user authentication",
+          "Feat : add initial user management classes and services",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 2886,
+        "evidence_loc": 899,
+        "is_fork": false,
+        "duration_days": 252,
+        "active_weeks": 13,
+        "total_commits": 52,
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "게임 개발",
+          "DevOps/인프라"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Kotlin",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "jaeyeong2659/Unity_Portfolio",
+    "username": "jaeyeong2659",
+    "repo": "Unity_Portfolio",
+    "repo_url": "https://github.com/jaeyeong2659/Unity_Portfolio",
+    "label": "게임 개발",
+    "profile_for_matching": "C# (100%) 기반 개발 경험. 게임, unity, fps 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 28.3,
+    "score_breakdown": {
+      "contribution": 28.3,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 1050,
+      "total_evidence_loc": 77,
+      "top_languages": "C# (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 10
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Unity_Portfolio (main)",
+        "readme": "🔫 Unity 기반 1인칭 FPS 좀비 게임 포트폴리오 > **프로젝트 명**: 하수도 생존일지 > **개발 기간**: 약 1개월 반 > **사용 엔진**: Unity > **사용 언어**: C--- 📌 프로젝트 소개 🎯 본 프로젝트는 Unity를 활용한 **1인칭 FPS 좀비 게임**입니다. 기본적인 **1인칭 시점**, **총기 시스템**, **오브젝트 상호작용(문, 포션)**, **좀비 리스폰**, **미션 시스템**, **화면 흔들림 효과** 등의 기능을 구현하였습니다. 📽 **[시연 영상 확인](https://youtu.be/wR39qljGYuA)** --- 🛠 기술 스택 - **Unity** - **1인칭 FPS 컨트롤** - **오브젝트 상호작용 시스템** - **총기 시스템 및 화면 흔들림 효과** --- 📌 주요 기능 🎮 게임 시스템 - 🔹 1인칭 시점 컨트롤 (이동, 카메라 회전) - 🔹 총기 구현 (발사, 재장전, 탄약 시스템) - 🔹 화면 흔들림 효과 적용 🧟 좀비 AI 시스템 - 🔹 좀비 리스폰 시스템 (웨이브 방식) - 🔹 좀비 공격 및 플레이어 데미지 처리 🏗️ 환경 및 상호작용 - 🔹 문 열기/닫기 기능 구현 - 🔹 미션 시스템 (목표 달성) --- 🚀 프로젝트 목표 ✅ Unity 기반 FPS 게임 개발 경험 축적 ✅ 좀비 AI 및 웨이브 시스템 구현 ✅ FPS 게임의 핵심 기능(총기, 상호작용, 미션) 개발 ✅ Unity 최적화 기법 적용 및 게임성 향상 --- 📢 추가 사항 > 프로젝트 관련 상세한 내용은 `README.md` 파일을 지속적으로 업데이트할 예정입니다.",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 9,
+          "avg_loc_per_file": 116.7,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "init",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 1050,
+        "evidence_loc": 77,
+        "is_fork": false,
+        "duration_days": 1311,
+        "active_weeks": 3,
+        "total_commits": 10,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [
+            [
+              "C#",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "fan950/Match-3-Game",
+    "username": "fan950",
+    "repo": "Match-3-Game",
+    "repo_url": "https://github.com/fan950/Match-3-Game",
+    "label": "게임 개발",
+    "profile_for_matching": "C# (100%) 기반 게임 개발 경험. 게임, game, 유니티 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 4
+    },
+    "detected_domains": [
+      "게임 개발"
+    ],
+    "github_score": 57.2,
+    "score_breakdown": {
+      "contribution": 57.2,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 5254,
+      "total_evidence_loc": 3311,
+      "top_languages": "C# (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 74
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Match-3-Game (main)",
+        "readme": "Match-3-Game 유니티로 개발한 Match 3 퍼즐게임 개발 포트폴리오 프로젝트 설명 https://drive.google.com/file/d/18AKTTJVSWDTbizrxpD1q_U3dbXnw0I1o/view?usp=sharing 유튜브 링크 https://youtu.be/_DLH_W1OpGs GameBoard.cs 인게임의 중요 스크립트이며 간략하게 함수 및 코루틴의 설명 기능 - 이동 - 폭발 - 생성 이동 MoveUpdate 이동 할 타일을 lisTileMove 리스트에 넣고 이동하고 Win, Lose를 판단하는 코루틴 ``` public IEnumerator MoveUpdate() { while (true) { yield return null; if (lisTileMove.Count > 0) { isTileMove = true; for (int i = 0; i = nTileMax) { if (GravityCoro == null) { if (lisTileMove.Count 0) { for (int i = 0; i 0) { nCombo += 1; Explode(); } else { isPlayAni = false; } if (isWin) { InGameScene.instance.isEnd = true; yield return endTileWait; WinPopup _uIPopup = UIManager.Instance.OpenPopup(sWinPopupPath, InGameScene.instance.uiPopupPos).GetComponent(); nStarCount = _uIPopup.SetFigure(level.nLevel, nScore, level.nScore1, level.nScore2, level.nScore3); _uIPopup.Open(delegate { if (level.nLevel == SaveManager.Instance.localGameData.nStageLevel) { GameManager.Instance.isStageMove = true; SaveManager.Instance.localGameData.nStageLevel = level.nLevel + 1; SaveManager.Instance.localGameData.lisStageStar.Add(nStarCount); SaveManager.Instance.Save(); } else { if (SaveManager.Instance.localGameData.lisStageStar[level.nLevel - 1] 0) { yield return endTileWait; LosePopup _uIPopup = UIManager.Instance.OpenPopup(sLosePopupPath, InGameScene.instance.uiPopupPos).GetComponent(); _uIPopup.SetFigure(nScore, level); _uIPopup.Open(delegate { GameManager.Instance.NextScene(eScene.LevelSc",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 45,
+          "avg_loc_per_file": 116.8,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Apk",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Match_3",
+          "Match_3",
+          "Match_3",
+          "Match_3",
+          "Match_3",
+          "Match_3",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Merge branch 'main' of https://github.com/fan950/Match-3-Game",
+          "Match_3",
+          "Update README.md",
+          "Update README.md",
+          "Match_3",
+          "Merge branch 'main' of https://github.com/fan950/Match-3-Game",
+          "Match_3",
+          "Update README.md",
+          "Merge branch 'main' of https://github.com/fan950/Match-3-Game",
+          "Match_3",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Match 3",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 5254,
+        "evidence_loc": 3311,
+        "is_fork": false,
+        "duration_days": 274,
+        "active_weeks": 2,
+        "total_commits": 74,
+        "frameworks": [],
+        "detected_domains": [
+          "게임 개발"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "C#",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "LHuHyeon/Security_Escape_Game",
+    "username": "LHuHyeon",
+    "repo": "Security_Escape_Game",
+    "repo_url": "https://github.com/LHuHyeon/Security_Escape_Game",
+    "label": "게임 개발",
+    "profile_for_matching": "C# (100%) 기반 게임 개발 경험. 게임, game, unity 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 4
+    },
+    "detected_domains": [
+      "게임 개발"
+    ],
+    "github_score": 32.8,
+    "score_breakdown": {
+      "contribution": 32.8,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 1343,
+      "total_evidence_loc": 38,
+      "top_languages": "C# (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 4
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Security_Escape_Game (main)",
+        "readme": "[Unity 3D] Security Escape Game 1. 소개 + Unity 3D 보안용 탈출 게임입니다. + 대학교 캡스톤디자인을 통해 처음으로 게임을 개발해보고 게임 개발자의 꿈을 가지게된 포트폴리오입니다. + 현재 Repository에는 소스코드만 등록되어 있습니다. 2. 팀 구성 + 게임 개발 + 시나리오 및 기획 + 문제/자료수집 3. 개발 환경 + Unity + C+ Window 10 4. 게임 설명 + https://www.notion.so/ad63002dec2049d09601877e14804cbb 5. 게임 다운로드 및 플레이 영상 + https://drive.google.com/drive/folders/16LXyiJO16nOXDjOijChOZKn6LpCdPtsF",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 23,
+          "avg_loc_per_file": 58.4,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Scripts Upload",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 1343,
+        "evidence_loc": 38,
+        "is_fork": false,
+        "duration_days": 473,
+        "active_weeks": 3,
+        "total_commits": 4,
+        "frameworks": [],
+        "detected_domains": [
+          "게임 개발"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "C#",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "LiztyStalker/Portfolio",
+    "username": "LiztyStalker",
+    "repo": "Portfolio",
+    "repo_url": "https://github.com/LiztyStalker/Portfolio",
+    "label": "게임 개발",
+    "profile_for_matching": "게임, unity, 캐릭터 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 37.2,
+    "score_breakdown": {
+      "contribution": 27.2,
+      "quality": 10.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 784,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 53
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Portfolio (master)",
+        "readme": "포트폴리오 1. 이력 * Email : listener312@gmail.com 2. 보유기술 * Unity + Stacks : C, Editor, Cinemachine, Timeline + Utility : Spine, LitJson * Git + Git : GitLab, GitHub, + Utility : SourceTree, Git Desktop * Test Framework + Unity Test Framework * Test Driven Develop 3. 관심분야 * AI + Behaviour Tree * Multicore Process + Unity DOTS * TDD + Test Framework * Book + Code Complete 2 - Book + 개발자에서 아키텍트로 - Book 4. 경력사항 - 3년 4개월 * (주)GamBridzy + Unity 클라이언트 프로그래머 + 2018년 6월 - 2021년 9월 | 3년 4개월 5. 경력 프로젝트 > [출시] The Wednesday - [19.05 ~ 20.12] Export Sheet Data + LitJson 4. 개발 내용 설명 + 플레이어, 맵, 상호작용자 설계 및 개발 + 대사 및 시나리오 설계 및 개발 + 미니게임 개발 (은신, 전선 스위치, 자물쇠) + 게임 데이터 Google Sheet로 제작 후 Export Sheet Data Plugin으로 Json 출력하여 LitJson으로 ScriptableObject 생성 + 번역 데이터도 위와 같이 진행하여 1달 만에 추가 번역 적용 (한, 영, 중) + Unity Cinemachine과 Unity Timeline을 활용한 카메라 구도, 캐릭터 이동, 대사 연출, 타임라인 적용 + https://docs.google.com/presentation/d/1YHkrxCUtmAcaiyMOj-92dE2XuuvO-lWEZMLt9hcYkhQ/edit?usp=sharing 5. 개발 성과 + 텀블벅 이후 스팀에 출시 성공 [2020.12] + 영어 번역판 업데이트 [2020.12] + 한달만에 중국어 번역판 업데이트 [2020.03] *** > [취소] 8인의 죽음 - [21.01 ~ 21.09] [완료] 행복누리 프로젝트 - [19.01 ~ 19.04] [출시] 아샤 런 - [18.06 ~ 18.09] [진행] 도형 디펜스 = [22.03 - ] [중단] 공성병기팩토리 - [21.12 - 22.03] [중단] 야수 엠파이어 - [21.03 - 21.09] < + 프로젝트 : https://github.com/LiztyStalker/BeastEmpire + 빌드 : https://github.com/LiztyStalker/BeastEmpire_Build + 영상 : https://www.youtube.com/watch?v=YABfKev9TWk 7. 학력 * 강릉원주대학교 원주캠퍼스 컴퓨터공학과 [졸업] - (2010.03 ~ 2016.02) 8. 자격증 * 정보처리기사 - (2016.05)",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 4,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "NEW : SystemFlow Image",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "+",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "first commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 784,
+        "is_fork": false,
+        "duration_days": 1444,
+        "active_weeks": 9,
+        "total_commits": 53,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "nowonsang/portfolio",
+    "username": "nowonsang",
+    "repo": "portfolio",
+    "repo_url": "https://github.com/nowonsang/portfolio",
+    "label": "게임 개발",
+    "profile_for_matching": "서버, API, 인증, auth, 백엔드 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 41.9,
+    "score_breakdown": {
+      "contribution": 31.9,
+      "quality": 10.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 9,
+      "total_evidence_loc": 1241,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "portfolio (main)",
+        "readme": "노원상 | 5년 차 모바일 풀스택 개발자 안녕하세요. **React Native, Android, iOS, Spring 기반 서버 개발 경험을 두루 갖춘 모바일 풀스택 개발자 노원상 대리**입니다. 저는 맡은 일에 끝까지 책임을 다하며, 현실에 안주하지 않고 **지속적인 성장과 개선**을 중요하게 여깁니다. 더존비즈온 재직 중에는 회사 내 최초로 **크로스 플랫폼 도입을 성공하였고** React Native, 사내 테크톡을 통해 상태관리 아키텍처 등 기술 교육을 전사적으로 주도했습니다. 이후 동화기업에 재직하여 \\*\\*10개 이상의 앱을 단독 유지보수 및 운영하면서 모바일 전반의 기술 의사결정과 커뮤니케이션을 주도하고 있습니다. **앱 개발뿐만 아니라 서버, 인프라, 배포, 인증, 보안까지 아우르는 폭넓은 실무 경험**을 바탕으로 저는 일반적인 모바일 개발자보다 더 깊고 넓은 시야로 기술을 바라보며 일할 수 있다고 자부합니다. 경력 (총 경력 : 5년 5개월) 🔹 동화기업(주) | 2022.07.06 ~ 재직중 [동화기업 회사정보 확인](https://www.dongwha.com/main/main.asp) - **하이브리드 앱 5종 단독 유지보수 및 기능 개선** - GreenNet, D-RMS, D-Sales, D-Partners, IT-Service - **하이브리드 웹앱 3종 단독 유지보수** - D-Logis, Smart-Factory, D-RMS VN - **신규 앱 개발** - VRGDW Store (베트남 고객용 주문관리 앱) - VRGDW D-Sales (베트남 자재 영업관리 앱) - **10개 이상의 Android/iOS 하이브리드 앱 단독 운영 및 스토어 배포** - **Spring + MySQL 기반 API 및 AWS 서버/인프라 운영** - **JWT, OAuth 2.0 기반 보안 인증 설계 및 적용** - **모바일 클라이언트와 백엔드를 포함한 풀사이클 개발 경험** - **Web Native Bridge & Native Module 설계 및 적용** 🔹 (주) 더존비즈온 | 2019.07.15 ~ 2022.01.13 [(주)더존비즈온 회사정보 확인](https://www.jobplanet.co.kr/companies/81407/landing/%EB%8D%94%EC%A1%B4%EB%B9%84%EC%A6%88%EC%98%A8) - **React Native 기반 신규 앱 4개 개발** - Nahago (임금명세서, 출퇴근관리, 연말정산 기능 -> 직원관리 모바일 앱) - NAYANA → 우리도 (강원도청 모바일 앱) - WehagoOne (블록체인 간편계약 모바일 앱) - WehagoSign (전자서명 인증 서비스 모바일 앱) - **Android 앱 유지보수 및 기능 개선** - Wehago (B2B 협업 플랫폼) - **보안 기술 경험** - Sign-Then-Encrypt (RSA + AES + Signature) - **회사 내 최초 React Native 프로젝트 도입 및 아키텍처 설계 주도(+ 사내 전체 ",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 129,
+          "avg_loc_per_file": 0.1,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "내용 추가",
+          "내용 수정",
+          "내용추가 -4",
+          "내용 추가 -3",
+          "내용 수정",
+          "내용 추가",
+          "배포완료",
+          "내용 수정와료",
+          "수정",
+          "내용 추가",
+          "내용 추가",
+          "내용추가",
+          "내용추가",
+          "내용 업데이트",
+          "내용 추가",
+          "배포완료",
+          "내용추가",
+          "내용 수정",
+          "내용 업데이트",
+          "내용 수정",
+          "내용 수정",
+          "내용 수정",
+          "내용 수정",
+          "내용추가",
+          "오타수정",
+          "포토폴리오 소개부분 추가",
+          "소화기 분사앱",
+          "수정수정",
+          "내용 수정",
+          "내용 수정",
+          "내용 수정",
+          "내용 수정",
+          "포토폴리오 내용 수정",
+          "포토폴리오 내용 수정",
+          "포토폴리오 내용 수정",
+          "내용 수정",
+          "프로젝트 내용 추가",
+          "내용 추가",
+          "내용 수정",
+          "포토폴리오 내용 추가",
+          "포토폴리오 내용 추가",
+          "포토폴리오 내용추가",
+          "포토폴리오 내용 추가",
+          "포토폴리오 내용 추가",
+          "포토폴리오 내용 추가",
+          "포토폴리오 추가",
+          "포토폴리오 내용추가",
+          "포토폴리오 내용 추가",
+          "포토폴리오 내용 수정",
+          "포토폴리오 내용 추가",
+          "위하고앱 설명 추가",
+          "내용추가",
+          "wehagoSign 추가",
+          "전자서명 앱",
+          "wehagoSign 포토폴리오 추가",
+          "wehagoOne 포토폴리오 수정",
+          "wehagoOne 포토폴리오 추가",
+          "나야나 추가",
+          "나야나 추가",
+          "나하고 파일 수정",
+          "나야나 개발",
+          "나하고 설명 수정",
+          "나하고 개발",
+          "형식 추가 -2",
+          "형식 추가",
+          "형식 추가",
+          "포토폴리오 추가",
+          "나하고 포토폴리오 추가",
+          "포토폴리오 교육 사진 변경",
+          "실험",
+          "포토폴리오 크기 변경",
+          "포토폴리오 이미지 작업",
+          "Update README.md",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 9,
+        "evidence_loc": 1241,
+        "is_fork": false,
+        "duration_days": 1438,
+        "active_weeks": 15,
+        "total_commits": 161,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "PNUCSE/Capstone-2022-1-35",
+    "username": "PNUCSE",
+    "repo": "Capstone-2022-1-35",
+    "repo_url": "https://github.com/PNUCSE/Capstone-2022-1-35",
+    "label": "블록체인",
+    "profile_for_matching": "kubernetes, docker, ci/cd 관련 프로젝트.",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 0.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'Capstone-2022-1-35': 'PNUCSE' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Capstone-2022-1-35 (main)",
+        "readme": "부산대학교 2022년 전기 졸업과제 35번 - JO2SEO팀 블록체인을 활용한 포트폴리오 관리 플랫폼 개발 1. 프로젝트 소개 본 과제는 개인 정보의 유출과 오남용 및 데이터의 위변조와 같은 문제를 해결하기 위해 자기 정보 통제 및 데이터 무결성 측면에서 장점을 가지는 블록체인을 활용한 개인 포트폴리오 관리 플랫폼을 제안한다. 제안하는 시스템은 블록체인에 사용자 자기 정보를 저장하고 블록체인 네트워크는 프라이빗 네트워크의 구현체인 하이퍼레저 패브릭을 기반으로 동작한다. 개인 포트폴리오 항목의 해시값을 블록체인에 저장함으로써 공유 데이터의 무결성 검사가 가능하게 한다. 현재 세종 텔레콤, 몰리다 등 여러 학사 정보 및 포트폴리오 관리 플랫폼들이 존재하지만, 기능 및 성능 측면에서 보완할 점을 다수 발견했다. 이를 개선하고자 새로운 개인 포트폴리오 관리 플랫폼을 제안한다. 2. 팀소개 |이름|이메일|역할| |---|---|------| |[조병우](https://github.com/whquddn55)|whqdudn55@gmail.com|블록체인(HyperledgerFabric) 개발| |[조현우](https://github.com/hyun98)|hyun0404woo@gmail.com|백엔드(SpringBoot, CI/CD) 개발| |[서지원](https://github.com/jwseo4074)|zwon2056@gmail.com|프론트(React) 개발| 3. 시스템 구성도 4. 소개 및 시연 영상 [](https://www.youtube.com/watch?v=zWiVFvmuC-w) 5. 설치 및 사용법 프론트(리액트) --- 플랫폼의 프론트엔드 사이드는 프레임워크인 React를 기반으로 설계되었습니다. 1. Clone Project ``` shell $ git clone https://github.com/whquddn55/Capstone-2022-1-35.git $ cd ./Capstone-2022-2-35/FrontEnd ``` 2. Install dependencies in package.json ``` shell $ npm install ``` 3. Run Project ``` shell $ npm run start ``` 백엔드(SpringBoot, CICD) --- 0. Dependencies |Name|Version| |----|-------:| |OS|Ubuntu 20.04.5 LTS| |Java|OpenJDK 11.0.15| |Springboot|2.7.1| |Docker|20.10.18| |kubernetes|1.23.6-k3s| |Nginx|1.21.1| |MySQL|5.7| 1. Clone project ``` shell $ git clone https://github.com/whquddn55/Capstone-2022-1-35 ``` ```shell $ git checkout dev ``` ```shell $ git checkout -b feat-... ``` 2. Pull Request from dev to main ",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 2,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": false
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 14,
+        "active_weeks": 0,
+        "total_commits": 0,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "potential1205/betty",
+    "username": "potential1205",
+    "repo": "betty",
+    "repo_url": "https://github.com/potential1205/betty",
+    "label": "블록체인",
+    "profile_for_matching": "TypeScript (69%), Java (30%) 기반 웹 프론트엔드 경험. Foundry (Solidity), Spring Boot, React 활용 경험. 테스트 코드 작성 경험 보유. 배포 환경 구성 경험. SEO 관련 프로젝트.",
+    "domain_hits_merged": {
+      "게임 개발": 3,
+      "웹 프론트엔드": 5,
+      "서버/백엔드": 4,
+      "블록체인": 5
+    },
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "블록체인"
+    ],
+    "github_score": 75.7,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 10.0,
+      "consistency": 8.4
+    },
+    "metrics_summary": {
+      "total_valid_loc": 17549,
+      "total_evidence_loc": 7836,
+      "top_languages": "TypeScript (68%), Java (30%), HTML (0%), JavaScript (0%), CSS (0%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "betty (main)",
+        "readme": "⚾ 블록체인 기반 팬 주도형 프로야구 플랫폼 『 BETTY 』 🔖 소개 Betty는 블록체인 기반의 투명한 토큰 경제 시스템으로 팬들이 실시간 소통하고 구단 의사결정에 직접 참여할 수 있는 새로운 프로야구 생태계를 제공합니다. 🔗 프로젝트 링크 **[Betty](https://j12a609.p.ssafy.io/)** - 운영기간 : 2025.04.01(화) ~ 2025.04.15(화) 📆 프로젝트 정보 **기간**: 2025.02.24(월) ~ 2025.04.11(금), 7주 **인원**: 6명 🧡 팀 소개 | 이재훈 | 김도희 | 예세림 | 이성희 | 이유나 | 이주호 | |:-----------------------------------------------------------------------------:|:-----------------------------------------------------------------------------:|:-----------------------------------------------------------------------------:|:-----------------------------------------------------------------------------:|:--------------------------------------------:|:-----------------------------------------------------------------------------:| | | | | | | | | **팀장, Infra** | **Front** | **Back** | **Back** | **Front** | **Front** | | [@potential1205](https://github.com/potential1205) | [@Dobee-Kim](https://github.com/Dobee-Kim) | [@serimmmaime](https://github.com/serimmmaime) | [@LeeSeongHui](https://github.com/LeeSeongHui) | [@yuuuna-lee](https://github.com/yuuuna-lee) | [@joeholee](https://github.com/joeholee) | | Contributors | Role | Position | |--------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 360,
+          "avg_loc_per_file": 48.7,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": true,
+        "has_deployment": true,
+        "test_ratio": 0.07777777777777778,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "add readme",
+          "add global gitignore",
+          "merge dev/fr",
+          "merge dev/bc",
+          "merge dev/be",
+          "feat: [BE] 세션 조회 방식 변경 [S12P21A609-491]",
+          "feat: [BE] 토큰 ID로 잔액 및 주소 조회 API 구현 [S12P21A609-487]",
+          "feat: [BE] 토큰 ID로 잔액 및 주소 조회 API 구현 [S12P21A609-487]",
+          "feat: [BE] 토큰 ID로 잔액 및 주소 조회 API 구현 [S12P21A609-487]",
+          "Merge branch 'task/be/S12P21A609-487' into 'dev/be'",
+          "feat: [BE] 토큰 ID로 잔액 및 주소 조회 API 구현 [S12P21A609-487]",
+          "feat: 환경 변수 변경",
+          "feat: 환경 변수 변경",
+          "feat: 로그 개선",
+          "feat: [BE] WebSocket 인터셉터 설정 변경 (실시간 투표 반영)",
+          "Merge branch 'task/be/S12P21A609-472' into 'dev/be'",
+          "feat: [BE] WebSocket 인터셉터 설정 변경 (실시간 투표 반영) [S12P21A609-472]",
+          "Merge branch 'task/be/S12P21A609-470' into 'dev/be'",
+          "feat: [BE] Token 잔액 조회 API 구현 [S12P21A609-470]",
+          "Merge branch 'task/be/S12P21A609-466' into 'dev/fr'",
+          "feat: [FE] 전광판 조회 API 연결 [S12P21A609-466]",
+          "fix:",
+          "Merge branch 'task/be/S12P21A609-467' into 'dev/be'",
+          "Merge branch 'task/be/S12P21A609-357' into 'dev/be'",
+          "feat: [BE] 경기별 Selenium 세팅[S12P21A609-357]",
+          "Merge branch 'task/be/S12P21A609-357' into 'dev/be'",
+          "feat: [BE] 경기별 Selenium 세팅[S12P21A609-357]",
+          "Merge branch 'task/be/S12P21A609-357' into 'dev/be'",
+          "feat: [BE] 경기별 Selenium 세팅[S12P21A609-357]",
+          "Merge branch 'task/be/S12P21A609-361' into 'dev/be'",
+          "feat: [임시] 전광판 저장 기능 구현 [S12P21A609-361]",
+          "Merge branch 'task/be/S12P21A609-358' into 'dev/be'",
+          "feat: [BE] Origin 변경 [S12P21A609-358]",
+          "Merge branch 'task/be/S12P21A609-343' into 'dev/be'",
+          "feat: 사용하지 않는 import 제거 [S12P21A609-344]",
+          "Merge branch 'task/be/S12P21A609-343' into 'dev/be'",
+          "feat: 사용하지 않는 import 제거 [S12P21A609-344]",
+          "feat: [BE] 팀 채널 - 안건 등록, 투표 기능 구현 [S12P21A609-344]",
+          "Merge branch 'task/be/S12P21A609-345' into 'dev/be'",
+          "feat: [Infra] Selenium 메모리 재할당 [S12P21A609-345]",
+          "Merge branch 'task/be/S12P21A609-338' into 'dev/be'",
+          "feat: [BE] 팀 채널 - 안건 조회 기능 구현 [S12P21A609-341]",
+          "feat: [BE] 팀 채널 - 안건 조회 기능 구현 [S12P21A609-341]",
+          "feat: dev/be, dev/infra 통합 [S12P21A609-336]",
+          "Merge branch 'task/be/S12P21A609-336' into 'dev/be'",
+          "feat: dev/be, dev/infra 통합 [S12P21A609-336]",
+          "Merge branch 'task/be/S12P21A609-336' into 'dev/be'",
+          "feat: dev/be, dev/infra 통합 [S12P21A609-336]",
+          "feat: 예외 처리 로직 수정 [S12P21A609-95]",
+          "Merge branch 'task/be/S12P21A609-91' into 'dev/be'",
+          "feat: 메서드 명, 클래스 명 오타 수정 [S12P21A609-93]",
+          "feat: 패키지 명 오타 수정 [S12P21A609-91]",
+          "Merge branch 'task/be/S12P21A609-85' into 'dev/be'",
+          "feat: 테스트 로직 작성 (서비스, 레포지토리) [S12P21A609-90]",
+          "feat: Swagger 적용 [S12P21A609-89]",
+          "feat: MatchController Request Mapping 설정 [S12P21A609-88]",
+          "feat: WebConfig 엔드포인트 설정 [S12P21A609-87]",
+          "feat: 테스트 API 작성 [S12P21A609-86]",
+          "Merge branch 'task/be/S12P21A609-83' into 'dev/be'",
+          "feat: 패키지 구조 작성 / 더미 파일 생성 [S12P21A609-84]",
+          "init: 초기 프로젝트 설정 [S12P21A609-80]",
+          "docs: 2025-03-07",
+          "docs: 2025-03-07",
+          "docs: 2025-03-06",
+          "docs: 2025-03-06",
+          "docs: 2025-03-05",
+          "docs: 2025-03-05",
+          "Update 이재훈/README.md",
+          "docs: 2025-03-04",
+          "docs: 2025-03-04",
+          "docs: init study readme",
+          "docs: init study readme",
+          "docs: init study readme"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 17549,
+        "evidence_loc": 7836,
+        "is_fork": false,
+        "duration_days": 6,
+        "active_weeks": 6,
+        "total_commits": 262,
+        "frameworks": [
+          "Foundry (Solidity)",
+          "Spring Boot",
+          "React"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드",
+          "블록체인",
+          "서버/백엔드",
+          "게임 개발"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "TypeScript",
+              68.82931882931884
+            ],
+            [
+              "Java",
+              30.29008029008029
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              0.4921004921004921
+            ],
+            [
+              "CSS",
+              0.0259000259000259
+            ]
+          ],
+          "trivial": [
+            [
+              "JavaScript",
+              0.3626003626003626
+            ]
+          ]
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "JoonSoo-Kim/VIN",
+    "username": "JoonSoo-Kim",
+    "repo": "VIN",
+    "repo_url": "https://github.com/JoonSoo-Kim/VIN",
+    "label": "블록체인",
+    "profile_for_matching": "Spring Boot, React 활용 경험. ai 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 2,
+      "서버/백엔드": 4,
+      "도구 개발": 2
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "도구 개발"
+    ],
+    "github_score": 0.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'VIN': 'JoonSoo-Kim' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "VIN (main)",
+        "readme": "VIN - 리스크 헷지 기반 ETF 추천 서비스 --- **목차** - [프로젝트 소개](프로젝트-소개) - [주요 기능](주요-기능) - [기술 스택](기술-스택) - [시스템 아키텍처](시스템-아키텍처) - [기술적 도전](기술적-도전) **바로가기** [VIN Github](https://github.com/JoonSoo-Kim/2024_2H_DAC) [VIN Notion](https://www.notion.so/00a485db6469497682d39715a07f7a19?pvs=21) [서비스 시연 영상 유튜브](https://youtu.be/FWQwvUAIn-Y) 프로젝트 소개 최근 **헷징(Hedging) 전략**이 대표적인 리스크 관리 기법으로 주목받고 있습니다. 헷징 전략이란 특정 자산이 하락할 때, **반대 경향성을 가진 자산**을 포트폴리오에 포함시켜 손실 폭을 줄이는 방법입니다. 이를 통해 시장의 변동성을 어느 정도 상쇄할 수 있지만, 이러한 전략을 개인 투자자가 활용하기는 쉽지 않습니다. 헷징 전략을 적절히 적용하기 위해서는 **상관관계 분석**을 포함한 다량의 시장 데이터 분석이 필요하기 때문입니다. **VIN - 리스크 헷지 기반 ETF 추천 서비스**는 상관관계 분석을 통해 개인 투자자들이 시장 변동성에 대비해 **안정적인 포트폴리오를 구성하도록 돕는 것**을 목표로 합니다. 특히, 개별 주식보다 변동성이 낮고 다양한 섹터에 분산 투자된 **ETF(Exchange-Traded Funds)를 분석 대상**으로 삼아 보다 안정적인 헷징 효과를 제공하고자 합니다. 이를 통해 사용자는 특정 종목 선택 시 반대 경향성을 가진 ETF를 추천받아 리스크를 효과적으로 관리할 수 있습니다. VIN은 개인 투자자들은 투자 리스크를 줄이고 장기적인 재정 목표를 달성하는 데 도움을 줄 수 있습니다. 특히 주식 시장에서의 변동성을 관리하며 보다 체계적이고 안정적인 투자 포트폴리오를 설계할 수 있도록 도울 것입니다. 왜 ETF인가? **ETF는 Exchange Trade Fund**로 한국어로 번역하면 **상장지수펀드**라고 부릅니다. 즉, **주식처럼 거래소에서 매매할 수 있는 펀드**입니다. ETF는 주식시장에 상장되어 있어서 투자자들이 주식처럼 실시간으로 사고팔 수 있습니다. 그리고 ETF는 다양한 자산에 분산 투자를 할 수 있기 때문에 많은 투자자들에게 인기가 있는 금융상품 중 하나입니다. 저희가 ETF를 선택한 이유는 3가지 조건을 만족하기 때문입니다. **첫 번째는, 상품의 경향성에 노이즈가 적어야 합니다.** 여러 개의 주식이나 자산들로 이루어진 상품이 아닌 주식 하나 하나에 대한 1대1 경향성을 분석하게 되면, 단일 회사의 호재와 악재로 인한 주가의 급등과 급락이 그대로 가격에 반영되게 되어 가격변동이 심해질 수 있습니다. 이렇게 가격이 급격하게 변동하는 상황이 발생한다면 분석 결과가 왜곡되어 도출될 위험이 있습니다. **두 번째는, 매매가 간단하여 일정 가격을 형성하고, 이를 통해 경향성을 파악할 수 있어야 합니다.** ",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 110,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.00909090909090909,
+        "commit_messages": [],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 60,
+        "active_weeks": 0,
+        "total_commits": 0,
+        "frameworks": [
+          "Spring Boot",
+          "React"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "웹 프론트엔드",
+          "도구 개발"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "SangjunRyu/clinical-search-data-pipeline",
+    "username": "SangjunRyu",
+    "repo": "clinical-search-data-pipeline",
+    "repo_url": "https://github.com/SangjunRyu/clinical-search-data-pipeline",
+    "label": "빅데이터 엔지니어",
+    "profile_for_matching": "Python (100%) 기반 빅데이터 엔지니어 경험. 배포 환경 구성 경험. airflow, etl, data pipeline, 데이터 파이프라인, spark, kafka 관련 프로젝트.",
+    "domain_hits_merged": {
+      "빅데이터 엔지니어": 6
+    },
+    "detected_domains": [
+      "빅데이터 엔지니어"
+    ],
+    "github_score": 64.8,
+    "score_breakdown": {
+      "contribution": 50.5,
+      "quality": 5.0,
+      "consistency": 9.3
+    },
+    "metrics_summary": {
+      "total_valid_loc": 6924,
+      "total_evidence_loc": 203347,
+      "top_languages": "Python (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 35
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "clinical-search-data-pipeline (main)",
+        "readme": "Clinical Search Data Pipeline TripClick 임상 데이터 검색 로그를 처리하는 엔드-투-엔드 데이터 파이프라인 프로젝트 개요 | 항목 | 내용 | |------|------| | 데이터 소스 | TripClick 임상 검색 로그 (JSON) | | 파이프라인 | Kafka → Spark → S3 (Archive Raw) → PostgreSQL | | 아키텍처 | Lambda Architecture (배치 + 스트림) | | 인프라 | Docker Compose 기반 | | 시각화 | Apache Superset | --- 기술 스택 | 구분 | 기술 | 버전 | |------|------|------| | 메시징 | Apache Kafka | 7.5.1 (Confluent) | | 처리 | Apache Spark | 3.4.1 | | 오케스트레이션 | Apache Airflow | 2.10.5 | | 저장소 | AWS S3 | - | | 데이터베이스 | PostgreSQL | 15 | | 시각화 | Apache Superset | 3.1.0 | | 컨테이너 | Docker Compose | 3.8 | --- 아키텍처 다이어그램 ```mermaid flowchart TB subgraph Source[\"Data Source\"] WS0[\"Web Server 0\"] WS1[\"Web Server 1\"] end subgraph Kafka[\"Messaging\"] K[\"Kafka Cluster(3 Brokers)\"] end subgraph Spark[\"Processing (Spark)\"] J1[\"batch_to_archive_raw\"] J2[\"etl_to_batch_mart\"] J3[\"streaming_to_realtime_mart\"] end subgraph S3[\"Storage\"] AR[\"S3 archive_raw/(Immutable Raw)\"] end subgraph Serving[\"Serving Layer\"] PG[\"PostgreSQL Mart\"] SS[\"Apache Superset\"] end subgraph Airflow[\"Orchestration\"] AF[\"Airflow DAGs\"] end WS0 & WS1 -->|Producer| K K -->|Daily Batch| J1 --> AR AR --> J2 --> PG K -->|Streaming| J3 --> PG PG --> SS AF -.->|Trigger| J1 & J2 & J3 ``` --- 디렉터리 구조 ``` clinical-search-data-pipeline/ │ ├── ingestion/ 데이터 수집 레이어 │ ├── ingestion.md Ingestion 상세 문서 │ ├── producer/ Kafka Producer │ ├── config/ 설정 파일 │ └── data/ 로그 데이터 (server0, server1) │ ├── messaging/ 메시징 인프라 레이어 │ ├── messaging.md Messaging 상세 문서 │ └── k",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 36,
+          "avg_loc_per_file": 192.3,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "발표 자료 및 내용수정",
+          "spark 처리로직 수정",
+          "Update tripclick_batch_mart_dag.py",
+          "람다 아키텍처 다듬기",
+          "spark jars 추가",
+          "Update README.md",
+          "Update README.md",
+          "네이밍 변경",
+          "spark jobs checkpoint 및 s3 버킷경로 확인 수정",
+          "Update README.md",
+          "Update README.md",
+          "gold mart job 업데이트",
+          "README 및 md 내용 총정리",
+          "gold 구역 내용추가",
+          "airflow dag 파일 수정",
+          "spark 구성 변경",
+          "airflow docker 설정 수정",
+          "ingestion 구성 수정",
+          "orchestration dags 내용분할",
+          "ingestion producer 실행 테스트 수정",
+          "airflow dags 구성 분할 및 변수추가",
+          "airflow 의존성, 권한 변경",
+          "Ingestion Docker 설정 및 Airflow DAG 볼륨 마운트 추가",
+          "Spark 처리, Gold 레이어, Orchestration 추가 및 문서 업데이트",
+          "airflow setting",
+          "데이터 변환 및 로그",
+          "spark 배치 job 커밋 및 ip부분 config로 수정",
+          "spark 배치코드 커밋",
+          "샘플 웹로그 파일 및 세션기반 분할 소스코드",
+          "kafka, spark 도커 컴포즈 및 readme 수정",
+          "Update .gitignore",
+          "Remove config.yaml from git tracking",
+          "로깅방식 변경 및 future.get 로직 변경",
+          "Add project title to README",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 6924,
+        "evidence_loc": 203347,
+        "is_fork": false,
+        "duration_days": 22,
+        "active_weeks": 4,
+        "total_commits": 35,
+        "frameworks": [],
+        "detected_domains": [
+          "빅데이터 엔지니어"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "jms0522/Streaming-Data",
+    "username": "jms0522",
+    "repo": "Streaming-Data",
+    "repo_url": "https://github.com/jms0522/Streaming-Data",
+    "label": "빅데이터 엔지니어",
+    "profile_for_matching": "Python (100%) 기반 빅데이터 엔지니어 경험. 테스트 코드 작성 경험 보유. 배포 환경 구성 경험. airflow, etl, 데이터 파이프라인, spark, kafka, 배치 처리 관련 프로젝트.",
+    "domain_hits_merged": {
+      "빅데이터 엔지니어": 5
+    },
+    "detected_domains": [
+      "빅데이터 엔지니어"
+    ],
+    "github_score": 72.1,
+    "score_breakdown": {
+      "contribution": 53.4,
+      "quality": 10.0,
+      "consistency": 8.7
+    },
+    "metrics_summary": {
+      "total_valid_loc": 2421,
+      "total_evidence_loc": 515556,
+      "top_languages": "Python (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 49
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "Streaming-Data (main)",
+        "readme": "🚀 멀티 파이프라인 프로젝트 멀티 파이프라인 프로젝트에 오신 것을 환영합니다! 이 리포지토리는 데이터 중심의 애플리케이션을 위해 다양한 데이터 파이프라인을 구축하고, 관리하며, 배포하는 것을 목표로 합니다. 💫 자세한 프로젝트 내용 더보기 ❗️ 자세한 프로젝트 내용은 블로그에 기술할 예정입니다. 📌 다양한 이슈 관리는 📌issue 확인하기에서 확인 가능합니다! ✓git-blog ✓Notion 🌟 주요 기능 • 데이터 수집 파이프라인: 다양한 소스로부터 데이터를 효율적으로 수집하고 저장합니다. • ETL 파이프라인: 데이터를 추출(Extract), 변환(Transform), 로드(Load)하여 분석할 수 있도록 준비합니다. • 실시간 스트리밍 파이프라인: Kafka와 Spark를 사용해 실시간으로 데이터를 처리합니다. • 배치 처리 파이프라인: 대량의 데이터를 일정 시간에 맞춰 처리합니다. • 데이터 웨어하우징 파이프라인: 데이터를 확장 가능하고 안정적인 스토리지 솔루션에 저장하고 관리합니다. • 데이터 시각화 파이프라인: Kibana와 Grafana를 사용하여 인사이트 있는 대시보드를 만듭니다. 🛠️ 사용 기술 이 프로젝트는 확장 가능한 파이프라인을 구축하기 위해 다양한 기술을 활용합니다: • Python: 스크립트 및 ETL 프로세스를 개발하는 데 사용되는 주요 언어입니다. • Apache Kafka: 실시간 데이터 스트리밍 및 처리를 위해 사용됩니다. • Apache Spark: 배치 및 스트리밍 모드에서 대규모 데이터 처리를 수행합니다. • Airflow: 복잡한 워크플로를 조정하고 파이프라인의 일정 실행을 관리합니다. • Docker: 일관된 환경을 보장하기 위해 서비스의 컨테이너화를 담당합니다. • Elasticsearch, Logstash, Kibana (ELK Stack): 로그 데이터를 검색, 분석 및 시각화할 수 있는 전체 파이프라인을 제공합니다. • Grafana: 메트릭과 로그를 시각화하고 모니터링하는 데 사용됩니다. 📁 프로젝트 구조 🚀 시작하기 git clone https://github.com/jms0522/Streaming-Data/.git cd Streaming-Data 🕹️ 사전 요구사항 • Docker 및 Docker Compose: Docker가 시스템에 설치되어 있어야 합니다. • Python 3.8+: ETL 스크립트 및 Airflow DAG을 실행하는 데 필요합니다. • Apache Kafka: 실시간 스트리밍을 위해 설정되어야 합니다. • Apache Spark: 실시간 및 배치 데이터 처리를 위해 필요합니다. • AWS EC2: AWS Cloud에서 작업합니다. 📊 모니터링 및 로깅 • Grafana: 파이프라인 성능 및 메트릭을 모니터링합니다. • Kibana: 다양한 파이프라인의 로그 데이터를 분석하고 시각화합니다. • Airflow UI: DAG과 태스크의 상태를 모니터링합니다. • Kafka UI: kafka 상태와 사용자 편의성을 증대합니다. 🧑‍💻 작성자 [장민수 Jangminsoo]",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 58,
+          "avg_loc_per_file": 41.7,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": true,
+        "has_deployment": true,
+        "test_ratio": 0.1206896551724138,
+        "commit_messages": [
+          "ETL Pipeline",
+          "Airflow ETL pipeline",
+          "API Code",
+          "Daily Candles",
+          "Update Upbit API",
+          "Upbit API",
+          "Airflow",
+          "Airflow Update",
+          "Airflow Upbit Update",
+          "Upbit Api Code Update",
+          "Airflow Setting",
+          "Airflow Slack Setting",
+          "Setting Airflow",
+          "Airflow Slack Setting",
+          "Airflow Slack Connect",
+          "Slack Failed Alert Setting",
+          "Update Airflow Dag -> Slack Alert",
+          "Update Airflow Dags",
+          "Airflow Slack Alert",
+          "Airflow Update",
+          "Airflow New Dag",
+          "Airflow - Posgres send to S3",
+          "Kafka DockerFile",
+          "Kafka Yml Update",
+          "Kafka Setting Update - docker-compose",
+          "Kafka Setting Update",
+          "Airflow Compose file Update",
+          "Kafka Setting",
+          "Kafka Dokcer Compose Update",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 2421,
+        "evidence_loc": 515556,
+        "is_fork": false,
+        "duration_days": 51,
+        "active_weeks": 7,
+        "total_commits": 49,
+        "frameworks": [],
+        "detected_domains": [
+          "빅데이터 엔지니어"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "dharana77/data-pipeline-for-music-recommendation",
+    "username": "dharana77",
+    "repo": "data-pipeline-for-music-recommendation",
+    "repo_url": "https://github.com/dharana77/data-pipeline-for-music-recommendation",
+    "label": "빅데이터 엔지니어",
+    "profile_for_matching": "Python (100%) 기반 빅데이터 엔지니어 경험. 테스트 코드 작성 경험 보유. 배포 환경 구성 경험. docker, pipeline 관련 프로젝트.",
+    "domain_hits_merged": {
+      "빅데이터 엔지니어": 2
+    },
+    "detected_domains": [
+      "빅데이터 엔지니어"
+    ],
+    "github_score": 49.8,
+    "score_breakdown": {
+      "contribution": 37.7,
+      "quality": 10.0,
+      "consistency": 2.1
+    },
+    "metrics_summary": {
+      "total_valid_loc": 274,
+      "total_evidence_loc": 112726,
+      "top_languages": "Python (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 16
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "data-pipeline-for-music-recommendation (main)",
+        "readme": "data-pipeline-for-music-recommendation 실시간 가상 음악 스트리밍 이벤트 제너레이터로부터 발생 이벤트를 처리하는 파이프라인 구축 프로젝트 Building a pipeline to process event data generated by a virtual music streaming site for music recommendation. --- Project Description This project involves building a comprehensive data pipeline to reliably collect event logs generated by a virtual music streaming platform, preprocess and store the data, and provide the capability to visualize the stored data through a dashboard. System Architecture 1. **Data Collection (Orange):** - Fluentd collects four types of event data. - The collected data is sent to the Data Lake. 2. **Data Processing in Silver Phase (Blue):** - In this phase, raw data (Bronze Phase) is filtered and processed. - The processed data is stored in the Data Lake in Parquet format. 3. **Data Processing in Gold Phase (Yellow):** - Aggregations are performed on the Fact Table. - Fact Table is merged with relevant Dimension Table for advanced analysis. 4. **Data Loading and Visualization (Black):** - The final processed data is ingested from the Data Lake to Druid. - Data is visualized by connecting Druid with Superset. Data [Eventsim](https://github.com/Interana/eventsim) is a program designed to generate event data that simulates page requests for a fictional music website. The resulting data closely resembles real user interactions but is entirely synthetic. The Docker image for Eventsim is sourced from [viirya's fork](https://github.com/viirya/eventsim), which w",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 7,
+          "avg_loc_per_file": 39.1,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": true,
+        "has_deployment": true,
+        "test_ratio": 0.14285714285714285,
+        "commit_messages": [
+          "Merge branch 'main' of github.com:dharana77/data-pipeline-for-music-recommendation",
+          "docs: 기간 오류 수정",
+          "Update README.md",
+          "Update README.md",
+          "docs: udpate docs kor",
+          "docs: modify readme.md",
+          "Merge branch 'main' of github.com:dharana77/data-pipeline-for-music-recommendation",
+          "feat: add postgres hook and select all",
+          "feat: test airflow added",
+          "docs: update docs",
+          "docs: eventism data explanation and docker command modified added",
+          "feat: kafka and eventism test added",
+          "docs: update readme",
+          "docs: update readme",
+          "docs: update readme",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 274,
+        "evidence_loc": 112726,
+        "is_fork": false,
+        "duration_days": 101,
+        "active_weeks": 6,
+        "total_commits": 16,
+        "frameworks": [],
+        "detected_domains": [
+          "빅데이터 엔지니어"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "UICHEOL-HWANG/subway_pipeline",
+    "username": "UICHEOL-HWANG",
+    "repo": "subway_pipeline",
+    "repo_url": "https://github.com/UICHEOL-HWANG/subway_pipeline",
+    "label": "빅데이터 엔지니어",
+    "profile_for_matching": "airflow, 데이터 파이프라인, spark, kafka 관련 프로젝트.",
+    "domain_hits_merged": {
+      "빅데이터 엔지니어": 2
+    },
+    "detected_domains": [
+      "빅데이터 엔지니어"
+    ],
+    "github_score": 15.7,
+    "score_breakdown": {
+      "contribution": 5.7,
+      "quality": 0.0,
+      "consistency": 10.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 33,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 5
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "subway_pipeline (master)",
+        "readme": "데이터 파이프라인 토이프로젝트 * 설명 : 서울시 지하철역별 승하차 인원 데이터 api 자동적재 * 내용 : airflow 스케줄링 이용한 데이터 적재 ------ 프로젝트 아키텍처 * 파싱한 데이터를 s3 스토리지에 적재 후, 파이썬 코드를 사용하여 데이터프레임화 시켜준 후에 mysql 서버로 다시 재 적재를 시켜줍니다 * 여기서 mysql 서버에 있는 데이터는 기존에 있는 데이터들을 파이썬 코드로 로드한 이후에 새롭게 파싱하여 만든 데이터프레임과 병합을 해야하기 때문에 판다스 df.to_sql문을 이용하여 if_exists='replace' 덮어쓰기 옵션으로 결합을 완료한 뒤 mysql에 적재하였습니다. * 마지막으로 ELK스택,powerbi로 시각화를 해야하나 예산문제로 부분적으로 무료 개방중인 google data studio를 이용하여 시각화를 하였습니다. ---- 프로젝트 내용 * 플라스크를 이용한 배포 → data studio(looker) iframe 태그 임포트 * 현재 11월 14일 기준(11월 11일 승하차 이용객 평균수) * 서울시 지하철 데이터는 당일날짜 기준 -3일의 데이터를 매일 오후 18시 이후에 업로드한다는 답변을 받음 ---- airflow 로직 * 매일 오후 21시 10분 기준으로 interval 루틴을 설정한 내역을 확인해볼 수 있다(크론 스케줄링 기법을 통한 10 20 * *) * UTC기준으로 12:00이 한국시간으로는 21시로 확인되어 로직이 완성된 것을 확인할 수 있다. ----- 별첨 * task1,task2 로직으로 task 의존성을 만들었는데 * upload_to_s3_task >> load_to_mysql_task (task1 >> task2로 연결) * upload_to_s3_task : api 파싱 내역을 s3 스토리지에 저장하는 로직 * load_to_mysql_task : mysql 데이터를 판다스로 로드하며 기존에 s3 스토리지에 저장한 데이터들과 병합 ------- 마치며 * 아쉬웠던점 : 처음 프로젝트는 twitter 스트리밍 데이터를 통해 spark와 kafka를 연습해보고 싶었으나 , 트위터 api 정책 변화로 인해 유료로 계정 업그레이드를 하지 않아서 제공 되는 데이터량이 한정적이었다, 그러므로 기획한 프로젝트는 진행할 수 없었음, 또한 ec2 프리티어를 이용하였는데 프리티어로 제공되는 t2,t3 micro 용량으로는 airflow 스케줄링 하나도 벅찬 모습에 많이 안타까웠다 * 어려웠던점 : airflow 스케줄링을 자동화간 오류 내역을 캐치하기가 상당히 어려웠다, 맞춰놓은 시간대로 움직이지 않거나 아니면 엉뚱한 데이터가 파싱되는 경우가 생겼을 때 어느 부분이 문제가 생겼는지 log로만으로는 판별하기가 어려웠다 * 추후 계획 : airflow보다는 우분투 내부의 크론탭 기능으로 단순화하여 스케줄링을 할 예정이고 다음은 스포티파이 스트리밍 데이터를 적재해볼 계획이다.",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 9,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "소개글",
+          "Delete image/data_pipeline.drawio.png",
+          "Add files via upload",
+          "Add files via upload",
+          "Add files via upload"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 0,
+        "evidence_loc": 33,
+        "is_fork": false,
+        "duration_days": 0,
+        "active_weeks": 1,
+        "total_commits": 5,
+        "frameworks": [],
+        "detected_domains": [
+          "빅데이터 엔지니어"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "u-hajin/seoul-population-data-pipeline",
+    "username": "u-hajin",
+    "repo": "seoul-population-data-pipeline",
+    "repo_url": "https://github.com/u-hajin/seoul-population-data-pipeline",
+    "label": "빅데이터 엔지니어",
+    "profile_for_matching": "Python (100%) 기반 빅데이터 엔지니어 경험. 배포 환경 구성 경험. airflow, spark, kafka, 분석, redshift 관련 프로젝트.",
+    "domain_hits_merged": {
+      "빅데이터 엔지니어": 3
+    },
+    "detected_domains": [
+      "빅데이터 엔지니어"
+    ],
+    "github_score": 43.3,
+    "score_breakdown": {
+      "contribution": 32.7,
+      "quality": 5.0,
+      "consistency": 5.6
+    },
+    "metrics_summary": {
+      "total_valid_loc": 542,
+      "total_evidence_loc": 530,
+      "top_languages": "Python (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 27
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "seoul-population-data-pipeline (master)",
+        "readme": "seoul-population-data-pipeline 프로젝트 소개 '서울시 실시간 인구' API를 호출해 서울시 주요 115개 장소에서의 데이터를 추출하고 kafka, spark를 통해 Amazon S3, Redshift에 저장합니다. Airflow를 사용해 자동으로 20분마다 데이터를 추출해 시간에 따른 장소 혼잡도 정도, 실시간 인구 지표, 성별과 나이에 따른 인구 비율 등을 저장하고 시각화합니다. - ’서울시 실시간 인구 데이터’를 사용해 데이터 추출, 변환, 저장 파이프라인 생성 - Airflow의 custom operator를 제작하고 20분 주기로 API를 호출해 데이터 추출 자동화 - 수집한 데이터를 kafka로 전달하고, spark에서 DataFrame으로 변환 후 S3에 저장 - Glue crawler를 사용해 S3 데이터를 스캔하고 메타데이터를 glue data catalog에 저장 - Redshift, query editor v2를 통해 S3의 데이터를 쿼리하고 분석 - 20분마다 데이터를 추출하고 자동으로 변환을 거쳐 S3에 저장하는 파이프라인 구축 프로젝트 목적 ‘서울시 실시간 인구’는 열린 데이터 광장에서 제공하는 API로 데이터가 지속적으로 업데이트 됩니다. 서울시 주요 115개 장소에서의 혼잡도 정도, 실시간 인구 지표, 성별과 나이에 따른 인구 비율 등 많은 데이터를 제공하고 있습니다. 더미 데이터를 생성하는 것이 아닌 실제 인구 데이터를 사용하기 때문에 신뢰성이 높습니다. 또한 API 데이터가 5분마다 업데이트되므로 이전의 데이터를 수집해놓지 않으면 조회할 수 없습니다. 따라서 파이프라인을 제작해 자동으로 데이터를 수집, 저장하고 해당 데이터들을 활용할 수 있도록 했습니다. Custom operator를 제작해 20분 주기로 데이터를 수집하며 airflow의 operator에 대한 이해도를 높이고, 다양한 AWS 서비스를 사용해보면서 클라우드 서비스에 대한 이해도를 높이고자 했습니다. 서울시 실시간 인구 데이터 : https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do 시스템 구조 구현 설명 - API를 호출해 수집한 데이터를 Kafka로 전달하는 Airflow Custom Operator - 데이터셋 이름, kafka topic 이름 등 간단한 설정만 인자로 입력하면 동작하는 custom operator 제작 - API를 호출하고 추출한 데이터를 자동으로 kafka로 publish하는 custom operator - 서울시 도시 통합 데이터 API 호출에도 쓰일 수 있도록 설계해 재사용성 증가 - 확장성을 위한 Kafka - 확장성을 고려해 kafka로부터 spark로 데이터를 전달하는 구조 선택 - 데이터 생성 시스템과 처리 시스템 분리 - 효율적인 데이터 처리를 위한 Spark - Kafka에서 수집된 데이터를 실시간으로 처리해 DataFrame으로 변환 - Master와 worker를 두어 분산 처리 활용 - 안전한 데이터 저장을 위한 S3",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 23,
+          "avg_loc_per_file": 23.6,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "docs: 프로젝트 목적 및 구현 설명 수정",
+          "build: airflow 볼륨 삭제",
+          "docs: 프로젝트 소개 및 목적, 구현 설명 추가",
+          "docs: 이미지명 수정",
+          "docs: 프로젝트 소개, 구성, 실행 방법 등 추가",
+          "refactor: 각 역할마다 함수 생성 및 함수명 변경",
+          "feat: config 파일 사용",
+          "docs: 시스템 구조 사진 변경",
+          "feat: API 호출 주기를 20분으로 변경",
+          "feat: dataframe을 s3 버킷에 저장",
+          "feat: kafka에서 읽은 데이터로 dataframe 생성",
+          "feat: spark schema 정의",
+          "fix: 데이터 타입 변환",
+          "build: spark master, worker 추가",
+          "delete: airflow의 variables 사용으로 대체",
+          "feat: 30분 주기로 데이터 전송하는 task 생성",
+          "feat: API를 호출해 kafka publish하는 custom operator",
+          "build: kafka 사용을 위한 custom image 생성 및 적용",
+          "feat: 추출 데이터를 kafka에 publish",
+          "build: kafka broker 추가",
+          "feat: API 호출 후 필요한 데이터 추출",
+          "feat: 실시간 인구 데이터 API 호출",
+          "feat: API 장소 코드 설정",
+          "build: example dag 로드하지 않도록 설정",
+          "build: airflow 컨테이너 설정",
+          "docs: 시스템 구조 사진 추가",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "valid_loc": 542,
+        "evidence_loc": 530,
+        "is_fork": false,
+        "duration_days": 84,
+        "active_weeks": 5,
+        "total_commits": 27,
+        "frameworks": [],
+        "detected_domains": [
+          "빅데이터 엔지니어"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  }
+]

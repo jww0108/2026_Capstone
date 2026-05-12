@@ -48,10 +48,28 @@ class GitHubExtractor:
     # author 커밋 목록 페이지네이션 상한 (per_page=100 × 3 = 최대 300커밋)
     MAX_COMMIT_PAGES = 3
 
-    # v6.2: 봇 작성자 식별 패턴
+    # v6.3: 봇 작성자 식별 패턴 (7종 → 22종)
     _BOT_LOGIN_PATTERN = re.compile(
         r"\[bot\]$|^dependabot$|^github-actions$|^renovate-bot$"
-        r"|^pre-commit-ci$|^codecov-commenter$|^stale\b",
+        r"|^pre-commit-ci$|^codecov-commenter$|^stale\b"
+        # v6.3: 배포/호스팅 서비스 봇
+        r"|^streamlit"
+        r"|^vercel"
+        r"|^netlify"
+        r"|^heroku"
+        r"|^railway"
+        # v6.3: 의존성/보안 봇
+        r"|^snyk"
+        r"|^depfu"
+        r"|^greenkeeper"
+        r"|^imgbot$"
+        r"|^allcontributors"
+        r"|^whitesource"
+        r"|^mend-bolt"
+        # v6.3: 릴리스 봇
+        r"|^semantic-release"
+        r"|^release-drafter"
+        r"|^changeset-bot",
         re.IGNORECASE,
     )
     _BOT_EMAIL_HINTS = (
@@ -166,20 +184,35 @@ class GitHubExtractor:
     @classmethod
     def _is_bot_author(cls, commit_obj: Dict[str, Any]) -> bool:
         """
-        v6.2: 커밋 작성자가 자동화 봇인지 판별.
-        - GitHub login에 [bot] suffix 또는 알려진 봇 이름 매칭
-        - 이메일이 noreply 또는 [bot]@ 패턴 (단, users.noreply.github.com은 일반 사용자 제외)
+        v6.3: 커밋 작성자가 자동화 봇인지 판별.
+        - 1차: GitHub login에 [bot] suffix 또는 알려진 봇 이름 매칭
+        - 2차: GitHub author.type == "Bot" (패턴 목록에 없는 미래 봇도 포착)
+        - 3차: 이메일이 noreply 또는 [bot]@ 패턴 (단, users.noreply.github.com은 일반 사용자 제외)
         """
         gh_author = commit_obj.get("author") or {}
         login = str(gh_author.get("login") or "")
+
+        # 1차: 명시적 봇 패턴 매칭
         if login and cls._BOT_LOGIN_PATTERN.search(login):
             return True
 
+        # v6.3 2차: GitHub author.type == "Bot" → 패턴 목록에 없는 봇도 자동 포착
+        if str(gh_author.get("type") or "").lower() == "bot":
+            return True
+
+        # 3차: 이메일 기반 판별
         raw = (commit_obj.get("commit") or {}).get("author") or {}
         email = str(raw.get("email") or "").lower()
         if any(hint in email for hint in cls._BOT_EMAIL_HINTS):
             if "users.noreply.github.com" in email:
-                return False
+                # 봇 noreply:   {id}+{name}[bot]@users.noreply.github.com → [bot] 포함
+                # 일반 사용자:  {id}+{username}@users.noreply.github.com  → [bot] 미포함
+                return "[bot]" in email
+            return True
+
+        # 4차: raw git author name 기반 판별 (author 객체 null 폴백)
+        name = str(raw.get("name") or "").lower()
+        if "[bot]" in name:
             return True
 
         return False
@@ -209,6 +242,13 @@ class GitHubExtractor:
 
         contribution_ratio = target_commit_count / total_repo_commits
         fair_share = 1.0 / distinct_author_count
+
+        # v6.3: 사실상 단독 저자 Fork → 패널티 면제 (이중 게이트)
+        if contribution_ratio >= 0.8 and target_commit_count >= 20:
+            return 1.0, (
+                f"Fork 감점 면제: 기여 비율 {contribution_ratio:.1%}, "
+                f"본인 커밋 {target_commit_count}개 — 사실상 단독 저작"
+            )
 
         if contribution_ratio >= fair_share:
             return 0.7, (
@@ -542,10 +582,18 @@ class GitHubExtractor:
         repo_author_labels: List[str] = []
         seen_label_keys: Set[str] = set()
         bot_count = 0
+        unlinked_count = 0                              # v6.3: GitHub 계정 미연결 커밋 수
+        human_commit_count = 0                          # v6.3: 봇 제외 커밋 수
         for c in all_repo_commits:
             # v6.2: 봇 작성자 제외 — 개인 레포가 팀 레포로 잘못 분류되는 결함 방지
             if self._is_bot_author(c):
                 bot_count += 1
+                continue
+            human_commit_count += 1                     # v6.3: 봇 제외 카운트 (미연결 포함)
+            # v6.3: GitHub 계정 미연결 커밋 → 작성자 수 집계에서만 제외 (커밋 수는 포함)
+            # email fallback으로 별도 key가 생성되어 distinct_author_count를 부풀리는 것 방지
+            if c.get("author") is None:
+                unlinked_count += 1
                 continue
             key = self._commit_author_key(c)
             if key:
@@ -559,11 +607,16 @@ class GitHubExtractor:
             repo_warnings.append(
                 f"repo '{repo}' 봇 작성자 커밋 {bot_count}개 제외 (팀/개인 판정에 미반영)"
             )
+        if unlinked_count >= 3:
+            repo_warnings.append(
+                f"repo '{repo}' GitHub 계정 미연결 커밋 {unlinked_count}개 — "
+                "서비스 자동 커밋(Streamlit 등) 또는 이메일 미연결 커밋으로 팀/개인 판정에서 제외됨"
+            )
 
         distinct_author_count = len(repo_author_keys) if repo_author_keys else 1
         repo_type = "team" if distinct_author_count >= 2 else "personal"
         target_commit_count = len(all_author_commits)
-        total_repo_commit_count = len(all_repo_commits)
+        total_repo_commit_count = human_commit_count    # v6.3: 봇 제외 (분모 정확화)
         target_commit_ratio = (
             round(target_commit_count / total_repo_commit_count, 4)
             if total_repo_commit_count > 0 else 0.0
@@ -766,6 +819,7 @@ class GitHubExtractor:
             "is_config_repo": is_config_repo,         # v5.6
             "mod_platform": mod_platform,             # v5.7: 모드/플러그인 플랫폼 감지 결과
             "readme": readme_content,
+            "readme_raw": readme_raw_text[:5000],       # v6.3: 품질 평가용 원본 (정제 전)
             "readme_has_image": readme_has_image,
             "frameworks": frameworks,
             "detected_domains": detected_domains,
@@ -978,6 +1032,7 @@ class GitHubExtractor:
                     "repo_total_score": res_total_score,        # v6.2
                     "score_breakdown": res_bd,                  # v6.2: 레포별 breakdown
                     "readme": rm,
+                    "readme_raw": res.get("readme_raw") or rm,  # v6.3: 원본 없으면 정제본 폴백
                     "readme_has_image": bool(res.get("readme_has_image")),
                     "readme_tier": profile_builder.readme_length_tier(rm),
                     "tree_stats": res.get("tree_stats") or {},

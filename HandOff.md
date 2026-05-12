@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.05.04 | 현재 스펙 버전: v3.0 | 현재 구현 버전: **v6.2**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.05.12 | 현재 스펙 버전: v3.0 | 현재 구현 버전: **v6.3**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -563,6 +563,38 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 
 ## 6. 버전 이력 및 주요 결정 사항
 
+### v6.2 → v6.3 (2026.05.11)
+
+UX 용어 정리 + 경력 필터 강화 + Quick Wins 게임 맥락 분기 + 캐시 버전 관리.
+
+- **`experience_filter.py`**:
+  - `CACHE_VERSION = 2` 상수 추가.
+  - `load_or_build_cache()` — `__version__` 불일치 시 캐시 전체 재구축. 저장 시 `__version__` 기록.
+  - `EXPERIENCE_PATTERNS` 보강 (7개):
+    - `open_to_all`: `"신입 가능"` 추가.
+    - `senior_only`: `"경력 개발자"`, `"경력직"`, `"experienced"` 추가.
+    - `range_years`: `"경력"` prefix 제거 → `년` suffix만으로 구분.
+    - `min_years_exp`: 영문 패턴 `(\d+)\+?\s*years?\s*(?:of\s+)?(?:experience|exp)?` 신규 추가.
+  - `_self_test()` — 16개 → 25개 케이스 (v6.3 신규 9개 추가, 25/25 통과).
+- **`portfolio_diagnosis.py`**:
+  - `_QUICK_WINS_POOL` → `_QUICK_WINS_POOL_DEFAULT` / `_QUICK_WINS_POOL_GAME` 분리.
+  - `_aggregate_quick_wins()` — `game_engines: Optional[Set[str]]` 파라미터 추가. 게임 감지 시 게임 맥락 풀 사용.
+  - `generate_summary_block()` — `game_engines` 파라미터 추가. `_aggregate_quick_wins` 호출 시 전달.
+  - `run_diagnosis()` — `_collect_game_engines(per_repo)` 호출 후 `generate_summary_block`에 전달.
+  - 출력 용어 변경: `"기여도"` → `"개발 활동량"`, `"성숙도"` → `"프로젝트 운영도"`, `"일관성"` → `"작업 일관성"` (두 곳).
+- **`run_git2value.py`**:
+  - 버전 표기 `v6.3`.
+- **`github_extractor.py`** (§7~§8 추가 적용):
+  - `_BOT_LOGIN_PATTERN` 7종 → 22종 확장 — 배포/호스팅(Streamlit·Vercel·Netlify·Heroku·Railway), 의존성/보안(Snyk·Depfu·Greenkeeper·imgbot·allcontributors·Whitesource·Mend-bolt), 릴리스(semantic-release·release-drafter·changeset-bot) 봇 추가.
+  - `_is_bot_author()` — 2차 체크 추가: `author.type == "Bot"` (패턴 목록 미등록 봇 자동 포착).
+  - `evaluate_repository()` — `human_commit_count` 도입. `total_repo_commit_count = human_commit_count`로 변경 (봇 커밋 제외 → `target_commit_ratio` 정확화).
+  - `_calc_fork_penalty()` — Fork 감점 면제 조건 추가: `contribution_ratio >= 0.8 AND target_commit_count >= 20` 시 계수 `1.0` 반환 (사실상 단독 저작 판정).
+  - `_is_bot_author()` 버그픽스: 3차 이메일 체크에서 `users.noreply.github.com` 도메인의 봇 noreply(`{id}+{name}[bot]@users.noreply.github.com`)가 `return False`로 오통과되던 문제 수정 → `return "[bot]" in email`로 교체. 4차 체크 추가: raw git author name에 `[bot]` 포함 시 봇 판정 (GitHub `author` 객체 null 폴백).
+  - **미연결 커밋 처리 (§8 결함 B)**: `evaluate_repository()` 루프에 `unlinked_count` 변수 추가. `author` 객체가 `null`인 커밋은 `human_commit_count`에는 포함하되 `repo_author_keys` 집계에서 제외. 미연결 커밋 3개 이상 시 `repo_warnings`에 경고 추가. — 서비스 자동 커밋(Streamlit push 등)의 email 기반 key가 `distinct_author_count`를 부풀려 개인 레포를 팀 레포로 오분류하던 결함 해소.
+  - **`readme_raw` 필드 전달 (§9)**: `evaluate_repository()` 반환 dict에 `"readme_raw": readme_raw_text[:5000]` 추가. `extract_applicant_profile()` per_repo 구성에 `"readme_raw": res.get("readme_raw") or rm` 추가 (원본 없으면 정제본 폴백).
+- **`portfolio_diagnosis.py`** (§9 추가 적용):
+  - `_readme_diagnosis_single()` — `readme_text` 단일 변수에서 `readme_raw` + `readme_clean` 분리. `evaluate_readme_quality()` 인자를 `readme_clean` → `readme_raw`로 교체. 길이 판단(`n`)은 정제본 기준 유지. — `_clean_markdown` 이후 `##` 헤딩·이미지 마크다운이 제거된 텍스트로 평가해 거의 항상 "미흡"을 반환하던 문제 해소.
+
 ### v6.1 → v6.2 (2026.05.04)
 
 v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 (가) 계열,
@@ -842,4 +874,4 @@ v6.1 적용 시 다음 문서들도 함께 갱신해야 함:
 
 ---
 
-*Git2Value HandOff v6.2 — 2026.05.04*
+*Git2Value HandOff v6.3 — 2026.05.11*

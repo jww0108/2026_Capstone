@@ -260,7 +260,7 @@ def similarity_label(
     if score >= max_s - spread * 0.1:
         return "강함", None
     if score >= 0.75 or score >= max_s - spread * 0.4:
-        return "보통", None
+        return "강함", None
     if score >= 0.65:
         return "보통", None
     return "약함", None
@@ -820,7 +820,7 @@ async def run_e2e_pipeline(
 
     # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v6.2] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v6.3] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
 
     repo_classifications = diag_bundle.get("repo_classifications") or []
@@ -1045,11 +1045,23 @@ if __name__ == "__main__":
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
     # 레포는 최대 3개 (메인 1 + 서브 2 권장)
-    TARGET_USERNAME =  "tekyung"#"AstroJini"
+    TARGET_USERNAME =  "AstroJini"#"chjnett"#"honey766"#"tekyung"#"siheon012"#"jww0108"#"2026TUKCOMCD"#"Central-MakeUs"#"Project-Guideon"#"AstroJini"#
     TARGET_REPOS = [
         #"AstroJini/SmartFridge/tree/develop",
         #"AstroJini/SmartFridge-FE/tree/develop",
-        "tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone",
+        #"tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone", # unity, C# 게임 개발
+        #"tekyung/kyonggi-university_network-system-laboratory_webpage", # 프론트엔드
+        #"siheon012/Deepsentinel", # ai, 웹 풀스택
+        #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung", # ai 백엔드
+        #"jww0108/2026_Cap stone/tree/tekyung" # 백엔드
+        #"honey766/Paint", # unity, 게임 개발
+        #"honey766/Balls-Run/tree/main", # unity, 게임 개발
+        #"2026TUKCOMCD/SyncLab", # 웹 풀스택, 모바일
+        #"Central-MakeUs/AZIT_Front/tree/develop", # 프론트엔드
+        #"Project-Guideon/guideon-backend", # 백엔드
+        "AstroJini/MKX-BE/tree/develop", # 웹 풀스택
+        "AstroJini/SmartFridge/tree/develop", # 웹 풀스택
+        #"chjnett/my-sports-ai/tree/main", # ai, 머신러닝
     ]
     APPLICANT_YEARS = 0
     # ================================================================

@@ -1,5 +1,5 @@
 """
-Git2Value v6.2 — 경력 요건 필터링 모듈.
+Git2Value v6.3 — 경력 요건 필터링 모듈.
 
 공고 position + text에서 경력 요건을 정규식으로 추출하고,
 신입/취준생(특히 0년차) 기준으로 명백한 경력직 공고를 추천 후보에서 분리한다.
@@ -12,13 +12,24 @@ import os
 import re
 from typing import Any, Tuple
 
+# 패턴 변경 시 이 값을 증가시키면 캐시 전체 재구축
+CACHE_VERSION = 2
+
 # 경력 요건 추출 패턴 (position + text 합산 대상, 우선순위 순)
 EXPERIENCE_PATTERNS: list[tuple[str, str]] = [
-    (r"경력\s*무관|경력무관|신입\s*/\s*경력|신입\s*및\s*경력|신입\s*또는\s*경력", "open_to_all"),
+    # 1. 경력무관/신입+경력 (최우선) — v6.3: "신입 가능" 추가
+    (r"경력\s*무관|경력무관|신입\s*/\s*경력|신입\s*및\s*경력|신입\s*또는\s*경력|신입\s*가능", "open_to_all"),
+    # 2. 신입/주니어
     (r"신입|주니어|junior|entry\s*level", "junior_only"),
-    (r"시니어|senior|리드|lead", "senior_only"),
-    (r"경력\s*(\d+)\s*[년~\-]\s*(\d+)?\s*년", "range_years"),
+    # 3. 시니어/경력직 — v6.3: "경력 개발자", "경력직", "experienced" 추가
+    (r"시니어|senior|리드|lead|경력\s*개발자|경력직|experienced", "senior_only"),
+    # 4. 한글 연차 범위 — v6.3: "경력" prefix 없이도 매칭 (년 suffix로 구분)
+    (r"(\d+)\s*[~\-]\s*(\d+)\s*년", "range_years"),
+    # 5. 한글 "N년 이상"
     (r"(\d+)\s*년\s*이상", "min_years_exp"),
+    # 6. 영문 "N+ years" / "N years experience" — v6.3 신규
+    (r"(\d+)\+?\s*years?\s*(?:of\s+)?(?:experience|exp)?", "min_years_exp"),
+    # 7. 한글 "N년차"
     (r"(\d+)\s*년차", "specific_years"),
 ]
 
@@ -114,13 +125,18 @@ def load_or_build_cache(metadata: list[dict], cache_path: str) -> dict[str, Any]
     캐시 형식: {str(job_id): {min_years, is_junior_friendly, raw_label, requirement_type}}
     - 캐시 파일이 없거나 누락 항목이 있으면 추출 후 저장.
     - 파일 I/O 오류는 조용히 무시 (캐시 없이도 런타임 추출로 동작).
+    - v6.3: __version__ 불일치 시 캐시 전체 재구축.
     """
     cache: dict[str, Any] = {}
 
     if os.path.exists(cache_path):
         try:
             with open(cache_path, "r", encoding="utf-8") as f:
-                cache = json.load(f)
+                raw = json.load(f)
+            if raw.get("__version__") != CACHE_VERSION:
+                cache = {}
+            else:
+                cache = raw
         except (OSError, json.JSONDecodeError):
             cache = {}
 
@@ -139,6 +155,7 @@ def load_or_build_cache(metadata: list[dict], cache_path: str) -> dict[str, Any]
     if updated:
         try:
             os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
+            cache["__version__"] = CACHE_VERSION
             with open(cache_path, "w", encoding="utf-8") as f:
                 json.dump(cache, f, ensure_ascii=False, indent=2)
         except OSError:
@@ -200,7 +217,7 @@ def filter_by_experience(
 
 
 def _self_test() -> bool:
-    """v6.2: 경력 요건 정규식 패턴 검증용 단위 테스트."""
+    """v6.3: 경력 요건 정규식 패턴 검증용 단위 테스트 (25개 케이스)."""
     cases = [
         # (position, applicant_years, expected_eligible, label_hint)
         # 신입/경력무관
@@ -223,6 +240,16 @@ def _self_test() -> bool:
         # 경력 미명시 - 모두 통과
         ("백엔드 개발자", 0, True, None),
         ("Software Engineer", 2, True, None),
+        # v6.3 신규: 경력직 표현 보강
+        ("경력 개발자", 0, False, "경력(시니어)"),
+        ("경력직 백엔드", 0, False, "경력(시니어)"),
+        ("Experienced Engineer", 0, False, "경력(시니어)"),
+        ("Backend Developer 3+ years", 0, False, "3년 이상"),
+        ("5 years of experience required", 0, False, "5년 이상"),
+        ("개발자 1~4년", 0, False, "1년 이상"),
+        ("프론트엔드 2-5년", 0, False, "2년 이상"),
+        ("신입 가능", 0, True, "경력무관"),
+        ("Junior Developer 3+ years", 0, True, "신입/주니어"),  # junior가 먼저 매칭
     ]
 
     failed = []

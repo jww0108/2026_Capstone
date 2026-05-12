@@ -253,9 +253,11 @@ def evaluate_readme_quality(readme_text: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _readme_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
-    readme_text = (repo.get("readme") or "").strip()
+    # v6.3: 품질 평가는 원본 기준, 길이 판단은 정제본 기준
+    readme_raw = (repo.get("readme_raw") or repo.get("readme") or "").strip()
+    readme_clean = (repo.get("readme") or "").strip()
     has_image = bool(repo.get("readme_has_image"))
-    n = len(readme_text)
+    n = len(readme_clean)   # 길이: 정제본 (보일러플레이트 제외 후 실질 내용)
 
     if n < 50:
         return _item(
@@ -264,7 +266,7 @@ def _readme_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
             "채용 담당자가 처음 보는 문서가 README입니다. 구조화된 설명을 추가하세요.",
         )
 
-    quality = evaluate_readme_quality(readme_text)
+    quality = evaluate_readme_quality(readme_raw)       # v6.3: 원본으로 평가
     missing_dims = [k for k, v in quality["indicators"].items() if not v]
     missing_hint = f" (부족: {', '.join(missing_dims)})" if missing_dims else ""
 
@@ -646,12 +648,20 @@ _DIAG_LABELS_FOR_SUMMARY: Dict[str, str] = {
     "deployment": "배포",
 }
 
-_QUICK_WINS_POOL: List[tuple] = [
+_QUICK_WINS_POOL_DEFAULT: List[tuple] = [
     ("readme_quality", "README에 프로젝트 목적 + 기술 스택 + 스크린샷 1장 추가 (1시간 이내)"),
     ("commit_quality", "Conventional Commits 적용 (feat:/fix:/refactor:)"),
     ("cicd", "GitHub Actions 워크플로우 1개 추가 (Python: pytest, Node: jest)"),
     ("deployment", "Dockerfile + docker-compose.yml로 로컬 실행 가능하게 구성"),
     ("test_coverage", "핵심 비즈니스 로직 1~2개에 단위 테스트 추가"),
+]
+
+_QUICK_WINS_POOL_GAME: List[tuple] = [
+    ("readme_quality", "README에 프로젝트 목적 + 기술 스택 + 스크린샷/GIF 1장 추가 (1시간 이내)"),
+    ("commit_quality", "Conventional Commits 적용 (feat:/fix:/refactor:)"),
+    ("cicd", "GameCI GitHub Action 또는 엔진 빌드 자동화 파이프라인 추가"),
+    ("deployment", "빌드 결과물(APK/EXE) 또는 itch.io/스토어 배포 링크를 README에 명시"),
+    ("test_coverage", "Unity Test Framework / Unreal Automation Tests 등 엔진 테스트 도구 추가"),
 ]
 
 _BAD_STATUSES = {"미흡", "개선 필요", "미경험", "선택 가점", "없음", "필수 미흡", "확인 필요"}
@@ -716,7 +726,11 @@ def _aggregate_strengths(per_repo_diags: List[Dict[str, Any]]) -> List[str]:
     return out
 
 
-def _aggregate_quick_wins(per_repo_diags: List[Dict[str, Any]]) -> List[str]:
+def _aggregate_quick_wins(
+    per_repo_diags: List[Dict[str, Any]],
+    game_engines: Optional[Set[str]] = None,
+) -> List[str]:
+    """미흡 항목 빈도순 Quick wins 추출. 게임 엔진 감지 시 게임 맥락 풀 사용."""
     bad_counter: Counter = Counter()
     for d in per_repo_diags:
         for key, item in d["core_items"].items():
@@ -727,9 +741,12 @@ def _aggregate_quick_wins(per_repo_diags: List[Dict[str, Any]]) -> List[str]:
                 if d["extra_items"][key]["status"] in _BAD_STATUSES:
                     bad_counter[key] += 1
 
+    # v6.3: 게임 프로젝트면 게임 맥락 Quick Wins 풀 사용
+    pool = _QUICK_WINS_POOL_GAME if game_engines else _QUICK_WINS_POOL_DEFAULT
+
     out: List[str] = []
     used = set()
-    for key, action in _QUICK_WINS_POOL:
+    for key, action in pool:
         if key in bad_counter and key not in used:
             out.append(action)
             used.add(key)
@@ -745,10 +762,12 @@ def generate_summary_block(
     score_breakdown: Dict[str, Any],
     primary_domain: Optional[str],
     per_repo_scores: Optional[List[Dict[str, Any]]] = None,   # v6.2
+    game_engines: Optional[Set[str]] = None,                   # v6.3
 ) -> str:
     """
     종합 분석 블록 — GitHub 점수 + 레포 구성 + 강점 + Quick wins.
     v6.2: per_repo_scores 추가 시 레포별 점수 표시.
+    v6.3: game_engines 전달 시 게임 맥락 Quick Wins 사용.
     """
     level = level_dict.get("level", "Entry")
     pd_str = primary_domain or "개발"
@@ -773,7 +792,7 @@ def generate_summary_block(
     consistency = score_breakdown.get("consistency", 0)
 
     strengths = _aggregate_strengths(per_repo_diags)
-    quick_wins = _aggregate_quick_wins(per_repo_diags)
+    quick_wins = _aggregate_quick_wins(per_repo_diags, game_engines=game_engines)
     composition_lines = _portfolio_composition_lines(per_repo_diags, primary_domain)
 
     lines = [
@@ -782,7 +801,7 @@ def generate_summary_block(
         "─" * 60,
         f"  GitHub 종합 점수: {github_score}점 / 100점",
         f"    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%",
-        f"    (기여도 {contrib} / 성숙도 {quality} / 일관성 {consistency}) — 최고 레포 기준",
+        f"    (개발 활동량 {contrib} / 프로젝트 운영도 {quality} / 작업 일관성 {consistency}) — 최고 레포 기준",
         "",
     ]
 
@@ -797,9 +816,9 @@ def generate_summary_block(
             type_label = "팀" if rtype == "team" else "개인"
             lines.append(
                 f"    {i}. {name} ({type_label}): {total}점"
-                f"  (기여도 {bd.get('contribution', 0)} / "
-                f"성숙도 {bd.get('quality', 0)} / "
-                f"일관성 {bd.get('consistency', 0)})"
+                f"  (개발 활동량 {bd.get('contribution', 0)} / "
+                f"프로젝트 운영도 {bd.get('quality', 0)} / "
+                f"작업 일관성 {bd.get('consistency', 0)})"
             )
         lines.append("")
 
@@ -863,9 +882,12 @@ def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
         if r.get("repo_total_score") is not None or r.get("score_breakdown")
     ] or None
 
+    game_engines = _collect_game_engines(per_repo)   # v6.3: 게임 맥락 Quick Wins 분기용
+
     summary_block = generate_summary_block(
         per_repo_diags, level_dict, github_score, score_breakdown, primary_domain,
         per_repo_scores=per_repo_scores,
+        game_engines=game_engines or None,
     )
 
     return {

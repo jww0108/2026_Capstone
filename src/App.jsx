@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import ContactModal from './components/ContactModal';
 import { STEPS } from './constants/steps';
 import { buildData } from './utils/buildData';
 import LandingPage from './pages/LandingPage';
@@ -16,7 +17,8 @@ export default function App() {
   const [loadPct,  setLoadPct]  = useState(0);
   const [loadStep, setLoadStep] = useState(0);
   const [section,  setSection]  = useState("overview");
-  const [data,     setData]     = useState(null);
+  const [data,        setData]       = useState(null);
+  const [showContact, setShowContact] = useState(false);
   const timerRef = useRef(null);
 
   const startAnalysis = () => {
@@ -82,7 +84,8 @@ export default function App() {
   };
   return (
     <div style={{ display:"flex", minHeight:"100vh" }}>
-      <Sidebar active={section} onSelect={setSection} />
+      {showContact && <ContactModal onClose={() => setShowContact(false)}/>}
+      <Sidebar active={section} onSelect={setSection} username={username} onContact={() => setShowContact(true)}/>
       {pages[section]}
     </div>
   );

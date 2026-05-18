@@ -581,6 +581,7 @@ class GitHubExtractor:
         repo_author_keys: Set[str] = set()
         repo_author_labels: List[str] = []
         seen_label_keys: Set[str] = set()
+        author_commit_counts: Dict[str, int] = {}      # v6.4: 작성자별 커밋 수 집계
         bot_count = 0
         unlinked_count = 0                              # v6.3: GitHub 계정 미연결 커밋 수
         human_commit_count = 0                          # v6.3: 봇 제외 커밋 수
@@ -598,6 +599,7 @@ class GitHubExtractor:
             key = self._commit_author_key(c)
             if key:
                 repo_author_keys.add(key)
+                author_commit_counts[key] = author_commit_counts.get(key, 0) + 1  # v6.4
                 label = self._commit_author_label(c)
                 if label and key not in seen_label_keys:
                     repo_author_labels.append(str(label))
@@ -614,7 +616,25 @@ class GitHubExtractor:
             )
 
         distinct_author_count = len(repo_author_keys) if repo_author_keys else 1
-        repo_type = "team" if distinct_author_count >= 2 else "personal"
+
+        # v6.4: 지배적 기여자 판정 — 최다 기여자가 커밋의 85% 이상이면 사실상 개인 프로젝트
+        dominance_ratio = 0.0
+        is_dominance_override = False
+        if distinct_author_count >= 2 and author_commit_counts:
+            max_commits = max(author_commit_counts.values())
+            total_authored = sum(author_commit_counts.values())
+            dominance_ratio = max_commits / total_authored if total_authored > 0 else 0.0
+            if dominance_ratio >= 0.85:
+                is_dominance_override = True
+                repo_warnings.append(
+                    f"작성자 {distinct_author_count}명이나 최다 기여자가 "
+                    f"커밋의 {dominance_ratio:.0%}를 차지하여 개인 프로젝트로 판정"
+                )
+
+        if is_dominance_override:
+            repo_type = "personal"
+        else:
+            repo_type = "team" if distinct_author_count >= 2 else "personal"
         target_commit_count = len(all_author_commits)
         total_repo_commit_count = human_commit_count    # v6.3: 봇 제외 (분모 정확화)
         target_commit_ratio = (
@@ -831,6 +851,8 @@ class GitHubExtractor:
             "distinct_author_count": distinct_author_count,
             "repo_type": repo_type,
             "repo_author_names": repo_author_labels[:10],
+            "dominance_ratio": round(dominance_ratio, 3) if dominance_ratio > 0 else None,  # v6.4
+            "is_dominance_override": is_dominance_override,                                  # v6.4
             "is_fork": is_fork,
             "fork_penalty": fork_penalty,           # v6.2
             "fork_penalty_log": fork_log,           # v6.2 (디버깅용)
@@ -1044,6 +1066,8 @@ class GitHubExtractor:
                     "distinct_author_count": int(res.get("distinct_author_count") or 1),
                     "repo_type": res.get("repo_type") or ("team" if int(res.get("distinct_author_count") or 1) >= 2 else "personal"),
                     "repo_author_names": res.get("repo_author_names") or [],
+                    "dominance_ratio": res.get("dominance_ratio"),                          # v6.4
+                    "is_dominance_override": bool(res.get("is_dominance_override")),        # v6.4
                     "valid_loc": int(res.get("valid_loc") or 0),
                     "evidence_loc": int(res.get("evidence_loc") or 0),
                     "is_fork": bool(res.get("is_fork")),

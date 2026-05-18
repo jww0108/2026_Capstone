@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.05.12 | 현재 스펙 버전: v3.0 | 현재 구현 버전: **v6.3**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.05.18 | 현재 스펙 버전: v3.0 | 현재 구현 버전: **v7.1**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -65,13 +65,20 @@ Git2Value는 **GitHub API**(데이터 수집)를 제외하면 외부 서비스 �
 basic/
 ├── github_extractor.py      # GitHubExtractor (수집·점수·per_repo 집계)
 ├── profile_builder.py       # 도메인·엔진 시그니처 감지, 의존성 파싱, build_profile_text()
-├── portfolio_diagnosis.py   # 레포별 카드 진단 (v6.1: core 3 + extra 4 항목)
+├── portfolio_diagnosis.py   # 레포별 카드 진단 (v7.0: LLM 통합, core 3 + extra 4 항목)
 ├── valuation_engine.py      # v4.0: get_market_band() + v6.0 realistic_range
 ├── experience_filter.py     # v6.0/v6.1: 경력 요건 필터링 (사이드카 캐시)
-├── run_git2value.py         # E2E: 모듈 A/B/C 통합 출력 (v6.1)
+├── run_git2value.py         # E2E: Git2ValuePipeline 클래스 + analyze() + CLI 래퍼 (v7.1)
+├── llm_readme_evaluator.py  # ★ v7.0 신규: ReadmeEvaluator 클래스 (vLLM 연동)
 ├── requirements.txt         # 의존성 (sentence-transformers==2.6.1 버전 고정 중요)
 ├── .env                     # Github_api_token 환경변수 (버전 관리 제외)
 ├── HandOff.md               # 이 파일
+│
+├── eval_readme.py           # ★ v7.0 신규: 단일 README LLM 채점 스크립트 (CLI)
+├── main.py                  # ★ v7.1: FastAPI 백엔드 게이트웨이 (LLM 평가 + E2E 분석 API, 포트 8080)
+├── tests/                   # ★ v7.0 신규: 골든 셋 검증
+│   ├── test_golden_set.py   # LLM README 평가 골든 셋 (25개 케이스)
+│   └── fixtures/            # 골든 셋용 README 샘플 25개
 │
 ├── vector/
 │   ├── git2value_faiss.index
@@ -303,7 +310,7 @@ EXPERIENCE_PATTERNS = [
 
 ---
 
-### `run_git2value.py` — E2E 파이프라인 (v6.1)
+### `run_git2value.py` — E2E 파이프라인 (v7.1)
 
 #### 기본 설정
 
@@ -311,6 +318,40 @@ EXPERIENCE_PATTERNS = [
 - 임베딩 입력: `profile_for_matching` (없으면 `applicant_resume` 폴백)
 - **`MAX_REPO_COUNT = 3`** (v6.1): 입력 레포 최대 3개로 제한, 초과 시 앞 3개만 사용
 - **FAISS k=20** (v6.0): 다중 도메인 균형 추천 + 경력 필터 여유분 확보
+
+#### v7.1 신규: `Git2ValuePipeline` 클래스
+
+API 서버 환경에서 인프라를 1회 로드하고 요청마다 분석만 실행하는 클래스.
+
+| 메서드 | 역할 |
+|---|---|
+| `__init__()` | FAISS 인덱스·메타데이터, `SentenceTransformer`, `Git2ValueEngine`, 경험 캐시, `GitHubExtractor`, `ReadmeEvaluator` 1회 로드 |
+| `check_llm()` | vLLM 서버 가용 여부 확인 + `self.llm_available` 설정. `lifespan` 또는 CLI 시작 시 1회 호출 |
+| `analyze(username, repos, applicant_years)` | E2E 분석. **print 없이 dict 반환.** 오류 시 `{"status": "error", "error": "..."}` |
+
+`analyze()` 반환 dict:
+
+- **API 공개 키**: `status`, `error`, `github_score`, `per_repo`, `level`, `summary`, `job_matching`, `salary_band`, `tech_analysis`, `meta`
+- **`_internal`** (CLI 출력 전용, API에서 자동 제거): `profile`, `per_repo_diags`, `diag_bundle`, `top_matches_5`, `rerank_note`, `multi_domain_result`, `mismatch_diag`, `domain_check`, `detected_domains_merged`, `band_report`, `matched_categories_seen`, `ref_salary_categories`, `alt_salary_band`, `jumpit_category`, `has_mod_or_config`, `repo_classifications`, `tech_result`
+
+#### v7.1 신규: dict 빌더 함수 7개
+
+`analyze()` 내부에서 호출하는 순수 변환 함수. 모두 모듈 레벨 정의.
+
+| 함수 | 역할 |
+|---|---|
+| `_build_github_score_dict(profile)` | `github_score`, `score_breakdown` 구조화 |
+| `_build_per_repo_dict(profile, per_repo_diags)` | `profile["per_repo"]`와 `diag_bundle["per_repo_diagnoses"]` 를 `repo_name` 기준으로 병합 |
+| `_build_job_matching_dict(...)` | FAISS 매칭 + 도메인 리랭킹 + `similarity_label` 포함 |
+| `_build_salary_band_dict(band_report, ref_salary_categories, alt_salary_band)` | 연봉 밴드 + 참고 직무 |
+| `_build_tech_analysis_dict(tech_result)` | 기술 매칭 분석 그대로 전달 |
+| `_build_level_dict(diag_bundle)` | `expected_level` dict |
+| `_build_summary_dict(diag_bundle, per_repo_diags)` | `summary_block` 텍스트 + `_aggregate_strengths` / `_aggregate_quick_wins` 구조화 데이터 병렬 제공 |
+
+#### v7.1 신규: `_print_full_report()` / `run_e2e_pipeline()` 래퍼 전환
+
+- **`_print_full_report(result, target_username, applicant_years)`**: `analyze()` 반환 dict(`_internal` 포함)를 받아 기존 CLI 보고서 형식 그대로 출력.
+- **`run_e2e_pipeline()`**: `Git2ValuePipeline()` 생성 → `check_llm()` → `analyze()` → `_print_full_report()` 의 얇은 래퍼. CLI 동작 100% 유지.
 
 #### 모듈 A 핵심 함수
 
@@ -396,6 +437,67 @@ CATEGORY_TARGET_TECHS = {         # 학습 권장 (v6.1)
     2. {quick win 2}
     3. {quick win 3}
 ```
+
+### `main.py` — FastAPI 백엔드 게이트웨이 (v7.1)
+
+#### 엔드포인트 전체 (v7.1 기준)
+
+| 메서드 | 경로 | 입력 | 응답 | 비고 |
+|---|---|---|---|---|
+| `GET` | `/health` | — | `HealthResponse` | vLLM 연결 상태 |
+| `POST` | `/v1/readme/evaluate` | JSON body | `EvaluateReadmeResponse` | README LLM 평가 |
+| `POST` | `/v1/readme/evaluate/file` | multipart | `EvaluateWithSourceResponse` | 파일 업로드 |
+| `POST` | `/v1/readme/evaluate/url` | form | `EvaluateWithSourceResponse` | GitHub URL |
+| **`POST`** | **`/v1/analyze`** | **JSON body** | **`AnalyzeResponse`** | **★ v7.1 신규: E2E 분석** |
+
+#### `POST /v1/analyze` 요청 / 응답 모델
+
+```python
+# 요청
+class AnalyzeRequest(BaseModel):
+    github_username: str          # GitHub ID (영문/숫자/-, 1~39자)
+    repos: List[str]              # 레포 경로 목록 (1~3개)
+    applicant_years: Optional[int] = 0  # 경력 년수 (신입=0)
+
+# repos 예시: ["user/repo", "user/repo2/tree/branch"]
+```
+
+```python
+# 응답
+class AnalyzeResponse(BaseModel):
+    status: str                           # "success" | "error"
+    error: Optional[str]
+    github_score: Optional[Dict[str, Any]]
+    per_repo: Optional[List[Dict[str, Any]]]
+    level: Optional[Dict[str, Any]]
+    summary: Optional[Dict[str, Any]]
+    job_matching: Optional[Dict[str, Any]]
+    salary_band: Optional[Dict[str, Any]]
+    tech_analysis: Optional[Dict[str, Any]]
+    meta: Optional[Dict[str, Any]]        # version, llm_available, analysis_time_seconds 등
+```
+
+#### 싱글톤 / lifespan (v7.1)
+
+- **`_pipeline: Git2ValuePipeline`**: 앱 시작 시(`lifespan`) 1회 초기화. FAISS·모델·캐시 재로드 없이 모든 요청 공유.
+- 초기화 실패 시 `_pipeline = None`으로 설정 → `/v1/analyze` 요청 시 **503** 반환.
+- 기존 `ReadmeEvaluator` 싱글톤(`_evaluator`) 및 vLLM health check는 변경 없이 유지.
+
+#### CORS (v7.1 변경)
+
+기존 `allow_origins=["*"]` → **명시적 출처 목록** (`Vercel 배포 도메인 + localhost:3000/5173`).  
+환경변수 `CORS_ORIGINS`에 콤마 구분 URL을 넣으면 오버라이드 가능:
+
+```bash
+set CORS_ORIGINS=https://git2value.vercel.app,http://localhost:3000
+python main.py
+```
+
+#### 입력 검증
+
+- `github_username`: `^[a-zA-Z0-9\-]{1,39}$` — 정규식 불일치 시 **400**
+- 각 repo: `user/repo` 또는 `user/repo/tree/branch` 형식 — 불일치 시 **400**
+- repos 0개 또는 4개 이상 — **400**
 
 ---
 
@@ -559,9 +661,247 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 
 **중요:** v6.0의 `portfolio_diagnosis` 키는 v6.1에서 `per_repo_diagnoses`로 대체됨. 기존 호출자가 있다면 갱신 필요.
 
+### `POST /v1/analyze` 응답 JSON (v7.1)
+
+```json
+{
+  "status": "success",
+  "error": null,
+  "github_score": {
+    "total": 72.4,
+    "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+    "breakdown": { "contribution": 42.0, "quality": 20.0, "consistency": 10.4 },
+    "breakdown_note": "최고 레포 기준"
+  },
+  "per_repo": [
+    {
+      "repo_name": "user/repo",
+      "repo_type": "team",
+      "distinct_author_count": 3,
+      "is_fork": false,
+      "repo_total_score": 72.4,
+      "detected_domains": ["서버/백엔드"],
+      "frameworks": ["FastAPI"],
+      "diagnosis": {
+        "core_items": { "readme_quality": {...}, "project_structure": {...}, "commit_quality": {...} },
+        "extra_items": { "test_coverage": {...}, "cicd": {...}, "deployment": {...}, "commit_pattern": {...} }
+      }
+    }
+  ],
+  "level": { "grade": "Competitive", "description": "팀 프로젝트 + CI/CD 확인 → 경쟁력 있는 포트폴리오." },
+  "summary": {
+    "text": "[종합 분석]\n  GitHub 점수 : 72.4점 / 100점 ...",
+    "positioning": "서버/백엔드 Competitive 수준 포트폴리오",
+    "strengths": ["README 품질", "CI/CD"],
+    "quick_wins": ["테스트 코드 추가", "Docker Compose 작성"]
+  },
+  "job_matching": {
+    "primary_domain": "서버/백엔드",
+    "detected_domains": ["서버/백엔드"],
+    "is_multi_domain": false,
+    "rerank_note": "도메인 감지: '서버/백엔드' → ... 재정렬했습니다.",
+    "eligible_matches": [
+      {
+        "rank": 1,
+        "position": "백엔드 개발자",
+        "company_name": "XXXX",
+        "category": "서버/백엔드",
+        "similarity": 0.8512,
+        "effective_score": 0.9012,
+        "domain_boosted": true,
+        "similarity_label": "강함",
+        "experience_warning": null
+      }
+    ],
+    "domain_mismatch": null,
+    "multi_domain_picks": null,
+    "jumpit_category": "서버/백엔드",
+    "company_types": ["서버/백엔드 유사 공고 3건"]
+  },
+  "salary_band": {
+    "matched_category": "서버/백엔드",
+    "experience_level": "신입~3년",
+    "salary_range": { "jumpit_median": 36000000, "wanted_median": 38000000, "combined_range": "3,600만~3,800만원" },
+    "realistic_range": { "median": 37000000, "p25_estimate": 31450000, "p75_estimate": 44400000 },
+    "source": "점핏 2025 공채 기준",
+    "note": "GitHub 점수 미반영 — 시장 참고용",
+    "reference_categories": [{ "category": "웹 풀스택", "combined_range": "3,800만~4,000만원" }],
+    "alt_category_band": null
+  },
+  "tech_analysis": {
+    "matched_techs": ["Python", "FastAPI", "Docker"],
+    "missing_techs": ["AWS"],
+    "learning_suggestions": ["Spring Boot", "PostgreSQL"],
+    "company_types": ["서버/백엔드 유사 공고 3건"]
+  },
+  "meta": {
+    "version": "v7.0",
+    "llm_available": true,
+    "analysis_time_seconds": 18.3,
+    "repos_analyzed": 1,
+    "applicant_years": 0
+  }
+}
+```
+
 ---
 
 ## 6. 버전 이력 및 주요 결정 사항
+
+### v7.1 (2026.05.18 — E2E 분석 API 엔드포인트 + Git2ValuePipeline 리팩토링)
+
+**백엔드 API화: `run_git2value.py`를 클래스 기반으로 리팩토링하고 `POST /v1/analyze` 엔드포인트 추가.**
+
+- **`run_git2value.py`**:
+  - `Git2ValuePipeline` 클래스 신규 — 인프라(FAISS·임베딩 모델·캐시·연봉 엔진·GitHub 추출기·LLM 평가기)를 `__init__()`에서 1회 로드. 이후 `analyze()` 호출마다 재로드 없음.
+  - `check_llm()` 비동기 메서드 — vLLM 서버 가용 여부 확인 + `self.llm_available` 설정.
+  - `analyze(username, repos, applicant_years)` 비동기 메서드 — 기존 `run_e2e_pipeline()` 로직을 **print 없이** 구현, 구조화 dict 반환. 오류 시 `{"status": "error", ...}`.
+  - dict 빌더 7개 신규(`_build_github_score_dict`, `_build_per_repo_dict`, `_build_job_matching_dict`, `_build_salary_band_dict`, `_build_tech_analysis_dict`, `_build_level_dict`, `_build_summary_dict`).
+  - `_build_summary_dict()` — `portfolio_diagnosis._aggregate_strengths()` / `_aggregate_quick_wins()`를 직접 호출해 `summary_block` 텍스트와 구조화 데이터(strengths, quick_wins)를 병렬 제공.
+  - `_print_full_report(result, target_username, applicant_years)` 신규 — `analyze()` 반환 dict의 `_internal`에서 데이터를 꺼내 기존 CLI 보고서 형식 그대로 출력.
+  - `run_e2e_pipeline()` 래퍼 전환 — `Git2ValuePipeline()` 생성 → `check_llm()` → `analyze()` → `_print_full_report()`. **기존 CLI 동작 100% 유지. `__main__` 블록 변경 없음.**
+  - `import time`, `from portfolio_diagnosis import ..., _aggregate_strengths, _aggregate_quick_wins` 추가.
+
+- **`main.py`**:
+  - `from run_git2value import Git2ValuePipeline` 추가.
+  - `_pipeline: Optional[Git2ValuePipeline]` 싱글톤 변수 추가.
+  - `lifespan` 수정 — 앱 시작 시 `Git2ValuePipeline()` 초기화 + `check_llm()` 실행. 초기화 실패 시 `_pipeline = None`으로 graceful 처리.
+  - `AnalyzeRequest` / `AnalyzeResponse` Pydantic 모델 신규 추가.
+  - 입력 검증 정규식 2개 신규 (`_GITHUB_USERNAME_RE`, `_GITHUB_REPO_RE`).
+  - `POST /v1/analyze` 엔드포인트 신규 — 입력 검증 → `_pipeline.analyze()` → `_internal` 제거 후 JSON 반환.
+  - CORS 변경: `allow_origins=["*"]` → **명시적 출처 목록** (Vercel + localhost:3000/5173). `CORS_ORIGINS` 환경변수로 오버라이드 가능.
+  - `import re` 추가.
+
+- **변경하지 않은 파일**: `github_extractor.py`, `profile_builder.py`, `portfolio_diagnosis.py`, `valuation_engine.py`, `experience_filter.py`, `llm_readme_evaluator.py`.
+
+---
+
+### v7.0 이후 개선 (2026.05.15 — FastAPI 게이트웨이 + eval_readme 출력 개선)
+
+**vLLM 연동 HTTP API 서버 추가 + CLI 출력 완전 표시.**
+
+- **`main.py`** (신규):
+  - FastAPI 기반 LLM 게이트웨이. vLLM(`localhost:8000`)과 `ReadmeEvaluator`를 HTTP API로 노출.
+  - 기본 포트 **8080** (vLLM 8000과 분리). `PORT` 환경변수로 변경 가능.
+  - 앱 수준 싱글톤 `ReadmeEvaluator` + **TTL 60초** health 캐시 (매 요청마다 vLLM 왕복 방지).
+  - 기동 시 `lifespan`에서 vLLM 연결 사전 확인 및 로그 출력.
+  - CORS 전체 허용 (`allow_origins=["*"]`) — 팀원 테스트용 (→ v7.1에서 명시적 출처 목록으로 변경).
+  - 엔드포인트 3종 (→ v7.1에서 `/v1/analyze` 추가):
+    | 경로 | 방식 | 입력 | 용도 |
+    |------|------|------|------|
+    | `GET /health` | GET | — | vLLM 연결 상태 확인 |
+    | `POST /v1/readme/evaluate` | JSON body | `readme_raw` + `meta` | 프로그래밍 통합용 |
+    | `POST /v1/readme/evaluate/file` | multipart form | README.md 파일 + form | 파일 직접 업로드 |
+    | `POST /v1/readme/evaluate/url` | form | GitHub URL + form | GitHub URL 즉시 평가 |
+  - 오류 코드 분리: 50자 미만 → **422**, vLLM 미연결 → **503**, LLM 파싱 실패 → **502**.
+  - GitHub `blob` URL(`/blob/`) → `raw.githubusercontent.com` 자동 변환.
+  - `readme_raw` 최대 50,000자 제한 (Pydantic `max_length`).
+  - `languages` 필드를 `Dict[str, float]`로 선언 (소수점 비율 허용).
+  - `/docs` Swagger UI에서 파일 업로드·URL 입력 모두 브라우저에서 직접 테스트 가능.
+- **`requirements.txt`**:
+  - `python-multipart>=0.0.9` 추가 (파일 업로드 엔드포인트 필수 의존성).
+- **`eval_readme.py`**:
+  - `reason` 출력 잘림(`[:72]`) 제거 → reason 전체 텍스트 표시.
+
+### v7.0 이후 개선 (2026.05.14 — 동일 세션)
+
+**LLM 평가 품질 향상 + 골든 셋 확장 + 단일 채점 CLI 추가.**
+
+- **`llm_readme_evaluator.py`**:
+  - `LLM_MAX_TOKENS`: 600 → **1000** (JSON 중간 절단으로 인한 파싱 실패 방지).
+  - `SYSTEM_PROMPT` 개선 3종:
+    1. **tier 경계 정수화**: `"보통" (score 2.5-3.9)` → `"양호": score 4-5 / "보통": score 3 / "미흡": score 1-2`. 소수점 경계로 인한 혼선 제거.
+    2. **도메인 가중치 힌트**: 게임(visual_demo 비중↑), ML(성능 지표 인정), CLI(실행 예시 대체), 모바일(빌드 복잡성 반영), 데이터 분석(차트·결과표 인정) 5개 도메인 조건 추가.
+    3. **Few-shot 예시**: 미흡·보통·양호 각 1건 대표 예시를 프롬프트 끝에 추가해 경계 케이스 일관성 향상.
+  - `_build_prompt()` — 이미지 링크 `![alt](url)` → `[screenshot: alt]` placeholder로 치환 후 개수 카운트. `has_screenshots` 필드를 컨텍스트에 명시 (`"yes (N image(s) detected)"` 형식).
+  - `USER_PROMPT_TEMPLATE` — `readme_raw` → `readme_clean` (이미지 치환본), `{has_screenshots}` 필드 추가.
+- **`tests/test_golden_set.py`**:
+  - 골든 셋 **15개 → 25개** 확장 (케이스 #16~#25 신규).
+  - Case #04 · #06: `expected_tier` "보통" → "미흡", `expected_tier_range: ["미흡", "보통"]` 추가 (LLM 엄격 판정이 더 합리적).
+  - Case #05: `expected_tier` "보통" → "미흡", `expected_tier_range: ["미흡", "보통"]` 추가.
+  - Case #11: `expected_llm_call` `False` → `True` (fixture 파일이 실제 50자 초과).
+  - 헤더·출력 문구 "15개" → "25개". 통과 기준 주석 업데이트.
+- **`tests/fixtures/`** (10개 신규):
+  - `16_frontend_mid_korean.md` — 한국어 프론트엔드 중간 수준 (스크린샷 1개, 실행 불완전) → 보통
+  - `17_cli_tool_english.md` — CLI 도구 영문, 실행 예시 상세, 시각 없음 → 보통
+  - `18_architecture_diagram.md` — 아키텍처 다이어그램 + 데모 GIF → 양호
+  - `19_docker_oneclick.md` — Docker 원클릭 + 스크린샷 2개 → 양호
+  - `20_data_analysis.md` — 데이터 분석, 모델 성능표 + 시각화 → 양호
+  - `21_react_native_basic.md` — React Native 기초, 설명 빈약 → 미흡
+  - `22_automation_script.md` — 자동화 스크립트, 설명 없음 → 미흡
+  - `23_crawler_project.md` — 크롤러, 한국어, 설명+실행 있음 → 보통
+  - `24_english_mid_backend.md` — 영문 중간 수준 백엔드 API → 보통
+  - `25_perfect_korean_readme.md` — 한국어 완벽 README (문제정의+아키텍처+GIF) → 양호
+- **`eval_readme.py`** (신규):
+  - 단일 README를 LLM으로 채점하는 독립 CLI 스크립트.
+  - 로컬 파일 경로 또는 GitHub raw URL 지원.
+  - `--domain`, `--langs`, `--sigs`, `--repo-type` 옵션으로 meta 지정 가능 (미지정 시 Unknown 폴백).
+  - `REASON_WRAP_WIDTH = 120` — reason 텍스트를 120자 단위로 줄바꿈해 출력.
+  - 종합 평가 아이콘(🟢🟡🔴) + 5차원 점수 바(█░) + 개선 제안 2개 출력.
+
+**골든 셋 검증 결과 (25개):**
+
+| 지표 | 값 | 기준 |
+|------|-----|------|
+| tier 일치율 | **91% (21/23)** | 80% 이상 |
+| 1단계 이내 오차 | **100% (23/23)** | 100% |
+| JSON 파싱 오류 | 0건 | 0건 |
+
+---
+
+### v6.4 → v7.0 (2026.05.14)
+
+로컬 LLM README 평가 시스템 통합. 설계 문서: `v7_0_LLM_README_Evaluation_Plan.md`.
+
+- **`llm_readme_evaluator.py`** (신규):
+  - `ReadmeEvaluator` 클래스: vLLM 서버(Qwen2.5-32B-AWQ, `localhost:8000`)와 통신.
+  - `health_check()` — 서버 가용성 최초 1회 확인 후 캐시. 미가동 시 모든 평가가 룰베이스로 폴백.
+  - `evaluate(readme_raw, meta)` — README(최대 3000자) + 언어/도메인/시그니처/레포타입 메타를 LLM에 전송.
+  - 5차원 평가: 목적 명확성·기술 설명·실행 가이드·시각 자료·종합(tier: 양호/보통/미흡) 각 1~5점.
+  - `guided_json` 강제로 파싱 실패 최소화. 모든 오류(타임아웃/HTTP오류/파싱실패) → `None` → 룰베이스.
+  - `temperature=0.1`, `max_tokens=600`, `LLM_TIMEOUT=5.0초`.
+- **`portfolio_diagnosis.py`**:
+  - `_item()` — `llm_used`/`llm_scores`/`llm_suggestions` 파라미터 추가 (기존 호출부 하위 호환).
+  - `_validate_llm_result_for_diag()` 신규 — LLM 출력 최소 스키마 검증.
+  - `_readme_diagnosis_single(repo, llm_result=None)` — `llm_result` 유효 시 LLM tier·요약·제안 채택. 없으면 기존 v6.4 룰베이스.
+  - `_aggregate_quick_wins()` — LLM `improvement_suggestions` 있으면 정적 풀 대신 최우선 사용.
+  - `diagnose_single_repo(repo, llm_result=None)` — LLM 결과를 `_readme_diagnosis_single()`에 전달.
+  - `run_diagnosis(profile, llm_results=None)` — `llm_results`(per_repo와 동일 인덱스 리스트)로 각 레포 LLM 결과 주입.
+  - 모듈 docstring을 v7.0으로 갱신.
+- **`run_git2value.py`**:
+  - `from llm_readme_evaluator import ReadmeEvaluator` 추가.
+  - Step 1에 `ReadmeEvaluator` 초기화 + `health_check()` 추가 (LLM 가용 여부 출력).
+  - Step 3.5(신규): GitHub 스캔 직후, FAISS 매칭과 독립적으로 `asyncio.gather()`로 레포별 LLM README 평가 병렬 실행.
+  - Step 4에 `run_diagnosis(profile, llm_results=...)` 전달.
+  - `_print_readme_llm_detail()` 신규 — AI 분석 라벨 + 5차원 점수 바(█░) 출력.
+  - `_print_repo_card()` — README 항목 출력 후 `_print_readme_llm_detail()` 호출.
+  - 버전 표기 `v6.4` → `v7.0`.
+- **`tests/`** (신규):
+  - `tests/test_golden_set.py` — 15개 케이스 골든 셋 검증 스크립트.
+  - `tests/fixtures/` — 골든 셋 README 샘플 15개 (README 없음·보일러플레이트·영문/한국어 완성·Unity·ML·완벽 등).
+
+#### v7.0 설계 원칙 (변경 없는 항목)
+
+- LLM은 Optional — 서버 다운 시 룰베이스 단독 동작. `github_score`, 모듈 A(매칭), 모듈 C(연봉)에 영향 없음.
+- `expected_level()`, 등급 판정 로직은 변경 없음 — LLM이 반환하는 tier("양호"/"보통"/"미흡")가 기존 status와 동일 값 공간이므로 하위 호환.
+
+### v6.3 → v6.4 (2026.05.13)
+
+README 패턴 커버리지 보강 + 지배적 기여자 판정.
+
+- **`portfolio_diagnosis.py`**:
+  - `README_QUALITY_INDICATORS` 패턴 보강 (3개 차원에 각 2~3개 패턴 추가).
+    - "프로젝트 목적 명시": `## About`, `## Description`, `## Summary`, `## 프로젝트 설명/소개`, `## What is` 추가.
+    - "기술 스택 설명": `## Built With`, `## Requirements`, `## Dependencies`, `## 개발 환경`, `## 의존성`, `## 기술 구성` 추가.
+    - "결과물 시각화": `<video>` 태그, YouTube/Vimeo 링크, `## Demo`, `## 데모`, `## Screenshots`, `## 스크린샷`, `## Preview` 섹션 헤딩 추가.
+- **`github_extractor.py`**:
+  - `evaluate_repository()` — `author_commit_counts: Dict[str, int]` 집계 추가. 봇/미연결 제외 후 작성자 key별 커밋 수 카운트.
+  - 지배적 기여자 판정: `distinct_author_count >= 2`여도 최다 기여자 커밋 비율 `>= 0.85`이면 `repo_type = "personal"` 재판정 + `is_dominance_override = True`. 85%는 "나머지 전원 합계 < 15%" 기준.
+  - 반환 dict에 `dominance_ratio` (소수점 3자리) + `is_dominance_override` 필드 추가.
+  - `extract_applicant_profile()` per_repo에 `dominance_ratio` / `is_dominance_override` 전달.
+- **`run_git2value.py`**:
+  - `_print_repo_card()` — `is_dominance_override` 시 "개인 (작성자 N명이나 본인 기여 X%로 개인 판정)" 형식으로 표시.
+  - 버전 표기 `v6.4`.
 
 ### v6.2 → v6.3 (2026.05.11)
 
@@ -806,12 +1146,15 @@ v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 
 40. ~~총점 산출 LOC 가중 편중~~ ✅ v6.2 (대표 프로젝트 70% + 전체 평균 30%)
 41. ~~Quality 점수 개인/팀 모순~~ ✅ v6.2 (개인 레포 활성 주 중심 + CI/CD·테스트 가산점)
 42. ~~개인 레포 우수 사용자 등급 누락~~ ✅ v6.2 (`Competitive (개인)` 경로 추가)
+43. ~~README 평가 패턴 커버리지 부족 (About/Built With 등 누락)~~ ✅ v6.4 (패턴 8개 추가)
+44. ~~사실상 1인 프로젝트가 팀으로 오분류 (기여 1~3커밋 팀원)~~ ✅ v6.4 (지배적 기여자 85% 임계값 판정)
+36. ~~LLM 도입 (로컬 Qwen2.5-32B-AWQ 등)~~ ✅ v7.0 (`llm_readme_evaluator.py` + `portfolio_diagnosis.py` 통합. vLLM 서버 Optional, 다운 시 룰베이스 폴백)
 
 ### 남은 항목
 
 12. **Consistency `0.5` 계수** — 임의값. 지수 감쇠 전환 검토.
 13. **`migrations/` ignore** — Django 등에서 의도한 마이그레이션이 LOC에서 제외.
-14. **`DOMAIN_BOOST`(0.05) 튜닝** — 데이터 기반 조정은 v7.
+14. **`DOMAIN_BOOST`(0.05) 튜닝** — 데이터 기반 조정 검토.
 15. **유사도 레이블 정밀화** — 백분위 기반으로 개선 가능 (v6.2 0.65 분기는 단계적 진전).
 16. **게임/정보보안 등 일부 직무** — 원티드 매핑 누락 시 점핏 단독.
 17. **PR/이슈 협업 분석** — 추가 API 필요, 우선순위 낮음.
@@ -819,9 +1162,14 @@ v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 
 19. **게임 포트폴리오 `expected_level` 웹 편향** — v5.4 피드백만 조정, 등급 산정 별도 검토.
 22. **신규 도메인 매핑** — `HW/임베디드`/`DBA/데이터`/`그래픽스`는 `DOMAIN_TO_CATEGORIES` 미매핑.
 25. **블록체인·도구 개발 공고 DB 매칭 품질** — 점핏 JD 코퍼스 보강 필요.
-30. **차등 가산점 (시그너처 vs 휴리스틱)** — 정확도 측정 후 v7.
+30. **차등 가산점 (시그너처 vs 휴리스틱)** — 정확도 측정 후 결정.
 35. **리멤버 400개 데이터 처리 결정** — 신입 대상 피벗 후 분석 보류. 분석 스크립트 + 분포 확인 후 결정.
-36. **LLM 도입 (로컬 Qwen2.5-32B-AWQ 등)** — README 평가의 룰베이스 한계 보완. v7 검토.
+45. ~~**LLM 골든 셋 검증 실행**~~ ✅ 91% 달성 (25개 케이스, tier 일치율 21/23, 1단계 이내 오차 100%).
+46. **LLM 프롬프트 A/B 테스트** — 골든 셋 확장(30개+) 후 프롬프트 변형별 일치율 비교 (v7.1 검토).
+47. **커밋 메시지 품질 LLM 평가** — 현재 룰베이스 무의미 커밋 비율 판정의 정확도 한계 보완 (v7.1 검토).
+48. **LLM 결과를 FAISS 키워드 압축 폴백으로 활용** — 도메인 사전 미등록 README의 매칭 개선 (v7.2 검토).
+49. **`/v1/analyze` 동시 요청 제어** — GitHub API 토큰 1개 기준 2~3 요청 이내 가정 (캡스톤 데모 규모). 프로덕션 전환 시 Rate Limiter 또는 큐 도입 필요.
+50. **`CORS_ORIGINS` 환경변수 미설정 시 Vercel 도메인 하드코딩** — 실제 프로덕션 배포 전 `CORS_ORIGINS` 확인 필요.
 
 ---
 
@@ -831,6 +1179,12 @@ v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 
 - `faiss-cpu==1.8.0` CPU 버전 유지
 - `.env`에 `Github_api_token` 필요
 - **외부 LLM API 의존 없음** — 분석·매칭·진단 전부 로컬 (설계 원칙)
+- **v7.0 LLM 서버 (Optional)**: vLLM 서버(`localhost:8000`)가 없으면 README 평가는 룰베이스로 자동 폴백. `aiohttp==3.9.3`은 이미 `requirements.txt`에 포함.
+  - 서버 실행 예시: `vllm serve Qwen/Qwen2.5-32B-Instruct-AWQ --gpu-memory-utilization 0.85 --max-model-len 8192`
+  - VRAM 요건: AWQ 4bit ≈ 18GB (RTX 4090 24GB에서 6GB 여유)
+- **v7.0+ FastAPI 게이트웨이 (Optional)**: `main.py` + `python-multipart>=0.0.9` 필요.
+  - `pip install python-multipart` 후 `python main.py` (포트 8080).
+  - 외부 접속: 방화벽 8080 포트 개방 또는 Tailscale/ngrok 터널 연결.
 
 ---
 
@@ -860,6 +1214,90 @@ python run_git2value.py
 python valuation_engine.py
 ```
 
+### LLM README 골든 셋 검증 (v7.0)
+
+```bash
+# vLLM 서버 실행 후:
+python tests/test_golden_set.py
+# tier 일치율 80% 이상, 1단계 이내 오차 100% 확인
+```
+
+### 단일 README LLM 채점 (v7.0 이후)
+
+```bash
+# 로컬 파일
+python eval_readme.py path/to/README.md
+
+# GitHub raw URL
+python eval_readme.py https://raw.githubusercontent.com/user/repo/main/README.md
+
+# meta 정보 지정 (선택)
+python eval_readme.py README.md --domain 서버/백엔드 --langs "Python 80,TypeScript 20" --sigs "FastAPI,Docker" --repo-type team
+```
+
+### FastAPI LLM 게이트웨이 (v7.0+ 이후)
+
+```bash
+# 서버 실행 (기본 8080)
+python main.py
+
+# 또는 uvicorn 직접 실행
+uvicorn main:app --host 0.0.0.0 --port 8080
+
+# 환경변수로 포트·모델 변경
+set PORT=8001
+set VLLM_BASE_URL=http://localhost:8000/v1
+python main.py
+```
+
+Swagger UI: `http://localhost:8080/docs`
+
+| 엔드포인트 | 설명 |
+|-----------|------|
+| `GET /health` | vLLM 연결 상태 확인 |
+| `POST /v1/readme/evaluate` | JSON body로 평가 (프로그래밍 통합용) |
+| `POST /v1/readme/evaluate/file` | README.md 파일 업로드 → 평가 |
+| `POST /v1/readme/evaluate/url` | GitHub URL → 평가 (blob/raw 모두 가능) |
+| **`POST /v1/analyze`** | **GitHub 포트폴리오 E2E 분석 → JSON 반환 (v7.1)** |
+
+### E2E 분석 API 호출 (v7.1)
+
+```bash
+# 서버 실행 (포트 8080)
+python main.py
+
+# E2E 분석 요청
+curl -X POST http://localhost:8080/v1/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "github_username": "siheon012",
+    "repos": ["siheon012/Deepsentinel"],
+    "applicant_years": 0
+  }'
+
+# 브랜치 지정 예시
+curl -X POST http://localhost:8080/v1/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "github_username": "tekyung",
+    "repos": [
+      "Virtual-Company-Mal-Geum/ai-server/tree/tekyung",
+      "tekyung/kyonggi-university_network-system-laboratory_webpage"
+    ],
+    "applicant_years": 1
+  }'
+```
+
+**입력 제약:**
+- `github_username`: 영문/숫자/`-` 조합, 1~39자
+- `repos`: 1~3개. 형식: `user/repo` 또는 `user/repo/tree/branch`
+- `applicant_years`: 0 이상 정수 (신입=0)
+
+**에러 코드:**
+- `400` — 입력 검증 실패 (잘못된 username / repo 형식 / 개수 초과)
+- `503` — 파이프라인 초기화 실패 (서버 재시작 필요)
+- `500` — 분석 중 오류 (GitHub API 한도 초과 등)
+
 ---
 
 ## 10. 외부 문서 동기 갱신
@@ -874,4 +1312,4 @@ v6.1 적용 시 다음 문서들도 함께 갱신해야 함:
 
 ---
 
-*Git2Value HandOff v6.3 — 2026.05.11*
+*Git2Value HandOff v7.1 — 2026.05.18 (E2E 분석 API `POST /v1/analyze` + `Git2ValuePipeline` 리팩토링 + CORS 명시적 출처 + FastAPI LLM 게이트웨이)*

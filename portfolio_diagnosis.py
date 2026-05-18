@@ -1,5 +1,5 @@
 """
-Git2Value v6.1 — 포트폴리오 진단 체크리스트 (룰베이스).
+Git2Value v7.0 — 포트폴리오 진단 체크리스트 (룰베이스 + 로컬 LLM 보강).
 v5.4: Unity/Unreal/Godot 감지 시 테스트·CI/CD·배포 피드백을 게임 개발 맥락으로 조정.
 v5.5: 기여 유형 안내(contribution_type_note), Competitive 등급 기준 조정, 테스트 항목 문구 완화.
 v5.7: 모드/플러그인 플랫폼 맥락 메시지(mod_context_message), 설정 프로젝트 안내(config_repo_message),
@@ -11,6 +11,10 @@ v6.1: 레포별 카드 진단으로 전환. classify_repo_type(), diagnose_singl
       개인 레포: 테스트·CI/CD·배포·커밋 리듬을 가산점 항목으로 한 줄 안내.
       팀 레포: 4개 항목 모두 필수 점검 항목.
       generate_summary_block()에 GitHub 점수 분해, 레포 구성 요약 추가.
+v7.0: _readme_diagnosis_single()에 로컬 LLM(ReadmeEvaluator) 결과 선택적 통합.
+      LLM 사용 시 5차원 점수·도메인 맞춤 개선 제안, 미사용 시 기존 룰베이스 그대로.
+      _item()에 llm_used/llm_scores/llm_suggestions 필드 추가 (하위 호환).
+      _aggregate_quick_wins()에서 LLM improvement_suggestions 최우선 사용.
 """
 from __future__ import annotations
 
@@ -28,8 +32,21 @@ MEANINGLESS_COMMIT_PATTERNS = re.compile(
 )
 
 
-def _item(status: str, detail: str, action: Optional[str] = None) -> Dict[str, Any]:
-    return {"status": status, "detail": detail, "action": action}
+def _item(
+    status: str,
+    detail: str,
+    action: Optional[str] = None,
+    llm_used: bool = False,
+    llm_scores: Optional[Dict[str, int]] = None,
+    llm_suggestions: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    result: Dict[str, Any] = {"status": status, "detail": detail, "action": action}
+    result["llm_used"] = llm_used
+    if llm_scores:
+        result["llm_scores"] = llm_scores
+    if llm_suggestions:
+        result["llm_suggestions"] = llm_suggestions
+    return result
 
 
 def contribution_type_note(valid_loc: int, evidence_loc: int) -> str:
@@ -222,17 +239,50 @@ README_QUALITY_INDICATORS: Dict[str, List[str]] = {
         r"^#\s*[가-힣\w].{5,}",
         r"##\s*(소개|introduction|overview|개요)",
         r"##\s*(프로젝트\s*목적|purpose|goal)",
+        # v6.4: 흔한 영문·한글 헤딩 추가
+        r"##\s*(about|description|summary)",
+        r"##\s*프로젝트\s*(설명|소개)",
+        r"##\s*what\s+is",
     ],
     "기술 스택 설명": [
         r"##\s*(기술\s*스택|tech\s*stack|technologies|사용\s*기술|stack)",
         r"\|\s*(언어|language|framework|기술)\s*\|",
+        # v6.4: Built With / Requirements 등 실용적 헤딩 추가
+        r"##\s*(built\s*with|requirements|dependencies)",
+        r"##\s*(개발\s*환경|의존성|기술\s*구성|사용\s*기술)",
     ],
     "결과물 시각화": [
         r"!\[.*?\]\(.*?\)",
         r"<img\s+src=",
         r"https?://[^\s)]+\.(gif|png|jpg|jpeg|mp4|webm)",
+        # v6.4: video 태그, YouTube/Vimeo 링크, Demo 섹션 헤딩 추가
+        r"<video\s",
+        r"https?://(www\.)?(youtube\.com|youtu\.be|vimeo\.com)/",
+        r"##\s*(demo|데모|screenshots?|스크린샷|preview|미리\s*보기)",
     ],
 }
+
+
+def _validate_llm_result_for_diag(result: Any) -> bool:
+    """LLM 출력이 진단에 사용 가능한 최소 스키마를 충족하는지 검증 (v7.0)."""
+    if not isinstance(result, dict):
+        return False
+    try:
+        overall = result.get("overall_quality", {})
+        if overall.get("tier") not in ("양호", "보통", "미흡"):
+            return False
+        if not (1 <= overall.get("score", 0) <= 5):
+            return False
+        for key in ("purpose_clarity", "tech_description", "setup_guide", "visual_demo"):
+            dim = result.get(key, {})
+            if not (1 <= dim.get("score", 0) <= 5):
+                return False
+        suggestions = result.get("improvement_suggestions", [])
+        if not isinstance(suggestions, list) or len(suggestions) < 1:
+            return False
+        return True
+    except Exception:
+        return False
 
 
 def evaluate_readme_quality(readme_text: str) -> Dict[str, Any]:
@@ -252,20 +302,48 @@ def evaluate_readme_quality(readme_text: str) -> Dict[str, Any]:
 # v6.1: 레포별 단건 진단 함수들 (per-repo)
 # ---------------------------------------------------------------------------
 
-def _readme_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
+def _readme_diagnosis_single(
+    repo: Dict[str, Any],
+    llm_result: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     # v6.3: 품질 평가는 원본 기준, 길이 판단은 정제본 기준
+    # v7.0: llm_result 있으면 LLM 판정 우선 사용
     readme_raw = (repo.get("readme_raw") or repo.get("readme") or "").strip()
     readme_clean = (repo.get("readme") or "").strip()
     has_image = bool(repo.get("readme_has_image"))
     n = len(readme_clean)   # 길이: 정제본 (보일러플레이트 제외 후 실질 내용)
 
+    # 길이 50자 미만은 LLM 결과와 무관하게 즉시 미흡
     if n < 50:
         return _item(
             "미흡",
             "README가 거의 비어 있거나 매우 짧습니다.",
             "채용 담당자가 처음 보는 문서가 README입니다. 구조화된 설명을 추가하세요.",
+            llm_used=False,
         )
 
+    # v7.0: LLM 결과가 유효하면 LLM 기반 판정
+    if llm_result and _validate_llm_result_for_diag(llm_result):
+        overall = llm_result["overall_quality"]
+        tier = overall["tier"]          # "양호"/"보통"/"미흡"
+        summary = overall["summary"]
+        suggestions: List[str] = llm_result.get("improvement_suggestions") or []
+        return _item(
+            tier,
+            summary,
+            suggestions[0] if suggestions else None,
+            llm_used=True,
+            llm_scores={
+                "purpose": llm_result["purpose_clarity"]["score"],
+                "tech": llm_result["tech_description"]["score"],
+                "setup": llm_result["setup_guide"]["score"],
+                "visual": llm_result["visual_demo"]["score"],
+                "overall": overall["score"],
+            },
+            llm_suggestions=suggestions,
+        )
+
+    # LLM 미사용 → 기존 v6.4 룰베이스 로직
     quality = evaluate_readme_quality(readme_raw)       # v6.3: 원본으로 평가
     missing_dims = [k for k, v in quality["indicators"].items() if not v]
     missing_hint = f" (부족: {', '.join(missing_dims)})" if missing_dims else ""
@@ -277,17 +355,20 @@ def _readme_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
                 "양호",
                 f"길이 {n:,}자{img_hint}. 목적·기술스택·시각화 항목이 충실합니다.",
                 None,
+                llm_used=False,
             )
         return _item(
             "개선 필요",
             f"길이는 충분({n:,}자)하지만 구성이 아쉽습니다{missing_hint}.",
             f"README에 {', '.join(missing_dims) if missing_dims else '목적·기술 스택·스크린샷'}을 추가하면 완성도가 높아집니다.",
+            llm_used=False,
         )
 
     return _item(
         "개선 필요",
         f"README가 짧습니다 ({n:,}자){missing_hint}.",
         "프로젝트 목적, 기술 스택, 실행 방법, 데모 GIF/스크린샷을 README에 정리하세요.",
+        llm_used=False,
     )
 
 
@@ -460,11 +541,15 @@ def _team_required_items(extra_items: Dict[str, Dict[str, Any]]) -> Dict[str, Di
     return out
 
 
-def diagnose_single_repo(repo: Dict[str, Any]) -> Dict[str, Any]:
+def diagnose_single_repo(
+    repo: Dict[str, Any],
+    llm_result: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """
     레포 1개에 대한 진단 결과.
     - core_items 3개는 개인/팀 공통 평가
     - extra_items 4개는 팀 레포에서 필수 점검, 개인 레포에서는 참고 항목
+    v7.0: llm_result 있으면 _readme_diagnosis_single()에 전달
     """
     game_engines = _repo_game_engines(repo)
     repo_type = classify_repo_type(repo)
@@ -501,7 +586,7 @@ def diagnose_single_repo(repo: Dict[str, Any]) -> Dict[str, Any]:
         "active_weeks": int(repo.get("active_weeks") or 0),
         "repo_active_weeks": int(repo.get("repo_active_weeks") or 0),
         "core_items": {
-            "readme_quality": _readme_diagnosis_single(repo),
+            "readme_quality": _readme_diagnosis_single(repo, llm_result=llm_result),
             "project_structure": _structure_diagnosis_single(repo),
             "commit_quality": _commit_quality_diagnosis_single(repo),
         },
@@ -730,7 +815,24 @@ def _aggregate_quick_wins(
     per_repo_diags: List[Dict[str, Any]],
     game_engines: Optional[Set[str]] = None,
 ) -> List[str]:
-    """미흡 항목 빈도순 Quick wins 추출. 게임 엔진 감지 시 게임 맥락 풀 사용."""
+    """미흡 항목 빈도순 Quick wins 추출. 게임 엔진 감지 시 게임 맥락 풀 사용.
+    v7.0: LLM improvement_suggestions가 있으면 도메인 맞춤 제안을 최우선으로 사용.
+    """
+    # v7.0: LLM 개선 제안 최우선 수집 (중복 제거 후 최대 3개)
+    llm_suggestions: List[str] = []
+    for d in per_repo_diags:
+        core_readme = d.get("core_items", {}).get("readme_quality", {})
+        for suggestion in (core_readme.get("llm_suggestions") or []):
+            if suggestion and suggestion not in llm_suggestions:
+                llm_suggestions.append(suggestion)
+            if len(llm_suggestions) >= 3:
+                break
+        if len(llm_suggestions) >= 3:
+            break
+    if llm_suggestions:
+        return llm_suggestions
+
+    # LLM 미사용 시 기존 정적 풀 로직 (v6.3 그대로)
     bad_counter: Counter = Counter()
     for d in per_repo_diags:
         for key, item in d["core_items"].items():
@@ -850,14 +952,24 @@ def generate_summary_block(
 # 진입점
 # ---------------------------------------------------------------------------
 
-def run_diagnosis(profile: Dict[str, Any]) -> Dict[str, Any]:
+def run_diagnosis(
+    profile: Dict[str, Any],
+    llm_results: Optional[List[Optional[Dict[str, Any]]]] = None,
+) -> Dict[str, Any]:
     """
     extract_applicant_profile() 반환 프로필을 입력으로 진단 JSON을 생성.
     v6.1: 레포별 카드 진단(per_repo_diagnoses) + 종합 분석 블록.
+    v7.0: llm_results(per_repo와 동일 인덱스)가 있으면 각 레포의 README 진단에 전달.
     """
     per_repo: List[Dict[str, Any]] = list(profile.get("per_repo") or [])
 
-    per_repo_diags: List[Dict[str, Any]] = [diagnose_single_repo(r) for r in per_repo]
+    per_repo_diags: List[Dict[str, Any]] = [
+        diagnose_single_repo(
+            r,
+            llm_result=(llm_results[i] if llm_results and i < len(llm_results) else None),
+        )
+        for i, r in enumerate(per_repo)
+    ]
 
     ms = profile.get("metrics_summary") or {}
     vl = int(ms.get("total_valid_loc") or 0)

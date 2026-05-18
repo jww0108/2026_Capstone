@@ -4,15 +4,17 @@ import asyncio
 import platform
 import warnings
 from collections import Counter
+import time
 
 import faiss
 import json
 from sentence_transformers import SentenceTransformer
 
 from github_extractor import GitHubExtractor
-from portfolio_diagnosis import run_diagnosis
+from portfolio_diagnosis import run_diagnosis, _aggregate_strengths, _aggregate_quick_wins
 from valuation_engine import Git2ValueEngine
 from experience_filter import load_or_build_cache, filter_by_experience, split_by_experience
+from llm_readme_evaluator import ReadmeEvaluator
 
 warnings.filterwarnings("ignore")
 os.environ["HF_HUB_OFFLINE"] = "1"
@@ -563,6 +565,27 @@ def _print_extra_one_liner(label: str, item: dict, indent: str = "    ") -> None
         print(f"{indent}· {label} (참고)  : {detail}")
 
 
+def _print_readme_llm_detail(item: dict, indent: str = "      ") -> None:
+    """v7.0: README 진단 항목에 AI/룰베이스 분석 라벨 + LLM 5차원 점수 바 출력."""
+    llm_used = item.get("llm_used", False)
+    if llm_used:
+        print(f"{indent}[AI 분석]")
+        scores = item.get("llm_scores") or {}
+        dim_names = [
+            ("purpose", "목적 명확성"),
+            ("tech",    "기술 설명  "),
+            ("setup",   "실행 가이드"),
+            ("visual",  "시각 자료  "),
+            ("overall", "종합      "),
+        ]
+        for key, name in dim_names:
+            s = scores.get(key, 0)
+            bar = "█" * s + "░" * (5 - s)
+            print(f"{indent}  ├─ {name}: {bar} {s}/5")
+    else:
+        print(f"{indent}[룰베이스 분석 (AI 미사용)]")
+
+
 def _print_repo_card(diag: dict, idx: int) -> None:
     """레포 1개의 진단 카드 출력."""
     repo_name = diag.get("repo_name", "repo")
@@ -571,11 +594,14 @@ def _print_repo_card(diag: dict, idx: int) -> None:
     is_fork = diag.get("is_fork", False)
     context = diag.get("context_label")
 
-    type_label_map = {
-        "personal": "개인 레포",
-        "team": f"팀 레포 · {distinct}명 협업",
-    }
-    type_label = type_label_map.get(repo_type, "레포")
+    # v6.4: 지배적 기여자 판정으로 개인 재판정된 경우 별도 표시
+    if diag.get("is_dominance_override"):
+        dom = diag.get("dominance_ratio") or 0
+        type_label = f"개인 (작성자 {distinct}명이나 본인 기여 {dom:.0%}로 개인 판정)"
+    elif repo_type == "team":
+        type_label = f"팀 레포 · {distinct}명 협업"
+    else:
+        type_label = "개인 레포"
     if is_fork:
         type_label += " · Fork"
 
@@ -590,6 +616,9 @@ def _print_repo_card(diag: dict, idx: int) -> None:
     for key, label in CORE_LABELS.items():
         item = diag["core_items"].get(key, {})
         _print_diag_item(label, item, indent="    ")
+        # v7.0: README 항목에 한해 LLM 분석 라벨 + 5차원 점수 바 출력
+        if key == "readme_quality":
+            _print_readme_llm_detail(item, indent="      ")
 
     # 운영/협업 항목 (4개) — 팀 레포에서만 필수 점검, 개인 레포는 양호 항목만 참고 표시
     if repo_type == "personal":
@@ -697,141 +726,443 @@ def _print_applicant_summary(
 
 
 # ---------------------------------------------------------------------------
-# 메인 파이프라인
+# dict 빌더 함수 (API 반환용)
 # ---------------------------------------------------------------------------
 
-async def run_e2e_pipeline(
+def _build_github_score_dict(profile: dict) -> dict:
+    return {
+        "total": float(profile.get("github_score") or 0),
+        "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+        "breakdown": dict(profile.get("score_breakdown") or {}),
+        "breakdown_note": "최고 레포 기준",
+    }
+
+
+def _build_per_repo_dict(profile: dict, per_repo_diags: list[dict]) -> list[dict]:
+    diag_map = {d.get("repo_name"): d for d in per_repo_diags}
+    result = []
+    for r in profile.get("per_repo") or []:
+        repo_name = r.get("repo_name", "")
+        diag = diag_map.get(repo_name) or {}
+        result.append({
+            "repo_name": repo_name,
+            "repo_type": r.get("repo_type", "personal"),
+            "distinct_author_count": r.get("distinct_author_count", 1),
+            "repo_author_names": r.get("repo_author_names") or [],
+            "is_fork": r.get("is_fork", False),
+            "fork_penalty": r.get("fork_penalty"),
+            "dominance_ratio": r.get("dominance_ratio"),
+            "is_dominance_override": r.get("is_dominance_override", False),
+            "repo_total_score": r.get("repo_total_score"),
+            "score_breakdown": r.get("score_breakdown"),
+            "target_commit_count": r.get("target_commit_count"),
+            "total_repo_commits": r.get("total_repo_commits"),
+            "target_commit_ratio": r.get("target_commit_ratio"),
+            "active_weeks": r.get("active_weeks"),
+            "repo_active_weeks": r.get("repo_active_weeks"),
+            "detected_domains": r.get("detected_domains") or [],
+            "frameworks": r.get("frameworks") or [],
+            "language_category": r.get("language_category"),
+            "diagnosis": {
+                "core_items": diag.get("core_items", {}),
+                "extra_items": diag.get("extra_items", {}),
+            },
+        })
+    return result
+
+
+def _build_job_matching_dict(
+    top_matches_5: list[dict],
+    rerank_note: str,
+    multi_domain_result: "dict | None",
+    mismatch_diag: dict,
+    domain_check: dict,
+    detected_domains_merged: list[str],
+    jumpit_category: str,
+    tech_result: dict,
+) -> dict:
+    top5_effective = [float(m["effective_score"]) for m in top_matches_5]
+    eligible_matches = []
+    for i, match in enumerate(top_matches_5):
+        m = match["meta"]
+        sim = float(match["similarity"])
+        eff = float(match["effective_score"])
+        boosted = bool(match.get("domain_boosted"))
+        label, _ = similarity_label(eff, top5_effective) if top5_effective else ("", None)
+        eligible_matches.append({
+            "rank": i + 1,
+            "position": m.get("position", ""),
+            "company_name": m.get("company_name", ""),
+            "category": match.get("category", ""),
+            "similarity": sim,
+            "effective_score": eff,
+            "domain_boosted": boosted,
+            "similarity_label": label,
+            "experience_warning": match.get("experience_warning"),
+        })
+    mismatch_info = None
+    if mismatch_diag.get("type") not in ("consistent", "no_signal", "no_mapping"):
+        mismatch_info = mismatch_diag
+    return {
+        "primary_domain": detected_domains_merged[0] if detected_domains_merged else None,
+        "detected_domains": detected_domains_merged,
+        "rerank_note": rerank_note,
+        "is_multi_domain": bool(multi_domain_result),
+        "eligible_matches": eligible_matches,
+        "domain_mismatch": mismatch_info,
+        "domain_check": domain_check,
+        "multi_domain_picks": multi_domain_result,
+        "jumpit_category": jumpit_category,
+        "company_types": tech_result.get("company_types", []),
+    }
+
+
+def _build_salary_band_dict(
+    band_report: dict,
+    ref_salary_categories: list[dict],
+    alt_salary_band: "dict | None",
+) -> dict:
+    msb = band_report["market_salary_band"]
+    sr = msb.get("salary_range") or {}
+    rr = msb.get("realistic_range") or {}
+    return {
+        "matched_category": msb.get("matched_category", ""),
+        "experience_level": msb.get("experience_level", ""),
+        "salary_range": {
+            "jumpit_median": sr.get("jumpit_median"),
+            "wanted_median": sr.get("wanted_median"),
+            "combined_range": sr.get("combined_range", ""),
+        },
+        "realistic_range": rr,
+        "source": msb.get("source", ""),
+        "note": msb.get("note", ""),
+        "reference_categories": ref_salary_categories,
+        "alt_category_band": alt_salary_band,
+    }
+
+
+def _build_tech_analysis_dict(tech_result: dict) -> dict:
+    return {
+        "matched_techs": tech_result.get("matched", []),
+        "missing_techs": tech_result.get("missing", []),
+        "learning_suggestions": tech_result.get("learning_suggestions", []),
+        "company_types": tech_result.get("company_types", []),
+    }
+
+
+def _build_level_dict(diag_bundle: dict) -> dict:
+    level_info = diag_bundle.get("expected_level") or {}
+    return {
+        "grade": level_info.get("level", "Entry"),
+        "description": level_info.get("summary", ""),
+    }
+
+
+def _build_summary_dict(diag_bundle: dict, per_repo_diags: list[dict]) -> dict:
+    summary_text = diag_bundle.get("summary_block", "")
+    strengths = _aggregate_strengths(per_repo_diags)
+    quick_wins = _aggregate_quick_wins(per_repo_diags)
+    positioning = ""
+    for line in summary_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("포지셔닝"):
+            positioning = stripped.split(":", 1)[-1].strip() if ":" in stripped else ""
+            break
+    return {
+        "text": summary_text,
+        "positioning": positioning,
+        "strengths": strengths,
+        "quick_wins": quick_wins,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Git2ValuePipeline — 인프라 1회 로드 + 요청마다 analyze() 호출
+# ---------------------------------------------------------------------------
+
+class Git2ValuePipeline:
+    """
+    E2E 파이프라인.
+    - __init__(): 인프라(FAISS, 임베딩 모델, 캐시, 엔진, LLM 평가기)를 1회 로드.
+    - check_llm(): vLLM 서버 가용 여부 확인 (lifespan 또는 CLI에서 1회 호출).
+    - analyze(): 입력(username, repos, applicant_years)을 받아 분석 결과 dict 반환.
+    """
+
+    def __init__(self) -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        index_path = os.path.join(current_dir, "vector", "git2value_faiss.index")
+        meta_path  = os.path.join(current_dir, "vector", "git2value_metadata.json")
+        cache_path = os.path.join(current_dir, "vector", "experience_cache.json")
+        self.index = faiss.read_index(index_path)
+        with open(meta_path, "r", encoding="utf-8") as f:
+            self.metadata = json.load(f)
+        self.model = SentenceTransformer("jhgan/ko-sroberta-multitask")
+        self.val_engine = Git2ValueEngine()
+        self.exp_cache = load_or_build_cache(self.metadata, cache_path)
+        self.extractor = GitHubExtractor()
+        self.llm_evaluator = ReadmeEvaluator()
+        self.llm_available: bool = False
+
+    async def check_llm(self) -> bool:
+        """vLLM 서버 가용 여부 확인 후 self.llm_available 설정. 결과 반환."""
+        self.llm_available = await self.llm_evaluator.health_check()
+        return self.llm_available
+
+    async def analyze(
+        self,
+        username: str,
+        repos: list[str],
+        applicant_years: int = 0,
+    ) -> dict:
+        """
+        E2E 분석. print 없이 dict 반환.
+        반환 dict의 "status": "success" | "error"
+        "_internal" 키에 CLI 출력용 내부 데이터 포함 (API에서는 노출하지 않음).
+        """
+        start = time.time()
+        try:
+            # ── Step 2: GitHub 스캔 ────────────────────────────────────
+            profile = await self.extractor.extract_applicant_profile(username, repos)
+            match_text = (profile.get("profile_for_matching") or "").strip() or (
+                profile.get("applicant_resume") or ""
+            )
+
+            # ── Step 3: FAISS 매칭 + 경력 필터 + 도메인 후처리 ─────────
+            SEARCH_K = min(100, len(self.metadata), getattr(self.index, "ntotal", len(self.metadata)))
+            query_vector = self.model.encode([match_text], normalize_embeddings=True)
+            distances, indices_arr = self.index.search(query_vector, SEARCH_K)
+
+            raw_matches_extended: list[dict] = []
+            for i in range(SEARCH_K):
+                idx = int(indices_arr[0][i])
+                if idx < 0 or idx >= len(self.metadata):
+                    break
+                dist = float(distances[0][i])
+                meta = self.metadata[idx]
+                raw_matches_extended.append({
+                    "meta": meta,
+                    "similarity": dist,
+                    "category": route_job_category_safe(meta["position"]),
+                })
+
+            entry_matches, excluded_exp_matches = split_by_experience(
+                raw_matches_extended, applicant_years, self.exp_cache
+            )
+            top_matches_extended = entry_matches if entry_matches else excluded_exp_matches[:10]
+
+            detected_domains_merged = merged_detected_domains_from_profile(profile)
+            domain_hits_merged = profile.get("domain_hits_merged") or {}
+
+            multi_domain_result = recommend_multi_domain(
+                top_matches_extended, detected_domains_merged, domain_hits_merged
+            )
+
+            reranked_matches, rerank_note = rerank_by_domain(
+                top_matches_extended[:20], detected_domains_merged, domain_hits_merged
+            )
+            top_matches_5 = reranked_matches[:5]
+
+            jumpit_category = top_matches_5[0]["category"] if top_matches_5 else "SW/솔루션"
+            domain_check = check_domain_match_consistency(detected_domains_merged, top_matches_5)
+            mismatch_diag = diagnose_domain_mismatch(
+                detected_domains_merged, top_matches_5, domain_hits_merged
+            )
+
+            # ── Step 3.5: LLM README 평가 (비동기 병렬, v7.0) ──────────
+            llm_results: list = []
+            if self.llm_available:
+                per_repo_list = profile.get("per_repo") or []
+                llm_tasks = [
+                    self.llm_evaluator.evaluate(
+                        readme_raw=r.get("readme_raw", ""),
+                        meta={
+                            "languages": {
+                                lang: pct
+                                for lang, pct in (
+                                    r.get("language_category", {}).get("main", [])
+                                    + r.get("language_category", {}).get("sub", [])
+                                )
+                            } if r.get("language_category") else {},
+                            "domain": (r.get("detected_domains") or [""])[0],
+                            "signatures": list(r.get("frameworks") or []),
+                            "repo_type": r.get("repo_type", "personal"),
+                        },
+                    )
+                    for r in per_repo_list
+                ]
+                raw_llm = await asyncio.gather(*llm_tasks, return_exceptions=True)
+                llm_results = [r if isinstance(r, dict) else None for r in raw_llm]
+
+            # ── Step 4: 포트폴리오 진단 ────────────────────────────────
+            diag_bundle = run_diagnosis(profile, llm_results=llm_results or None)
+            per_repo_diags = diag_bundle.get("per_repo_diagnoses") or []
+
+            # ── Step 5: 연봉 밴드 + 기술 분석 ──────────────────────────
+            band_report = self.val_engine.get_market_band(
+                job_category=jumpit_category,
+                years_max=3 if applicant_years <= 3 else applicant_years,
+            )
+
+            ms = profile.get("metrics_summary") or {}
+            all_frameworks = list({
+                fw
+                for r in profile.get("per_repo") or []
+                for fw in (r.get("frameworks") or [])
+            })
+            tech_result = analyze_tech_match(
+                applicant_languages=ms.get("top_languages", ""),
+                applicant_frameworks=all_frameworks,
+                top_matches=top_matches_5,
+                detected_domains=detected_domains_merged,
+                target_category=jumpit_category,
+            )
+
+            # ── Step 6: 참고 직무 연봉 수집 ─────────────────────────────
+            matched_categories_seen: list[str] = []
+
+            def _add_ref_cat(cat: "str | None") -> None:
+                if cat and cat != jumpit_category and cat not in matched_categories_seen:
+                    matched_categories_seen.append(cat)
+
+            if multi_domain_result:
+                for _domain, picks in multi_domain_result["domain_picks"].items():
+                    for pick in picks:
+                        _add_ref_cat(pick.get("category"))
+            else:
+                for m in top_matches_5[1:]:
+                    _add_ref_cat(m.get("category"))
+
+            for domain in detected_domains_merged[:3]:
+                for cat in DOMAIN_TO_CATEGORIES.get(domain, []):
+                    _add_ref_cat(cat)
+
+            ref_salary_categories: list[dict] = []
+            for cat in matched_categories_seen:
+                try:
+                    ref_band = self.val_engine.get_market_band(
+                        job_category=cat,
+                        years_max=3 if applicant_years <= 3 else applicant_years,
+                    )
+                    ref_sr = ref_band["market_salary_band"]["salary_range"]
+                    ref_salary_categories.append({
+                        "category": cat,
+                        "combined_range": ref_sr.get("combined_range", ""),
+                    })
+                except ValueError:
+                    continue
+                if len(ref_salary_categories) >= 4:
+                    break
+
+            # ── 도메인 불일치 대안 연봉 밴드 ────────────────────────────
+            alt_salary_band: "dict | None" = None
+            if not domain_check["consistent"] and domain_check.get("suggested_category"):
+                sc = domain_check["suggested_category"]
+                try:
+                    alt_b = self.val_engine.get_market_band(
+                        job_category=sc,
+                        years_max=3 if applicant_years <= 3 else applicant_years,
+                    )
+                    alt_rr = alt_b["market_salary_band"].get("realistic_range") or {}
+                    if alt_rr:
+                        alt_salary_band = {
+                            "category": sc,
+                            "realistic_range": alt_rr,
+                        }
+                except ValueError:
+                    pass
+
+            repo_classifications = diag_bundle.get("repo_classifications") or []
+            has_mod_or_config = any(
+                rc["type"] in ("mod", "config") for rc in repo_classifications
+            )
+            elapsed = round(time.time() - start, 1)
+
+            return {
+                "status": "success",
+                "error": None,
+                "github_score": _build_github_score_dict(profile),
+                "per_repo": _build_per_repo_dict(profile, per_repo_diags),
+                "level": _build_level_dict(diag_bundle),
+                "summary": _build_summary_dict(diag_bundle, per_repo_diags),
+                "job_matching": _build_job_matching_dict(
+                    top_matches_5, rerank_note, multi_domain_result,
+                    mismatch_diag, domain_check, detected_domains_merged,
+                    jumpit_category, tech_result,
+                ),
+                "salary_band": _build_salary_band_dict(
+                    band_report, ref_salary_categories, alt_salary_band
+                ),
+                "tech_analysis": _build_tech_analysis_dict(tech_result),
+                "meta": {
+                    "version": "v7.0",
+                    "llm_available": self.llm_available,
+                    "analysis_time_seconds": elapsed,
+                    "repos_analyzed": len(per_repo_diags),
+                    "applicant_years": applicant_years,
+                },
+                # 내부 데이터 — CLI 출력용, API에서는 노출하지 않음
+                "_internal": {
+                    "profile": profile,
+                    "per_repo_diags": per_repo_diags,
+                    "diag_bundle": diag_bundle,
+                    "top_matches_5": top_matches_5,
+                    "rerank_note": rerank_note,
+                    "multi_domain_result": multi_domain_result,
+                    "mismatch_diag": mismatch_diag,
+                    "domain_check": domain_check,
+                    "detected_domains_merged": detected_domains_merged,
+                    "band_report": band_report,
+                    "matched_categories_seen": matched_categories_seen,
+                    "ref_salary_categories": ref_salary_categories,
+                    "alt_salary_band": alt_salary_band,
+                    "jumpit_category": jumpit_category,
+                    "has_mod_or_config": has_mod_or_config,
+                    "repo_classifications": repo_classifications,
+                    "tech_result": tech_result,
+                },
+            }
+
+        except ValueError as e:
+            return {"status": "error", "error": f"연봉 밴드 조회 오류: {e}"}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# CLI 전체 보고서 출력 (_print_full_report)
+# ---------------------------------------------------------------------------
+
+def _print_full_report(
+    result: dict,
     target_username: str,
-    target_repos: list[str],
     applicant_years: int,
 ) -> None:
-    # v6.1: 입력 레포 개수 제한 (메인 1 + 서브 2 권장)
-    if len(target_repos) > MAX_REPO_COUNT:
-        print(
-            f"\n⚠ 레포는 최대 {MAX_REPO_COUNT}개까지 분석 가능합니다. "
-            "메인 프로젝트 1개 + 서브 프로젝트 2개를 선별해서 입력하세요."
-        )
-        print(f"   입력된 {len(target_repos)}개 중 앞 {MAX_REPO_COUNT}개만 사용합니다.")
-        target_repos = target_repos[:MAX_REPO_COUNT]
-    if not target_repos:
-        print("\n⚠ 분석할 레포가 없습니다. TARGET_REPOS에 1~3개 입력하세요.")
-        return
+    """analyze() 반환 result dict를 받아 기존 CLI 형식으로 전체 보고서 출력."""
+    i = result["_internal"]
+    profile               = i["profile"]
+    per_repo_diags        = i["per_repo_diags"]
+    diag_bundle           = i["diag_bundle"]
+    top_matches_5         = i["top_matches_5"]
+    rerank_note           = i["rerank_note"]
+    multi_domain_result   = i["multi_domain_result"]
+    mismatch_diag         = i["mismatch_diag"]
+    domain_check          = i["domain_check"]
+    detected_domains_merged = i["detected_domains_merged"]
+    band_report           = i["band_report"]
+    matched_categories_seen = i["matched_categories_seen"]
+    ref_salary_categories = i["ref_salary_categories"]
+    alt_salary_band       = i["alt_salary_band"]
+    jumpit_category       = i["jumpit_category"]
+    has_mod_or_config     = i["has_mod_or_config"]
+    repo_classifications  = i["repo_classifications"]
+    tech_result           = i["tech_result"]
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    index_path = os.path.join(current_dir, "vector", "git2value_faiss.index")
-    meta_path  = os.path.join(current_dir, "vector", "git2value_metadata.json")
-    cache_path = os.path.join(current_dir, "vector", "experience_cache.json")
-
-    # ── 1. 인프라 로딩 ──────────────────────────────────────────
-    print("\n[Step 1] 벡터 DB 및 연봉 엔진 로딩 중...")
-    index = faiss.read_index(index_path)
-    with open(meta_path, "r", encoding="utf-8") as f:
-        metadata = json.load(f)
-    model = SentenceTransformer("jhgan/ko-sroberta-multitask")
-    val_engine = Git2ValueEngine()
-    exp_cache = load_or_build_cache(metadata, cache_path)
-    print("  완료.")
-
-    # ── 2. GitHub 실시간 스캔 ───────────────────────────────────
-    print(f"\n[Step 2] GitHub 스캔 시작 — {target_username}")
-    print(f"  대상 레포 ({len(target_repos)}개): {', '.join(target_repos)}")
-    extractor = GitHubExtractor()
-    profile = await extractor.extract_applicant_profile(target_username, target_repos)
-
-    match_text = (profile.get("profile_for_matching") or "").strip() or (
-        profile.get("applicant_resume") or ""
-    )
-
-    # ── 3. FAISS JD 매칭 (k=100 → 0년차 기준 경력 필터) ─────────────
-    SEARCH_K = min(100, len(metadata), getattr(index, "ntotal", len(metadata)))
-    print(f"\n[Step 3] AI 직무 매칭 중 (Top {SEARCH_K} 추출 → 0년차/연차 필터링)...")
-    query_vector = model.encode([match_text], normalize_embeddings=True)
-    distances, indices = index.search(query_vector, SEARCH_K)
-
-    raw_matches_extended: list[dict] = []
-    for i in range(SEARCH_K):
-        idx = indices[0][i]
-        if idx < 0 or idx >= len(metadata):
-            break
-        dist = distances[0][i]
-        meta = metadata[idx]
-        raw_matches_extended.append({
-            "meta": meta,
-            "similarity": float(dist),
-            "category": route_job_category_safe(meta["position"]),
-        })
-
-    entry_matches, excluded_exp_matches = split_by_experience(
-        raw_matches_extended, applicant_years, exp_cache
-    )
-
-    if entry_matches:
-        top_matches_extended = entry_matches
-    else:
-        # 데이터셋 상위권에 신입/경력무관 공고가 하나도 없을 때만 안전 폴백.
-        # 이 경우 출력에서 경력 경고를 유지한다.
-        top_matches_extended = excluded_exp_matches[:10]
-
-    detected_domains_merged = merged_detected_domains_from_profile(profile)
-    domain_hits_merged = profile.get("domain_hits_merged") or {}
-
-    multi_domain_result = recommend_multi_domain(
-        top_matches_extended, detected_domains_merged, domain_hits_merged
-    )
-
-    reranked_matches, rerank_note = rerank_by_domain(
-        top_matches_extended[:20], detected_domains_merged, domain_hits_merged
-    )
-    top_matches_5 = reranked_matches[:5]
-
-    jumpit_category = top_matches_5[0]["category"] if top_matches_5 else "SW/솔루션"
-    domain_check = check_domain_match_consistency(detected_domains_merged, top_matches_5)
-    mismatch_diag = diagnose_domain_mismatch(
-        detected_domains_merged, top_matches_5, domain_hits_merged
-    )
-
-    print("\n[Step 4] 포트폴리오 진단 (룰베이스, 레포별)...")
-    diag_bundle = run_diagnosis(profile)
-    per_repo_diags = diag_bundle.get("per_repo_diagnoses") or []
-
-    print("\n[Step 5] 시장 연봉 밴드 조회 (GitHub 점수와 독립)...")
-    try:
-        band_report = val_engine.get_market_band(
-            job_category=jumpit_category,
-            years_max=3 if applicant_years <= 3 else applicant_years,
-        )
-    except ValueError as e:
-        print(f"  연봉 밴드 조회 오류: {e}")
-        return
-
-    ms = profile.get("metrics_summary", {})
-    all_frameworks = list({
-        fw
-        for r in profile.get("per_repo") or []
-        for fw in (r.get("frameworks") or [])
-    })
-    tech_result = analyze_tech_match(
-        applicant_languages=ms.get("top_languages", ""),
-        applicant_frameworks=all_frameworks,
-        top_matches=top_matches_5,
-        detected_domains=detected_domains_merged,
-        target_category=jumpit_category,
-    )
-
-    # ── 6. 최종 리포트 (3개 독립 모듈) ───────────────────────────
     print("\n" + "=" * 60)
-    print("[Git2Value v6.3] 최종 리포트 — 모듈 A / B / C")
+    print("[Git2Value v7.0] 최종 리포트 — 모듈 A / B / C")
     print("=" * 60)
 
-    repo_classifications = diag_bundle.get("repo_classifications") or []
-    has_mod_or_config = any(
-        rc["type"] in ("mod", "config") for rc in repo_classifications
-    )
-
-    # ── 지원자 요약 (4개 항목만) ──────────────────────────────
     _print_applicant_summary(profile, target_username, applicant_years, per_repo_diags)
 
-    # ── 모드/설정 프로젝트 분류 안내 (선택적) ─────────────────
     if has_mod_or_config:
         print("\n" + "-" * 60)
         print("[프로젝트 분류 안내]")
@@ -846,7 +1177,6 @@ async def run_e2e_pipeline(
                 if rc["type"] == "config":
                     print("      (직무 매칭 입력에서 제외됨)")
 
-    # ── 모듈 A: 포트폴리오 진단 (레포별 카드) ──────────────────
     print("\n" + "-" * 60)
     print(f"[모듈 A] 포트폴리오 진단 — 레포별 평가 ({len(per_repo_diags)}개)")
     print("-" * 60)
@@ -854,16 +1184,14 @@ async def run_e2e_pipeline(
     if not per_repo_diags:
         print("  분석된 레포가 없습니다.")
     else:
-        for i, diag in enumerate(per_repo_diags, 1):
+        for idx, diag in enumerate(per_repo_diags, 1):
             print()
-            _print_repo_card(diag, i)
+            _print_repo_card(diag, idx)
 
-    # 종합 분석 (GitHub 점수 + 강점 + Quick wins)
     summary_block = diag_bundle.get("summary_block", "")
     if summary_block:
         print(f"\n{summary_block}")
 
-    # ── 모듈 B: 직무 매칭 ──────────────────────────────────────
     print("\n" + "-" * 60)
     if multi_domain_result:
         print("[모듈 B] 직무 매칭 — 다중 도메인 프로젝트 (균형 추천)")
@@ -893,12 +1221,11 @@ async def run_e2e_pipeline(
         print(f"    · 풀스택 경험을 어필하려면 README에 각 영역의 기여를 명시하세요.")
         print(f"  감지 도메인: {', '.join(detected_domains_merged[:4])}")
     else:
-        # 단일 도메인
         top5_effective = [float(m["effective_score"]) for m in top_matches_5]
         system_note_printed = False
-        for i, match in enumerate(top_matches_5):
+        for idx, match in enumerate(top_matches_5):
             m = match["meta"]
-            rank_label = "1순위" if i == 0 else f"{i + 1}순위"
+            rank_label = "1순위" if idx == 0 else f"{idx + 1}순위"
             sim = float(match["similarity"])
             eff = float(match["effective_score"])
             boosted = bool(match.get("domain_boosted"))
@@ -944,11 +1271,10 @@ async def run_e2e_pipeline(
     print("[모듈 C] 시장 연봉 밴드 (신입~3년 구간, GitHub 점수 미반영)")
     print("-" * 60)
     msb = band_report["market_salary_band"]
-    sr = msb["salary_range"]
-    rr = msb.get("realistic_range", {})
+    sr  = msb["salary_range"]
+    rr  = msb.get("realistic_range", {})
 
     print(f"  매칭 직무       : {msb['matched_category']}")
-    # 도메인 감지와 라우팅 직무가 다를 때 참고 직무 표시
     if detected_domains_merged and jumpit_category not in (
         DOMAIN_TO_CATEGORIES.get(detected_domains_merged[0], [])
     ):
@@ -974,68 +1300,76 @@ async def run_e2e_pipeline(
         print(f" / 원티드: 해당 직무 매핑 없음")
     print(f"  출처·주의      : {msb['source']} / {msb['note']}")
 
-    # 도메인 불일치 시 대안 밴드
-    if not domain_check["consistent"] and domain_check.get("suggested_category"):
-        sc = domain_check["suggested_category"]
-        try:
-            alt_band = val_engine.get_market_band(
-                job_category=sc,
-                years_max=3 if applicant_years <= 3 else applicant_years,
-            )
-            alt_rr = alt_band["market_salary_band"].get("realistic_range", {})
-            if alt_rr:
-                alt_m = alt_rr["median"] // 10000
-                alt_p25 = alt_rr["p25_estimate"] // 10000
-                alt_p75 = alt_rr["p75_estimate"] // 10000
-                print(f"\n  (참고 — 도메인 감지 기반 '{sc}' 직무)")
-                print(f"    중앙값: 약 {alt_m:,}만원 / 분포: {alt_p25:,}만 ~ {alt_p75:,}만원")
-        except ValueError:
-            pass
-
-    # ── [참고 직무] — 매칭 공고/감지 도메인 기준 ───────────────────
-    # category_comparison은 상위 12개 고연봉 직무만 담기 때문에 여기서 쓰면
-    # 프론트엔드처럼 데이터가 있어도 누락될 수 있다. 직무별로 직접 조회한다.
-    matched_categories_seen: list[str] = []
-
-    def _add_ref_category(cat: str | None) -> None:
-        if cat and cat != jumpit_category and cat not in matched_categories_seen:
-            matched_categories_seen.append(cat)
-
-    if multi_domain_result:
-        for _domain, picks in multi_domain_result["domain_picks"].items():
-            for pick in picks:
-                _add_ref_category(pick.get("category"))
-    else:
-        for m in top_matches_5[1:]:
-            _add_ref_category(m.get("category"))
-
-    # 공고 추천에는 경력 필터가 적용되지만, 연봉 참고선은 감지 도메인도 함께 보여준다.
-    for domain in detected_domains_merged[:3]:
-        for cat in DOMAIN_TO_CATEGORIES.get(domain, []):
-            _add_ref_category(cat)
+    if alt_salary_band:
+        sc = alt_salary_band["category"]
+        alt_rr = alt_salary_band["realistic_range"]
+        alt_m = alt_rr["median"] // 10000
+        alt_p25 = alt_rr["p25_estimate"] // 10000
+        alt_p75 = alt_rr["p75_estimate"] // 10000
+        print(f"\n  (참고 — 도메인 감지 기반 '{sc}' 직무)")
+        print(f"    중앙값: 약 {alt_m:,}만원 / 분포: {alt_p25:,}만 ~ {alt_p75:,}만원")
 
     if matched_categories_seen:
         print(f"\n  [참고 직무 — 매칭 공고/감지 도메인 기준]")
         ref_count = 0
-        for cat in matched_categories_seen:
-            try:
-                ref_band = val_engine.get_market_band(
-                    job_category=cat,
-                    years_max=3 if applicant_years <= 3 else applicant_years,
-                )
-            except ValueError:
-                continue
-            ref_sr = ref_band["market_salary_band"]["salary_range"]
-            print(f"    {cat}: {ref_sr['combined_range']}")
+        for item in ref_salary_categories:
+            print(f"    {item['category']}: {item['combined_range']}")
             ref_count += 1
-            if ref_count >= 4:
-                break
         if ref_count == 0:
             print("    (참고 직무의 연봉 데이터가 없습니다)")
         else:
             print("    → 참고용 수치입니다. 회사 규모·지역·협상에 따라 차이가 있습니다.")
 
     print("=" * 60)
+
+
+# ---------------------------------------------------------------------------
+# 메인 파이프라인
+# ---------------------------------------------------------------------------
+
+async def run_e2e_pipeline(
+    target_username: str,
+    target_repos: list[str],
+    applicant_years: int,
+) -> None:
+    """CLI 진입점. Git2ValuePipeline.analyze()를 호출하고 결과를 print한다."""
+    # v6.1: 입력 레포 개수 제한 (메인 1 + 서브 2 권장)
+    if len(target_repos) > MAX_REPO_COUNT:
+        print(
+            f"\n⚠ 레포는 최대 {MAX_REPO_COUNT}개까지 분석 가능합니다. "
+            "메인 프로젝트 1개 + 서브 프로젝트 2개를 선별해서 입력하세요."
+        )
+        print(f"   입력된 {len(target_repos)}개 중 앞 {MAX_REPO_COUNT}개만 사용합니다.")
+        target_repos = target_repos[:MAX_REPO_COUNT]
+    if not target_repos:
+        print("\n⚠ 분석할 레포가 없습니다. TARGET_REPOS에 1~3개 입력하세요.")
+        return
+
+    print("\n[Step 1] 벡터 DB 및 연봉 엔진 로딩 중...")
+    pipeline = Git2ValuePipeline()
+    llm_available = await pipeline.check_llm()
+    if llm_available:
+        print("  LLM 서버 가용 — README 평가에 AI 분석 사용.")
+    else:
+        print("  LLM 서버 미가용 — README 평가는 룰베이스 단독 사용.")
+    print("  완료.")
+
+    print(f"\n[Step 2] GitHub 스캔 시작 — {target_username}")
+    print(f"  대상 레포 ({len(target_repos)}개): {', '.join(target_repos)}")
+    print(f"\n[Step 3] AI 직무 매칭 중 (Top 100 추출 → {applicant_years}년차 기준 경력 필터링)...")
+    if llm_available:
+        print("\n[Step 3.5] LLM README 평가 중 (비동기 병렬)...")
+    llm_mode_label = "룰베이스 + AI" if llm_available else "룰베이스"
+    print(f"\n[Step 4] 포트폴리오 진단 ({llm_mode_label}, 레포별)...")
+    print("\n[Step 5] 시장 연봉 밴드 조회 (GitHub 점수와 독립)...")
+
+    result = await pipeline.analyze(target_username, target_repos, applicant_years)
+
+    if result.get("status") == "error":
+        print(f"\n⚠ 분석 실패: {result.get('error', '알 수 없는 오류')}")
+        return
+
+    _print_full_report(result, target_username, applicant_years)
 
 
 if __name__ == "__main__":
@@ -1045,13 +1379,13 @@ if __name__ == "__main__":
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
     # 레포는 최대 3개 (메인 1 + 서브 2 권장)
-    TARGET_USERNAME =  "AstroJini"#"chjnett"#"honey766"#"tekyung"#"siheon012"#"jww0108"#"2026TUKCOMCD"#"Central-MakeUs"#"Project-Guideon"#"AstroJini"#
+    TARGET_USERNAME = "siheon012"#"AstroJini"#"chjnett"#"honey766"#"tekyung"#"siheon012"#"jww0108"#"2026TUKCOMCD"#"Central-MakeUs"#"Project-Guideon"#"AstroJini"#
     TARGET_REPOS = [
         #"AstroJini/SmartFridge/tree/develop",
         #"AstroJini/SmartFridge-FE/tree/develop",
         #"tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone", # unity, C# 게임 개발
         #"tekyung/kyonggi-university_network-system-laboratory_webpage", # 프론트엔드
-        #"siheon012/Deepsentinel", # ai, 웹 풀스택
+        "siheon012/Deepsentinel", # ai, 웹 풀스택
         #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung", # ai 백엔드
         #"jww0108/2026_Cap stone/tree/tekyung" # 백엔드
         #"honey766/Paint", # unity, 게임 개발
@@ -1059,8 +1393,8 @@ if __name__ == "__main__":
         #"2026TUKCOMCD/SyncLab", # 웹 풀스택, 모바일
         #"Central-MakeUs/AZIT_Front/tree/develop", # 프론트엔드
         #"Project-Guideon/guideon-backend", # 백엔드
-        "AstroJini/MKX-BE/tree/develop", # 웹 풀스택
-        "AstroJini/SmartFridge/tree/develop", # 웹 풀스택
+        #"AstroJini/MKX-BE/tree/develop", # 웹 풀스택
+        #"AstroJini/SmartFridge/tree/develop", # 웹 풀스택
         #"chjnett/my-sports-ai/tree/main", # ai, 머신러닝
     ]
     APPLICANT_YEARS = 0

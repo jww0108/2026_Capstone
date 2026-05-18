@@ -3,6 +3,7 @@ import re
 import asyncio
 import platform
 import warnings
+from pathlib import Path #추가
 from collections import Counter
 
 import faiss
@@ -13,6 +14,7 @@ from github_extractor import GitHubExtractor
 from portfolio_diagnosis import run_diagnosis
 from valuation_engine import Git2ValueEngine
 from experience_filter import load_or_build_cache, filter_by_experience, split_by_experience
+from ml.job_classifier import load_model_bundle, predict_profile #추가
 
 warnings.filterwarnings("ignore")
 os.environ["HF_HUB_OFFLINE"] = "1"
@@ -109,6 +111,161 @@ DOMAIN_TO_CATEGORIES: dict[str, list[str]] = {
 
 DOMAIN_BOOST = 0.05
 
+#---------------------추가----------------
+
+# AI 분류모델 리랭킹 가중치
+# experiments/evaluate_ex2.py의 DEFAULT_AI_ALPHA와 동일한 의미
+CLASSIFIER_ALPHA = 0.10
+
+# run_git2value.py의 세부 채용공고 category를
+# ml/job_classifier.py가 예측하는 8개 도메인 라벨에 연결한다.
+JOB_CATEGORY_TO_MODEL_LABELS: dict[str, list[str]] = {
+    "서버/백엔드": ["서버/백엔드"],
+    "웹 풀스택": ["서버/백엔드", "프론트엔드"],
+    "프론트엔드": ["프론트엔드"],
+    "웹퍼블리셔": ["프론트엔드"],
+
+    "인공지능/머신러닝": ["인공지능/머신러닝"],
+    "빅데이터 엔지니어": ["빅데이터 엔지니어", "인공지능/머신러닝"],
+
+    "devops/시스템 엔지니어": ["DevOps/시스템 엔지니어"],
+    "DevOps/시스템 엔지니어": ["DevOps/시스템 엔지니어"],
+
+    "안드로이드": ["모바일 앱"],
+    "iOS": ["모바일 앱"],
+    "크로스플랫폼 앱": ["모바일 앱"],
+
+    "게임 클라이언트": ["게임 개발"],
+    "게임 서버": ["게임 개발", "서버/백엔드"],
+    "VR/AR/3D": ["게임 개발"],
+
+    "블록체인": ["블록체인"],
+}
+
+
+def _norm_label(label: str) -> str:
+    return str(label or "").lower().replace(" ", "").replace("-", "").strip()
+
+
+def get_classifier_probability_for_category(
+    job_category: str,
+    probabilities: dict[str, float],
+) -> float:
+    """
+    채용공고 category에 대응되는 분류모델 확률을 반환한다.
+
+    예:
+    job_category = "안드로이드"
+    probabilities = {"모바일 앱": 0.72, ...}
+    → 0.72
+    """
+    if not probabilities:
+        return 0.0
+
+    target_labels = JOB_CATEGORY_TO_MODEL_LABELS.get(job_category, [job_category])
+    prob_by_norm = {
+        _norm_label(label): float(prob)
+        for label, prob in probabilities.items()
+    }
+
+    matched_probs = [
+        prob_by_norm.get(_norm_label(label), 0.0)
+        for label in target_labels
+    ]
+
+    return max(matched_probs) if matched_probs else 0.0
+
+
+def _matches_with_classifier_baseline(matches: list[dict]) -> list[dict]:
+    return [
+        {
+            **m,
+            "effective_score": round(float(m["similarity"]), 4),
+            "domain_boosted": False,
+            "ai_classifier_used": False,
+            "ai_probability": 0.0,
+            "ai_bonus": 0.0,
+        }
+        for m in matches
+    ]
+
+
+def rerank_by_ai_classifier(
+    candidate_matches: list[dict],
+    profile: dict,
+    classifier_bundle: dict | None,
+    alpha: float = CLASSIFIER_ALPHA,
+    include_domain_hits: bool = False,
+) -> tuple[list[dict], str, dict | None]:
+    """
+    기존 고정 도메인 보너스 대신 ml/job_classifier.py의 분류 확률로 재정렬한다.
+
+    final_score = faiss_similarity + alpha * classifier_probability
+    """
+    if not candidate_matches:
+        return [], "상위 매칭 없음 — FAISS 결과가 비어 있습니다.", None
+
+    if classifier_bundle is None:
+        return _matches_with_classifier_baseline(candidate_matches), (
+            "분류모델을 로드하지 못해 FAISS 유사도 순서 그대로 적용했습니다."
+        ), None
+
+    pred = predict_profile(
+        profile=profile,
+        bundle=classifier_bundle,
+        include_domain_hits=include_domain_hits,
+    )
+
+    probabilities = pred.get("probabilities") or {}
+    pred_label = pred.get("pred_label", "")
+
+    reranked: list[dict] = []
+
+    for rank, m in enumerate(candidate_matches, start=1):
+        sim = float(m.get("similarity", 0.0) or 0.0)
+        job_category = str(m.get("category") or "")
+
+        job_prob = get_classifier_probability_for_category(
+            job_category,
+            probabilities,
+        )
+
+        ai_bonus = alpha * job_prob
+        effective = sim + ai_bonus
+
+        reranked.append(
+            {
+                **m,
+                "original_rank": rank,
+                "effective_score": round(effective, 4),
+                "domain_boosted": False,
+                "ai_classifier_used": True,
+                "ai_probability": round(job_prob, 4),
+                "ai_bonus": round(ai_bonus, 4),
+            }
+        )
+
+    reranked.sort(key=lambda x: x["effective_score"], reverse=True)
+
+    top_probs = sorted(
+        probabilities.items(),
+        key=lambda x: x[1],
+        reverse=True,
+    )[:3]
+
+    top_prob_text = ", ".join(
+        f"{label} {prob:.3f}"
+        for label, prob in top_probs
+    ) or "없음"
+
+    note = (
+        f"분류모델 예측: '{pred_label}' "
+        f"(상위 확률: {top_prob_text}) — "
+        f"FAISS 유사도 + {alpha}×분류모델 직무확률로 재정렬했습니다."
+    )
+
+    return reranked, note, pred
+#---------------추가------------
 
 def _matches_with_baseline_scores(matches: list[dict]) -> list[dict]:
     return [
@@ -727,11 +884,25 @@ async def run_e2e_pipeline(
     index = faiss.read_index(index_path)
     with open(meta_path, "r", encoding="utf-8") as f:
         metadata = json.load(f)
+    # model = SentenceTransformer("jhgan/ko-sroberta-multitask")
+    # val_engine = Git2ValueEngine()
+    # exp_cache = load_or_build_cache(metadata, cache_path)
+    # print("  완료.")
+    #추가------------------
     model = SentenceTransformer("jhgan/ko-sroberta-multitask")
     val_engine = Git2ValueEngine()
     exp_cache = load_or_build_cache(metadata, cache_path)
-    print("  완료.")
 
+    classifier_model_path = Path(current_dir) / "ml" / "models" / "job_classifier.pkl"
+
+    try:
+        classifier_bundle = load_model_bundle(classifier_model_path)
+        print(f"  분류모델 로드 완료: {classifier_model_path}")
+    except Exception as e:
+        classifier_bundle = None
+        print(f"  ⚠ 분류모델 로드 실패: {e}")
+    print("  완료.")
+    
     # ── 2. GitHub 실시간 스캔 ───────────────────────────────────
     print(f"\n[Step 2] GitHub 스캔 시작 — {target_username}")
     print(f"  대상 레포 ({len(target_repos)}개): {', '.join(target_repos)}")
@@ -779,8 +950,17 @@ async def run_e2e_pipeline(
         top_matches_extended, detected_domains_merged, domain_hits_merged
     )
 
-    reranked_matches, rerank_note = rerank_by_domain(
-        top_matches_extended[:20], detected_domains_merged, domain_hits_merged
+    # reranked_matches, rerank_note = rerank_by_domain(
+    #     top_matches_extended[:20], detected_domains_merged, domain_hits_merged
+    # )
+    # top_matches_5 = reranked_matches[:5]
+    #추가-------------------
+    reranked_matches, rerank_note, classifier_pred = rerank_by_ai_classifier(
+        top_matches_extended[:20],
+        profile=profile,
+        classifier_bundle=classifier_bundle,
+        alpha=CLASSIFIER_ALPHA,
+        include_domain_hits=False,
     )
     top_matches_5 = reranked_matches[:5]
 
@@ -868,7 +1048,7 @@ async def run_e2e_pipeline(
     if multi_domain_result:
         print("[모듈 B] 직무 매칭 — 다중 도메인 프로젝트 (균형 추천)")
     else:
-        print("[모듈 B] 직무 매칭 (FAISS + 도메인 리랭킹)")
+        print("[모듈 B] 직무 매칭 (FAISS + AI 분류모델 리랭킹)")
     print("-" * 60)
 
     if multi_domain_result:
@@ -901,16 +1081,44 @@ async def run_e2e_pipeline(
             rank_label = "1순위" if i == 0 else f"{i + 1}순위"
             sim = float(match["similarity"])
             eff = float(match["effective_score"])
+            # boosted = bool(match.get("domain_boosted"))
+            # label, sys_note = similarity_label(eff, top5_effective)
+            # exp_warn = match.get("experience_warning")
+            # exp_str = f"  [⚠ {exp_warn} — 지원 가능 경력에 미달]" if exp_warn else ""
+            # print(f"  [{rank_label}] [{m['company_name']}] {m['position']}{exp_str}")
+            # if boosted:
+            #     print(
+            #         f"          (FAISS: {sim:.4f} + 도메인 일치: +{DOMAIN_BOOST} "
+            #         f"→ 유효: {eff:.4f} · {label})"
+            #     )
+            # else:
+            #     print(f"          (FAISS: {sim:.4f} · {label})")
+            
+            #추가
             boosted = bool(match.get("domain_boosted"))
+            ai_used = bool(match.get("ai_classifier_used"))
+
             label, sys_note = similarity_label(eff, top5_effective)
             exp_warn = match.get("experience_warning")
             exp_str = f"  [⚠ {exp_warn} — 지원 가능 경력에 미달]" if exp_warn else ""
+
             print(f"  [{rank_label}] [{m['company_name']}] {m['position']}{exp_str}")
-            if boosted:
+
+            if ai_used:
+                ai_prob = float(match.get("ai_probability", 0.0) or 0.0)
+                ai_bonus = float(match.get("ai_bonus", 0.0) or 0.0)
+
+                print(
+                    f"          (FAISS: {sim:.4f} + 분류모델: {ai_prob:.3f}×{CLASSIFIER_ALPHA}="
+                    f"{ai_bonus:.4f} → 유효: {eff:.4f} · {label})"
+                )
+
+            elif boosted:
                 print(
                     f"          (FAISS: {sim:.4f} + 도메인 일치: +{DOMAIN_BOOST} "
                     f"→ 유효: {eff:.4f} · {label})"
                 )
+
             else:
                 print(f"          (FAISS: {sim:.4f} · {label})")
             if sys_note and not system_note_printed:
@@ -1045,7 +1253,7 @@ if __name__ == "__main__":
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
     # 레포는 최대 3개 (메인 1 + 서브 2 권장)
-    TARGET_USERNAME =  "AstroJini"#"chjnett"#"honey766"#"tekyung"#"siheon012"#"jww0108"#"2026TUKCOMCD"#"Central-MakeUs"#"Project-Guideon"#"AstroJini"#
+    TARGET_USERNAME =  "hojunnnnn"#"AstroJini"#"chjnett"#"honey766"#"tekyung"#"siheon012"#"jww0108"#"2026TUKCOMCD"#"Central-MakeUs"#"Project-Guideon"#"AstroJini"#
     TARGET_REPOS = [
         #"AstroJini/SmartFridge/tree/develop",
         #"AstroJini/SmartFridge-FE/tree/develop",
@@ -1059,9 +1267,10 @@ if __name__ == "__main__":
         #"2026TUKCOMCD/SyncLab", # 웹 풀스택, 모바일
         #"Central-MakeUs/AZIT_Front/tree/develop", # 프론트엔드
         #"Project-Guideon/guideon-backend", # 백엔드
-        "AstroJini/MKX-BE/tree/develop", # 웹 풀스택
+        #"AstroJini/MKX-BE/tree/develop", # 웹 풀스택
         "AstroJini/SmartFridge/tree/develop", # 웹 풀스택
-        #"chjnett/my-sports-ai/tree/main", # ai, 머신러닝
+        "chjnett/my-sports-ai/tree/main", # ai, 머신러닝
+        "hojunnnnn/board/tree/master" #서버/백엔드
     ]
     APPLICANT_YEARS = 0
     # ================================================================

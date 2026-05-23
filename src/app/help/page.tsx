@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 import { WorkHeader } from "@/components/Header"
 import { HelpSidebar } from "@/components/Sidebar"
-import { Card } from "@/components/Common"
+import { Card } from "@/components/ui/card"
 
 type GuideTone = "green" | "blue" | "purple" | "orange"
 

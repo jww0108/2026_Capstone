@@ -2,18 +2,36 @@
 
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { useState, type ReactNode } from "react"
+import { useState, useTransition, type ReactNode } from "react"
 import { Github, Link as LinkIcon, Rocket, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { InfoTooltip } from "@/components/Common"
 import { PublicHeader } from "@/components/Header"
 import { landingGuideRows, landingProcessItems, landingResultCards, type LandingResultCard } from "@/data/uiContent"
+import { startAnalysis } from "@/lib/analysisResult"
 
 export default function MainInputPage() {
   const router = useRouter()
   const [githubId, setGithubId] = useState("")
   const [repos, setRepos] = useState(["", "", ""])
+  const [isStarting, startTransition] = useTransition()
+
+  const handleStartAnalysis = () => {
+    startTransition(async () => {
+      try {
+        const nonEmptyRepos = repos.map((repo) => repo.trim()).filter(Boolean)
+        const { analysisId } = await startAnalysis({
+          githubId: githubId.trim(),
+          repositories: nonEmptyRepos,
+        })
+        router.push(`/loading?analysisId=${analysisId}`)
+      } catch {
+        // 시연 단계에서는 분석 시작 요청에 실패해도 로딩 화면으로 이동해 UI 흐름을 확인할 수 있게 둡니다.
+        router.push("/loading")
+      }
+    })
+  }
 
   return (
     <div className="min-h-screen soft-grid-bg">
@@ -68,8 +86,8 @@ export default function MainInputPage() {
               </div>
 
               <div className="pt-1">
-                <Button size="lg" className="h-14 w-full text-xl font-black" onClick={() => router.push("/loading")}>
-                  <Rocket className="h-6 w-6" />분석 시작하기
+                <Button type="button" size="lg" className="h-14 w-full text-xl font-black" onClick={handleStartAnalysis} disabled={isStarting}>
+                  <Rocket className="h-6 w-6" />{isStarting ? "분석 준비 중..." : "분석 시작하기"}
                 </Button>
                 <p className="mt-3 text-center text-base font-extrabold text-slate-500">◷ 예상 소요 시간: 약 30초 ~ 2분</p>
               </div>

@@ -2,7 +2,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { CalendarDays, Gamepad2, Github, Hexagon, Users } from "lucide-react"
 import { PageShell } from "@/components/PageShell"
-import { Bar, Card, Chip, InfoTooltip } from "@/components/Common"
+import { Card } from "@/components/ui/card"
+import { Bar, InfoTooltip } from "@/components/Common"
 import { ScoreRing } from "@/components/ScoreRing"
 import { getAnalysisResult } from "@/lib/analysisResult"
 
@@ -72,35 +73,23 @@ export default function SummaryPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-[23px] font-black tracking-[-0.035em] text-slate-950">핵심 역량 점수</h3>
-            <Score label="개발 활동량" val={`${report.score.activity} / 60`} pct={Math.round((report.score.activity / 60) * 100)} image="/images/develop-activity.png" />
-            <Score label="프로젝트 관리도" val={`${report.score.management.toFixed(1)} / 30`} pct={Math.round((report.score.management / 30) * 100)} color="bg-purple-500" image="/images/project-management.png" />
-            <Score label="작업 일관성" val={`${report.score.consistency} / 10`} pct={Math.round((report.score.consistency / 10) * 100)} color="bg-emerald-500" image="/images/work-consistency.png" />
+            <Score label="개발 활동량" val={`${report.score.activity} / 60`} pct={(report.score.activity / 60) * 100} image="/images/develop-activity.png" />
+            <Score label="프로젝트 관리도" val={`${report.score.management.toFixed(1)} / 30`} pct={(report.score.management / 30) * 100} color="bg-purple-500" image="/images/project-management.png" />
+            <Score label="작업 일관성" val={`${report.score.consistency} / 10`} pct={(report.score.consistency / 10) * 100} color="bg-emerald-500" image="/images/work-consistency.png" />
           </div>
         </div>
       </Card>
 
-      <Card className="glass-card mt-4 p-5">
-        <h2 className="text-[23px] font-black tracking-[-0.035em] text-slate-950">먼저 개선하면 좋은 항목</h2>
-        <div className="mt-3 divide-y overflow-hidden rounded-xl border border-slate-200 bg-white">
-          {report.quickWins.map((item, i) => (
-            <div className="grid grid-cols-[52px_210px_1fr_180px] items-center px-4 py-3" key={item.title}>
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-600 text-xl font-black text-white shadow-sm shadow-blue-200">{i + 1}</div>
-              <b className="text-[21px] font-black tracking-[-0.035em] text-slate-950">{item.title}</b>
-              <span className="text-[15px] font-extrabold text-slate-600">{item.desc}</span>
-              <div className="flex justify-end">
-                <Chip tone={i === 0 ? "green" : i === 1 ? "orange" : "blue"}>{item.priority}</Chip>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/70 px-5 py-4 text-[16px] font-extrabold leading-7 text-slate-700">
+        <InfoTooltip text="세부 피드백은 포트폴리오 진단 화면에서 레포별로 확인할 수 있습니다." /> 요약 화면은 전체 수준과 상세 분석 진입점을 제공합니다. 레포별 개선 항목은 포트폴리오 진단에서 확인하세요.
+      </div>
 
-      <h2 className="mt-4 text-[23px] font-black tracking-[-0.035em] text-slate-950">상세 분석 보기</h2>
+      <h2 className="mt-4 text-[24px] font-black tracking-[-0.035em] text-slate-950">상세 분석 보기</h2>
       <div className="mt-3 grid grid-cols-3 gap-5">
         {moduleCards.map((module) => <DetailModuleCard key={module.title} {...module} />)}
       </div>
 
-      <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-5 py-3 text-[15px] font-extrabold text-slate-600">
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[15px] font-extrabold text-slate-600">
         <InfoTooltip text="결과는 포트폴리오와 채용 데이터 기반의 참고 지표이며, 실제 평가는 기업과 상황에 따라 달라질 수 있습니다." /> 분석 결과는 참고용입니다. 실제 채용 및 연봉은 회사, 지역, 개인 역량, 최신성 등에 따라 달라질 수 있습니다.
       </div>
     </PageShell>

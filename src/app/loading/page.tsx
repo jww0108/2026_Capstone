@@ -9,22 +9,61 @@ import { WorkHeader } from "@/components/Header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { loadingSteps } from "@/data/uiContent"
-import { getAnalysisResult } from "@/lib/analysisResult"
+import { getAnalysisResult, getAnalysisStatus } from "@/lib/analysisResult"
+import { clampPercent } from "@/lib/utils"
 
 const AUTO_REDIRECT = true
-const STEP_DELAY = 950
-const RESULT_DELAY = 700
+const STEP_DELAY = 1450
+const RESULT_DELAY = 800
+const USE_SERVER_STATUS = process.env.NEXT_PUBLIC_ENABLE_ANALYSIS_STATUS === "true"
 
 type StepStatus = "done" | "active" | "waiting"
 
 export default function LoadingPage() {
   const router = useRouter()
+  const analysisId = "demo-analysis"
   const report = getAnalysisResult()
   const [currentStep, setCurrentStep] = useState(0)
   const [progress, setProgress] = useState(6)
   const [isComplete, setIsComplete] = useState(false)
+  const [failedMessage, setFailedMessage] = useState("")
 
   useEffect(() => {
+    if (!USE_SERVER_STATUS || isComplete || failedMessage) return
+
+    const poll = window.setInterval(async () => {
+      try {
+        const status = await getAnalysisStatus(analysisId)
+
+        if (status.status === "FAILED") {
+          setFailedMessage(status.message ?? "분석 중 문제가 발생했습니다.")
+          window.clearInterval(poll)
+          return
+        }
+
+        if (status.status === "COMPLETED") {
+          setCurrentStep(loadingSteps.length - 1)
+          setProgress(100)
+          setIsComplete(true)
+          window.clearInterval(poll)
+          return
+        }
+
+        if (status.status === "RUNNING") {
+          setCurrentStep(Math.max(0, Math.min(loadingSteps.length - 1, status.currentStep - 1)))
+          setProgress(Math.max(8, Math.min(96, status.progress)))
+        }
+      } catch {
+        // 서버 상태 조회 실패 시에는 시연용 시간 기반 진행을 유지합니다.
+      }
+    }, 1200)
+
+    return () => window.clearInterval(poll)
+  }, [analysisId, failedMessage, isComplete])
+
+  useEffect(() => {
+    if (failedMessage || USE_SERVER_STATUS) return
+
     if (isComplete) {
       setProgress(100)
       if (!AUTO_REDIRECT) return
@@ -42,9 +81,11 @@ export default function LoadingPage() {
       })
     }, STEP_DELAY)
     return () => window.clearTimeout(stepTimer)
-  }, [currentStep, isComplete, router])
+  }, [currentStep, failedMessage, isComplete, router])
 
   useEffect(() => {
+    if (failedMessage || USE_SERVER_STATUS) return
+
     if (isComplete) {
       setProgress(100)
       return
@@ -52,7 +93,13 @@ export default function LoadingPage() {
     const targetProgress = Math.min(96, Math.round(((currentStep + 1) / loadingSteps.length) * 100))
     const progressTimer = window.setInterval(() => setProgress((prev) => prev >= targetProgress ? prev : Math.min(targetProgress, prev + 1)), 35)
     return () => window.clearInterval(progressTimer)
-  }, [currentStep, isComplete])
+  }, [currentStep, failedMessage, isComplete])
+
+  useEffect(() => {
+    if (!USE_SERVER_STATUS || !isComplete || !AUTO_REDIRECT) return
+    const redirectTimer = window.setTimeout(() => router.push(`/result?analysisId=${analysisId}`), RESULT_DELAY)
+    return () => window.clearTimeout(redirectTimer)
+  }, [analysisId, isComplete, router])
 
   const getStepStatus = (index: number): StepStatus => {
     if (isComplete || index < currentStep) return "done"
@@ -60,7 +107,12 @@ export default function LoadingPage() {
     return "waiting"
   }
 
-  const activeStepTitle = isComplete ? "분석 결과 리포트 생성 완료" : loadingSteps[currentStep]?.title ?? "분석 중"
+  const activeStepTitle = failedMessage
+    ? "분석 상태 확인 필요"
+    : isComplete
+      ? "분석 결과 리포트 생성 완료"
+      : loadingSteps[currentStep]?.title ?? "분석 중"
+  const safeProgress = clampPercent(progress)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -72,7 +124,9 @@ export default function LoadingPage() {
               GitHub 포트폴리오 분석 중
               {!isComplete ? <Loader2 className="h-8 w-8 animate-spin text-blue-600" /> : <Check className="h-8 w-8 rounded-full bg-emerald-500 p-1 text-white" />}
             </h1>
-            <p className="mt-4 text-lg font-bold text-slate-600">입력하신 정보를 기반으로 GitHub 레포지토리를 분석하고 있습니다.</p>
+            <p className="mt-4 text-lg font-bold text-slate-600">
+              입력하신 정보를 기반으로 GitHub 레포지토리를 분석하고 있습니다.
+            </p>
 
             <div className="mt-8 grid grid-cols-3 rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-100">
               <InfoBlock image="/images/githubID_logo.png" label="GitHub ID" value={report.applicant.githubId} />
@@ -87,8 +141,17 @@ export default function LoadingPage() {
                     <h2 className="text-2xl font-black">분석 진행 단계</h2>
                     <p className="mt-2 text-sm font-bold text-slate-500">현재 단계: {activeStepTitle}</p>
                   </div>
-                  <span className="rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">{isComplete ? "완료" : `${currentStep + 1} / ${loadingSteps.length}`}</span>
+                  <span className="rounded-full bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">
+                    {failedMessage ? "확인 필요" : isComplete ? "완료" : `${currentStep + 1} / ${loadingSteps.length}`}
+                  </span>
                 </div>
+
+                {failedMessage && (
+                  <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-base font-black text-red-700">
+                    {failedMessage}
+                  </div>
+                )}
+
                 <div className="mt-6">
                   {loadingSteps.map((step, index) => <StepItem key={step.title} index={index} title={step.title} description={step.description} status={getStepStatus(index)} />)}
                 </div>
@@ -96,21 +159,20 @@ export default function LoadingPage() {
 
               <Card className="p-8 shadow-none">
                 <h2 className="text-2xl font-black">분석 진행률</h2>
-                <div className="mx-auto mt-10 grid h-56 w-56 place-items-center rounded-full border-[18px] border-blue-100" style={{ background: `conic-gradient(#2563eb ${progress * 3.6}deg,#eef2ff 0deg)` }}>
+                <div className="mx-auto mt-10 grid h-56 w-56 place-items-center rounded-full border-[18px] border-blue-100" style={{ background: `conic-gradient(#2563eb ${safeProgress * 3.6}deg,#eef2ff 0deg)`, transition: "background 180ms linear" }}>
                   <div className="grid h-40 w-40 place-items-center rounded-full bg-white">
                     <div className="text-center">
-                      <b className="text-5xl font-black">{progress}%</b>
-                      <p className="mt-1 font-black text-slate-500">{isComplete ? "완료" : "분석 중..."}</p>
+                      <b className="text-5xl font-black">{Math.round(safeProgress)}%</b>
+                      <p className="mt-1 font-black text-slate-500">{failedMessage ? "대기" : isComplete ? "완료" : "분석 중..."}</p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-8 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm font-bold leading-6 text-slate-700">
-                  <div className="flex items-center gap-2 text-slate-950"><Image src="/images/light.png" alt="" width={26} height={24} />분석이 오래 걸리는 이유</div>
+                  <div className="flex items-center gap-2 text-slate-950"><Image src="/images/light.png" alt="" width={26} height={24} />분석 진행 안내</div>
                   <ul className="mt-2 list-disc pl-5">
-                    <li>GitHub API 데이터 수집</li>
-                    <li>README 및 코드 구조 분석</li>
-                    <li>채용공고 유사도 매칭</li>
-                    <li>연봉 데이터 계산</li>
+                    <li>현재는 시연용 시간 기반으로 진행됩니다.</li>
+                    <li>추후 서버 상태 API가 붙으면 완료 응답 즉시 결과 화면으로 이동합니다.</li>
+                    <li>분석 실패 시 이 화면에서 문제를 확인할 수 있습니다.</li>
                   </ul>
                 </div>
               </Card>
@@ -120,8 +182,8 @@ export default function LoadingPage() {
               <div className="flex items-center gap-4">
                 <Image src="/images/mascot.png" alt="Git2Value mascot" width={113} height={95} className="h-[92px] w-[110px] object-contain" />
                 <div>
-                  <b className="text-xl font-black">{isComplete ? "분석이 완료되었습니다!" : "잠시만 기다려주세요! 😊"}</b>
-                  <p className="font-bold text-slate-600">{isComplete ? "곧 결과 요약 화면으로 이동합니다." : "정확하고 신뢰할 수 있는 분석 결과를 제공하기 위해 최선을 다해 분석하고 있습니다."}</p>
+                  <b className="text-xl font-black">{failedMessage ? "문제 해결 가이드를 확인해 주세요." : isComplete ? "분석이 완료되었습니다!" : "잠시만 기다려주세요! 😊"}</b>
+                  <p className="font-bold text-slate-600">{failedMessage ? "입력값, GitHub 접근 권한, 데이터 파일 상태를 확인하면 대부분 해결할 수 있습니다." : isComplete ? "곧 결과 요약 화면으로 이동합니다." : "정확하고 신뢰할 수 있는 분석 결과를 제공하기 위해 최선을 다해 분석하고 있습니다."}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">

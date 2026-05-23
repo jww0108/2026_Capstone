@@ -56,26 +56,56 @@ button, input { font-family: inherit; }
 
   body.pdf-print-mode header,
   body.pdf-print-mode aside,
-  body.pdf-print-mode [data-no-print] {
+  body.pdf-print-mode [data-no-print],
+  body.pdf-print-mode .fixed {
     display: none !important;
   }
 
   body.pdf-print-mode main {
     margin-left: 0 !important;
     padding-top: 0 !important;
+    overflow: visible !important;
     background: #ffffff !important;
   }
 
   body.pdf-print-mode [data-pdf-content] {
-    max-width: none !important;
-    width: 100% !important;
+    width: var(--pdf-content-width, 1440px) !important;
+    max-width: var(--pdf-content-width, 1440px) !important;
+    min-width: var(--pdf-content-width, 1440px) !important;
     padding: 0 !important;
     margin: 0 !important;
+    zoom: var(--pdf-scale, 0.72);
+    overflow: visible !important;
     background: #ffffff !important;
   }
 
-  body.pdf-print-mode * {
+  body.pdf-print-mode [data-pdf-content],
+  body.pdf-print-mode [data-pdf-content] * {
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  body.pdf-print-mode [data-pdf-content] > *,
+  body.pdf-print-mode [data-pdf-content] .glass-card,
+  body.pdf-print-mode [data-pdf-content] .rounded-2xl {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  body.pdf-print-mode .salary-band-fill,
+  body.pdf-print-mode .salary-band-marker,
+  body.pdf-print-mode [role="progressbar"] > div {
+    transition: none !important;
+    opacity: 1 !important;
+  }
+
+  body.pdf-print-mode .salary-band-fill {
+    transform: scaleY(1) !important;
+  }
+
+  body.pdf-print-mode * {
+    animation: none !important;
   }
 }

@@ -63,13 +63,24 @@ export function WorkHeader({ mode = "result" }: { mode?: "loading" | "result" | 
     }
 
     try {
+      setToastMessage("")
       setIsSavingPdf(true)
-      showToast("PDF 저장 창을 여는 중입니다.")
-
       document.body.classList.add("pdf-print-mode")
+
+      const printContentWidth = 1440
+      const pageWidthPx = ((297 - 16) / 25.4) * 96
+      const pageHeightPx = ((210 - 16) / 25.4) * 96
+      const targetHeight = Math.max(target.scrollHeight, target.offsetHeight)
+      const fitScale = Math.min(0.98, pageWidthPx / printContentWidth, pageHeightPx / Math.max(targetHeight, 1))
+      const printScale = Math.max(0.54, fitScale)
+
+      document.documentElement.style.setProperty("--pdf-content-width", `${printContentWidth}px`)
+      document.documentElement.style.setProperty("--pdf-scale", printScale.toFixed(3))
 
       const cleanup = () => {
         document.body.classList.remove("pdf-print-mode")
+        document.documentElement.style.removeProperty("--pdf-scale")
+        document.documentElement.style.removeProperty("--pdf-content-width")
         setIsSavingPdf(false)
         window.removeEventListener("afterprint", cleanup)
       }
@@ -78,16 +89,18 @@ export function WorkHeader({ mode = "result" }: { mode?: "loading" | "result" | 
 
       window.setTimeout(() => {
         window.print()
-      }, 120)
+      }, 180)
 
       window.setTimeout(() => {
         if (document.body.classList.contains("pdf-print-mode")) {
           cleanup()
         }
-      }, 2500)
+      }, 3200)
     } catch (error) {
       console.error(error)
       document.body.classList.remove("pdf-print-mode")
+      document.documentElement.style.removeProperty("--pdf-scale")
+      document.documentElement.style.removeProperty("--pdf-content-width")
       setIsSavingPdf(false)
       showToast("PDF 저장 중 문제가 발생했습니다.")
     }
@@ -120,7 +133,7 @@ export function WorkHeader({ mode = "result" }: { mode?: "loading" | "result" | 
       </header>
 
       {toastMessage && (
-        <div className="fixed bottom-6 left-6 z-[80] flex max-w-[360px] items-center gap-3 rounded-2xl border border-blue-100 bg-white px-5 py-4 text-base font-black text-slate-800 shadow-xl shadow-slate-300/40">
+        <div data-no-print className="fixed bottom-6 left-6 z-[80] flex max-w-[360px] items-center gap-3 rounded-2xl border border-blue-100 bg-white px-5 py-4 text-base font-black text-slate-800 shadow-xl shadow-slate-300/40">
           <CheckCircle2 className="h-6 w-6 shrink-0 text-blue-600" />
           <span>{toastMessage}</span>
         </div>

@@ -1,24 +1,68 @@
+import Image from "next/image"
 import Link from "next/link"
+import { Code2, Database, FileText, Filter, Gamepad2, Monitor, ShieldCheck, Target, Users } from "lucide-react"
 import { PageShell } from "@/components/PageShell"
-import { Bar, Breadcrumb, Card, Chip, FooterActions, InfoTooltip, PageTitle, StatRow } from "@/components/Common"
+import { Card } from "@/components/ui/card"
+import { Bar, Breadcrumb, Chip, FooterActions, InfoTooltip } from "@/components/Common"
 import { Button } from "@/components/ui/button"
 import { getAnalysisResult } from "@/lib/analysisResult"
+import { cn, scoreToPercent } from "@/lib/utils"
 
 export default function JobsPage() {
   const report = getAnalysisResult()
+
+  const quickStats = [
+    { label: "분석 공고", value: report.jobSummary.totalPostings, icon: "search" },
+    { label: "추천 가능", value: report.jobSummary.recommendedPostings, icon: "target" },
+    { label: "평균 점수", value: report.jobSummary.averageScore, icon: "score" },
+    { label: "도메인 일치", value: report.jobSummary.domainMatchRatio, icon: "domain" },
+  ]
+
+  const reasonIcons = [Code2, Gamepad2, Monitor, Users, Database, FileText]
+
   return (
     <PageShell active="직무 매칭">
       <Breadcrumb current="직무 매칭" />
-      <PageTitle title="직무 매칭" desc="FAISS 유사도 검색과 도메인 분석을 통해 지원자에게 적합한 직무를 추천합니다." />
 
-      <div className="grid grid-cols-[1fr_470px] gap-5">
-        <Card className="p-5">
+      <div className="mb-4">
+        <h1 className="flex items-center gap-2 text-[40px] font-black tracking-[-0.045em] text-slate-950">
+          직무 매칭
+          <InfoTooltip text="포트폴리오 신호와 채용공고 유사도를 비교해 적합한 직무를 추천합니다." />
+        </h1>
+        <div className="mt-3 grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_500px]">
+          <p className="pt-1 text-lg font-bold leading-7 text-slate-700">
+            FAISS 유사도 검색과 도메인 분석을 통해 지원자에게 적합한 직무를 추천합니다.
+          </p>
+          <Card className="border-amber-200 bg-amber-50/70 px-5 py-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Image src="/images/light.png" alt="추천 활용 팁" width={34} height={32} className="h-8 w-8 object-contain" />
+              <p className="text-[15px] font-black leading-6 text-slate-800">
+                README, 기술 스택, 프로젝트 설명을 보강하면 직무 매칭 품질을 높일 수 있어요.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      <Card className="p-5">
+        <div>
           <h2 className="flex items-center gap-3 text-[26px] font-black tracking-[-0.03em]">
             추천 직무 TOP 5
-            <Chip>신입/경력무관/경력 미기재 기준</Chip>
+            <Chip>신입 기준 필터 적용</Chip>
           </h2>
+          <p className="mt-2 text-[15px] font-bold text-slate-600">
+            점수, 경력 조건, 도메인 적합성을 함께 고려해 우선순위를 정렬했습니다.
+          </p>
+        </div>
 
-          <div className="mt-4 grid grid-cols-[64px_1fr_190px_150px_150px] border-b pb-2.5 text-[15px] font-black text-slate-500">
+        <div className="mt-4 grid grid-cols-4 gap-4">
+          {quickStats.map((item) => (
+            <StatCard key={item.label} label={item.label} value={item.value} icon={item.icon} />
+          ))}
+        </div>
+
+        <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+          <div className="grid grid-cols-[68px_minmax(0,1.45fr)_210px_170px_170px] items-center bg-slate-50 px-4 py-3 text-[14px] font-black text-slate-500">
             <span>순위</span>
             <span>직무 / 회사</span>
             <span>
@@ -28,87 +72,71 @@ export default function JobsPage() {
             <span>도메인 일치</span>
           </div>
 
-          {report.jobs.map((j) => (
-            <div
-              key={j.rank}
-              className="grid grid-cols-[64px_1fr_190px_150px_150px] items-center border-b py-2.5 last:border-b-0"
-            >
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-2xl font-black text-blue-600">
-                {j.rank}
-              </div>
-              <div className="flex items-center gap-4">
-                <Avatar name={j.company} rank={j.rank} />
+          <div className="divide-y divide-slate-200">
+            {report.jobs.slice(0, 5).map((j) => (
+              <div key={j.rank} className="grid grid-cols-[68px_minmax(0,1.45fr)_210px_170px_170px] items-center gap-3 px-4 py-3.5">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-[22px] font-black text-blue-600">
+                  {j.rank}
+                </div>
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar name={j.company} rank={j.rank} />
+                  <div className="min-w-0">
+                    <div className="truncate text-[18px] font-black tracking-[-0.02em] text-slate-950">{j.title}</div>
+                    <p className="mt-0.5 text-[14px] font-extrabold text-slate-600">{j.company}</p>
+                  </div>
+                </div>
                 <div>
-                  <b className="text-[18px] font-black tracking-[-0.02em]">{j.title}</b>
-                  <p className="text-[15px] font-extrabold text-slate-600">{j.company}</p>
+                  <div className="text-[15px] font-black text-slate-950">{j.score}</div>
+                  <div className="mt-1.5 w-[150px]">
+                    <Bar value={scoreToPercent(j.score)} />
+                  </div>
+                </div>
+                <div>
+                  <Chip tone={j.exp === "신입" ? "green" : j.exp === "경력 무관" ? "green" : "gray"}>{j.exp}</Chip>
+                </div>
+                <div>
+                  <Chip tone={j.domain === "도메인 일치" ? "green" : j.domain === "보통" ? "blue" : j.domain === "낮음" ? "gray" : "orange"}>{j.domain}</Chip>
                 </div>
               </div>
-              <div>
-                <b className="text-base font-black">{j.score}</b>
-                <div className="mt-1.5 w-36">
-                  <Bar value={j.rank === 1 ? 80 : j.rank === 2 ? 72 : j.rank === 3 ? 68 : j.rank === 4 ? 64 : 60} />
-                </div>
-              </div>
-              <div className="justify-self-start">
-                <Chip tone={j.exp === "신입" ? "green" : j.exp === "경력 무관" ? "green" : "gray"}>{j.exp}</Chip>
-              </div>
-              <div className="justify-self-start">
-                <Chip tone={j.domain === "도메인 일치" ? "green" : j.domain === "보통" ? "blue" : j.domain === "낮음" ? "gray" : "orange"}>{j.domain}</Chip>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+      </Card>
 
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-            <h3 className="flex items-center gap-3 text-[20px] font-black tracking-[-0.03em]">
-              매칭 분포 안내
-              <span className="text-[14px] font-extrabold text-slate-500">상위 공고의 유효 점수 분포</span>
-            </h3>
-            <div className="mt-3 grid grid-cols-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
-              {report.matchDistribution.map((item, index) => (
-                <Dist key={item.label} active={index === 1} label={item.label} value={item.count} />
-              ))}
-            </div>
-            <p className="mt-3 rounded-xl bg-white px-4 py-3 text-[15px] font-extrabold leading-6 text-slate-600">
-              <InfoTooltip text="FAISS 기반 유사도 점수를 구간별로 나눈 분포입니다." /> 유사도 점수가 낮을수록 공고와의 일치도가 낮다는 의미입니다.
-            </p>
-
-            <div className="mt-3 flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3">
-              <img src="/images/light.png" alt="추천 활용 팁" className="h-7 w-7 shrink-0 object-contain" />
-              <p className="text-[16px] font-black leading-none text-slate-800">
-                README, 기술 스택, 프로젝트 설명을 보강하면 더 높은 매칭 점수를 받을 수 있어요.
-              </p>
-            </div>
+      <div className="mt-5 grid grid-cols-2 items-stretch gap-5">
+        <Card className="h-full p-5">
+          <h2 className="flex items-center gap-2 text-[22px] font-black tracking-[-0.03em]">
+            <ShieldCheck className="h-6 w-6 text-blue-600" />추천 근거
+          </h2>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {report.techMatchNotes.map((item, index) => {
+              const Icon = reasonIcons[index] ?? ShieldCheck
+              return (
+                <ReasonItem
+                  key={item.label}
+                  icon={<Icon className="h-[18px] w-[18px]" />}
+                  label={item.label}
+                  note={item.note}
+                  type={item.type}
+                />
+              )
+            })}
           </div>
         </Card>
 
-        <div className="flex h-full flex-col gap-5">
-          <Card className="flex-1 p-5">
-            <h2 className="text-[22px] font-black tracking-[-0.03em]">매칭 분석 요약</h2>
-            <div className="mt-3 space-y-1">
-              <StatRow label="분석된 채용공고 수" value={report.jobSummary.totalPostings} />
-              <StatRow label="추천 가능 공고 수" value={report.jobSummary.recommendedPostings} />
-              <StatRow label="평균 유효 점수" value={report.jobSummary.averageScore} />
-              <StatRow label="도메인 일치 상위 비율" value={report.jobSummary.domainMatchRatio} />
-            </div>
-          </Card>
-
-          <Card className="flex-1 p-5">
-            <h2 className="text-[22px] font-black tracking-[-0.03em]">기술 스택 매칭 분석</h2>
-            <div className="mt-3 space-y-2.5">
-              {report.techMatchNotes.map((item) => (
-                <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5">
-                  <div className="flex items-center justify-between gap-3">
-                    <b className="text-[16px] font-black text-slate-900">{item.label}</b>
-                    <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700 ring-1 ring-blue-100">
-                      {item.type}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[14px] font-extrabold text-slate-600">{item.note}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+        <Card className="h-full p-5">
+          <h2 className="flex items-center gap-2 text-[22px] font-black tracking-[-0.03em]">
+            <Filter className="h-6 w-6 text-blue-600" />추천 기준 요약
+          </h2>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <RuleItem title="경력 조건" desc="신입·경력무관·경력 미기재 우선 반영" />
+            <RuleItem title="텍스트 유사도" desc="FAISS 기반 공고-포트폴리오 유사도 비교" />
+            <RuleItem title="도메인 보정" desc="프로젝트 도메인과 직무 방향 일치 여부 반영" />
+            <RuleItem title="추천 결과 제한" desc="최대 5개 직무만 우선순위 중심으로 표시" />
+            <RuleItem title="기술 스택 반영" desc="보유 기술과 공고 요구 기술의 겹침 정도 반영" />
+            <RuleItem title="중복 공고 정리" desc="유사 공고는 대표 직무 중심으로 묶어 해석" />
+          </div>
+        </Card>
       </div>
 
       <FooterActions
@@ -132,6 +160,60 @@ export default function JobsPage() {
   )
 }
 
+function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
+  const Icon = icon === "target" ? Target : icon === "score" ? ShieldCheck : icon === "domain" ? Gamepad2 : Filter
+
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
+      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-600 ring-1 ring-blue-100">
+        <Icon className="h-6 w-6" />
+      </div>
+      <div>
+        <div className="text-[13px] font-black text-slate-500">{label}</div>
+        <div className="mt-0.5 text-[22px] font-black tracking-[-0.03em] text-slate-950">{value}</div>
+      </div>
+    </div>
+  )
+}
+
+function ReasonItem({
+  icon,
+  label,
+  note,
+  type,
+  className,
+}: {
+  icon: React.ReactNode
+  label: string
+  note: string
+  type: string
+  className?: string
+}) {
+  return (
+    <div className={cn("flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3", className)}>
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <b className="block truncate text-[15px] font-black text-slate-900">{label}</b>
+        <p className="mt-1 text-[13px] font-extrabold leading-5 text-slate-600">{note}</p>
+      </div>
+      <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700 ring-1 ring-blue-100">
+        {type}
+      </span>
+    </div>
+  )
+}
+
+function RuleItem({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3.5">
+      <b className="block text-[15px] font-black text-slate-950">{title}</b>
+      <p className="mt-1.5 text-[13px] font-extrabold leading-5 text-slate-600">{desc}</p>
+    </div>
+  )
+}
+
 function Avatar({ name, rank }: { name: string; rank: number }) {
   const label = /[A-Za-z]+/.test(name)
     ? name.match(/[A-Za-z]+/)?.[0].slice(0, 2).toUpperCase()
@@ -145,17 +227,8 @@ function Avatar({ name, rank }: { name: string; rank: number }) {
   ]
 
   return (
-    <div className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${colors[rank - 1]} text-lg font-black text-white shadow-sm`}>
+    <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${colors[rank - 1]} text-lg font-black text-white shadow-sm`}>
       {label}
-    </div>
-  )
-}
-
-function Dist({ label, value, active }: { label: string; value: string; active?: boolean }) {
-  return (
-    <div className={`px-2.5 py-2.5 text-center text-[14px] font-extrabold ${active ? "bg-blue-600 text-white" : "bg-blue-50/60 text-slate-700"}`}>
-      <p>{label}</p>
-      <b className="mt-1 block text-[15px] font-black">{value}</b>
     </div>
   )
 }

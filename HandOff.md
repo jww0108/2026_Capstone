@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.05.18 | 현재 스펙 버전: v3.0 | 현재 구현 버전: **v7.1**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.05.30 | 현재 스펙 버전: v4.0 | 현재 구현 버전: **v7.2-upgrade.4**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -9,6 +9,18 @@
 - **MultiDomain/사용자 피드백 수정 체크리스트**로 작업할 때는 **체크리스트의 각 단계(Step)를 완료할 때마다** 이 `HandOff.md`를 갱신한다.
 - 갱신 내용: 해당 단계에서 바뀐 파일·동작 요약, 버전/이력 섹션 반영, 알려진 과제 목록 정합.
 - 외부 문서(Spec_v3, 논문, 발표 자료)도 메이저 버전 변경 시 동기 갱신한다.
+
+### 에이전트 필수 안내 — 도입 보류 영역 (당분간 무시)
+
+**아래 경로·파일은 프로덕션 파이프라인에 포함되지 않습니다.** 기능 구현·리팩토링·API 연동·의존성 추가·버그 수정 범위를 잡을 때 **기본적으로 고려하지 마세요.** 사용자가 명시적으로 “ML 리랭킹 도입”을 요청한 경우에만 해당 영역을 다룹니다.
+
+| 상태          | 경로·파일                           | 비고                                                                   |
+| ------------- | ----------------------------------- | ---------------------------------------------------------------------- |
+| **도입 보류** | `ml/`                               | RandomForest 직무 분류기 학습·추론 (연구용)                            |
+| **도입 보류** | `experiments/`                      | FAISS/키워드/도메인·AI 리랭킹 비교 실험                                |
+| **도입 보류** | `run_git2value_trying_reranking.py` | `rerank_by_ai_classifier` 시험 적용본. **메인은 `run_git2value.py`만** |
+
+**프로덕션 모듈 A 리랭킹**은 v7.1 기준 **`run_git2value.py`의 `rerank_by_domain()`** (트리 기반 `detected_domains` + `DOMAIN_BOOST=0.05`)만 사용합니다. 상세: [§2.1 도입 보류 — AI 직무 분류 리랭킹 연구](#21-도입-보류--ai-직무-분류-리랭킹-연구).
 
 ---
 
@@ -94,8 +106,120 @@ basic/
 │
 ├── kaggle/   (비활성, 무시)
 ├── used/     (비활성, 무시)
-└── md/       (과거의 계획 파일, 필요할 때만 사용)
+├── md/       (과거의 계획 파일, 필요할 때만 사용)
+│
+├── ml/                          # ⛔ 도입 보류 — 연구 전용 (§2.1)
+│   ├── feature_extractor.py
+│   ├── train_job_classifier.py
+│   ├── job_classifier.py
+│   ├── dataset/job_training_data.csv
+│   └── models/                  # job_classifier.pkl은 보통 미커밋 (report.json만 있을 수 있음)
+│
+├── experiments/                 # ⛔ 도입 보류 — 연구 전용 (§2.1)
+│   ├── collect_eval_profiles.py
+│   ├── evaluate_ex1.py / evaluate_ex2.py
+│   ├── embedding_matcher.py / keyword_matcher.py
+│   ├── eval_repos_v*.csv
+│   ├── cache/ / results/
+│   └── ml/feature_extractor.py  # experiments 쪽 복사본 (루트 ml/와 중복 가능)
+│
+└── run_git2value_trying_reranking.py  # ⛔ 도입 보류 — AI 리랭킹 시험 E2E (run_git2value.py 미대체)
 ```
+
+---
+
+## 2.1 도입 보류 — AI 직무 분류 리랭킹 연구
+
+> **상태: 도입 보류 (Deferred)** — 당분간 `run_git2value.py` / `main.py` / `Git2ValuePipeline`에 병합하지 않음.  
+> **2026.05.30 결정:** ex2 재실험 후에도 프로덕션은 **`rerank_by_domain()` 현상 유지** (§2.1 실험 결과 참조).
+
+### 목적 (연구만 해당)
+
+FAISS Top-k 후보 공고에 대해, GitHub 프로필을 **8개 직무군**으로 분류한 **RandomForest 확률**을 가산해 순위를 조정하는 2단계 매칭 실험.
+
+```text
+effective_score = faiss_similarity + α × P(직무 | profile)   # 시험본 α=0.10
+```
+
+기존 프로덕션 방식(`rerank_by_domain`, `DOMAIN_BOOST=0.05`, 다중 도메인 억제 등)과 **대체 관계가 아니라** 실험적 후보입니다.
+
+### 폴더·파일 역할
+
+| 경로                                   | 역할                                                                                                      |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `experiments/collect_eval_profiles.py` | `eval_repos_v*.csv` 레포 → `cache/*_profiles.json` 수집                                                   |
+| `experiments/evaluate_ex1.py`          | 키워드 vs FAISS 임베딩 Top-k 정확도                                                                       |
+| `experiments/evaluate_ex2.py`          | FAISS only vs 도메인 리랭킹 vs AI 분류 리랭킹 (3-way)                                                     |
+| `ml/feature_extractor.py`              | 프로필 → 77차원 특징 (`domain_hits_merged` 기본 제외)                                                     |
+| `ml/train_job_classifier.py`           | `job_training_data.csv` → `job_classifier.pkl`                                                            |
+| `ml/job_classifier.py`                 | pkl 로드·레포별 `probabilities` 예측                                                                      |
+| `run_git2value_trying_reranking.py`    | E2E에서 `rerank_by_domain` 대신 `rerank_by_ai_classifier` 호출 시험 (v7.1 `Git2ValuePipeline` **미반영**) |
+| `github_domain_dataset.csv`            | GPT 수집 OSS 레포·도메인 라벨 (150건, 15클래스) — **2026.05.30** ex2 추가 평가용                       |
+| `experiments/cache/eval_profiles_gpt_domain_snapshot_20260530.json` | gpt_domain 프로필 **고정 스냅샷** (n=150) — 공정 비교용 |
+| `ml/models/job_classifier_from_gpt_domain_20260530.pkl` | gpt_domain 특징으로 재학습한 시험 모델 (base `job_classifier.pkl`과 별도) |
+| `experiments/results/comparison_all_datasets_20260530.csv` | 3개 평가셋 × 방법 × 모델 통합 요약 |
+
+### 실험 결과 (2026.05.29 ~ 2026.05.30)
+
+`experiments/evaluate_ex2.py`로 **FAISS only / domain_rerank / ai_classifier_rerank** 3-way 비교를 수행했다.  
+지표는 정답 라벨(도메인)과 Top-k 예측 채용공고 `category` 일치율(Top-1·Top-3·Top-5).
+
+#### 평가셋
+
+| 평가셋 | n | 프로필 캐시 | 비고 |
+| ------ | - | ----------- | ---- |
+| **eval_v2** | 29 | `experiments/cache/eval_profiles_v2.json` | 기존 연구용 개인 레포 |
+| **comments_refined** | 13 | `experiments/cache/eval_profiles_run_git2value_comments_refined.json` | `run_git2value.py` 주석 레포 URL 정제본 |
+| **gpt_domain** | 150 | `experiments/cache/eval_profiles_gpt_domain_snapshot_20260530.json` | `github_domain_dataset.csv` → 프로필 수집 후 **스냅샷 고정** |
+
+#### Top-1 정확도 (%)
+
+| 평가셋 | FAISS only | domain_rerank (룰) | AI rerank (base `job_classifier.pkl`) | AI rerank (GPT 재학습 모델) |
+| ------ | ---------- | ------------------ | --------------------------------------- | --------------------------- |
+| eval_v2 | 44.8 | 62.1 | **75.9** | 44.8 |
+| comments_refined | 53.8 | **76.9** | 61.5 | — |
+| gpt_domain | 1.3 | **10.7** | 7.3 | 10.7 |
+
+- **Top-3·Top-5** 및 전체 행: `experiments/results/comparison_all_datasets_20260530.csv`
+- gpt_domain 상세: `experiments/results/ex2_gpt_domain_snapshot_base_model_20260530_summary.csv`, `…_gpt_model_…_summary.csv`
+- **CLASSIFIER_ALPHA** 스윕(0.05~0.20): Top-1 변화 미미 → 병목은 α가 아닌 **데이터·가드·과제 정합성** 쪽으로 판단.
+
+#### 해석 (요약)
+
+- **데이터셋마다 승자가 다름** — eval_v2만 base AI가 룰보다 +13.8%p 앞섬. comments_refined는 룰이 AI보다 +15.4%p 앞섬.
+- **ex2 `domain_rerank` ≠ 프로덕션 `rerank_by_domain`** (다중 도메인 가드·혼합 프로젝트 억제 등 단순화). eval_v2 AI 75.9%를 프로덕션 기대치로 직접 쓰지 말 것.
+- **gpt_domain**은 OSS **조직 레포** + 프로필 템플릿화(평균 `profile_for_matching` ~105자)로 FAISS·리랭킹 모두 Top-1 ~10%대. AI 재학습(`job_classifier_from_gpt_domain_20260530.pkl`)은 같은 스냅샷에서 base 대비 Top-1 +3.4%p(7.3→10.7)이나 **룰과 동률**, eval_v2에서는 **75.9→44.8%**로 일반화 악화.
+- GPT 모델 교차검증 정확도 ~45.7% (14클래스, DBA 등 일부 라벨 표본 극소).
+
+### 결정 (2026.05.30 — **현상 유지**)
+
+| 항목 | 결정 |
+| ---- | ---- |
+| **프로덕션 리랭킹** | **`run_git2value.py`의 `rerank_by_domain()` 유지** — AI 분류기로 교체하지 않음 |
+| **AI 연구 경로** | `ml/`, `experiments/`, `run_git2value_trying_reranking.py` **도입 보류(Deferred) 지속** |
+| **근거** | (1) 평가셋별 AI 일관 우위 없음 (2) ex2↔프로덕션 로직 불일치 (3) 학습 n≈80·재학습 시 타 셋 성능 하락 (4) 룰의 다중 도메인 가드·`rerank_note` 설명 가능성·pkl 비의존 |
+| **향후 검토 방향** | 룰 **대체**가 아니라 **하이브리드**(프로덕션 가드 + 조건부 AI 보조). gpt_domain류 데이터는 **개인 개발자 레포**·라벨–채용 카테고리 정합 후 재평가 |
+
+### 보류 사유 (요약)
+
+- 학습·평가 표본 소규모(학습 CSV 약 80건, ex2 평가 n≈29) — **2026.05.30 ex2 3셋 재실험 후에도 AI 전면 도입 근거 부족 확인**.
+- `ml/models/job_classifier.pkl`이 저장소에 없을 수 있어 시험본은 로드 실패 시 FAISS-only 폴백.
+- 시험본은 프로덕션 `rerank_by_domain`의 다중 도메인 가드 등을 **끄고** AI만 적용한 상태.
+- ex2의 `domain_rerank`는 프로덕션 `rerank_by_domain`과 동일하지 **않음** — 수치를 그대로 프로덕션 기대치로 쓰지 말 것.
+- 3레포 E2E 입력 vs 특징 추출 `per_repo[0]`만 사용 등 **입력 불일치** 잔존.
+
+### 도입 재개 시 최소 체크리스트 (참고용, 지금 수행하지 않음)
+
+1. `job_classifier.pkl` 빌드·버전 관리 및 `feature_columns` 번들 검증.
+2. `evaluate_ex2.py`에 **실제** `run_git2value.rerank_by_domain` 로직 반영 후 3-way 재실험.
+3. `Git2ValuePipeline.analyze()` 단일 진입점 + 도메인 가드와 **하이브리드** 설계.
+4. `HandOff.md` 본 절 상태를 “도입 완료”로 갱신.
+
+### 에이전트 동작 규칙
+
+- 일반 태스크에서 `ml/`, `experiments/`, `run_git2value_trying_reranking.py`를 import·병합·테스트 대상에 넣지 않는다.
+- `DOMAIN_BOOST` 튜닝 이슈(§7 #14)를 AI 분류기로 **대체했다고 가정하지 않는다** — 프로덕션은 여전히 `rerank_by_domain`이다.
+- 연구 폴더 정리·문서화만 요청된 경우에만 해당 경로를 읽는다.
 
 ---
 
@@ -103,21 +227,22 @@ basic/
 
 ### `github_extractor.py` — GitHubExtractor 클래스
 
-| 메서드 | 역할 |
-|---|---|
-| `_fetch_with_retry` | 모든 API 호출 게이트. 403/429 시 Retry-After 파싱 + 지수 백오프 (최대 3회) |
-| `_fetch_repo_text_files` | **v4.0** 의존성 파일 등 contents API로 텍스트 조회 |
-| `_fetch_all_commits_paginated` | 커밋 목록 수집. `MAX_COMMIT_PAGES=3` (최대 300커밋) 상한 |
-| `_commit_author_key` (v6.1) | **신규**: GitHub login > email > name 우선순위로 작성자 안정 식별. prefix(`login:`/`email:`/`name:`)로 카테고리 충돌 방지 |
-| `_commit_author_label` (v6.1) | **신규**: 리포트 표시용 작성자 이름 |
-| `_stratified_sample_commits` | 초기/중간/최근 각 최대 25개씩, 레포 내부 + 전역 SHA dedup |
-| `_cicd_and_test_ratio_from_tree` | tree blob size>200B로 CI/CD 실질성 판별, 테스트 파일 비율 계산 |
-| `_count_active_weeks` | author 커밋 목록 기준 ISO 주(년+주차) 개수 |
-| `_calc_consistency_score` | 커밋 간격 표준편차 → `max(0, 10 - std * 0.5)`. 전체 author 커밋 목록 기준 |
-| `evaluate_repository` | 레포 1개 완전 분석. **v6.1**: 두 종류 커밋 분리 수집(`all_author_commits` + `all_repo_commits`), `repo_type`/`distinct_author_count`/`target_commit_*`/`repo_active_weeks` 산출 |
-| `extract_applicant_profile` | LOC 가중 github_score + `profile_for_matching` + `domain_hits_merged` + `per_repo`(v6.1: `repo_type`·`repo_author_names`·`target_commit_count`·`total_repo_commits`·`target_commit_ratio`·`repo_active_weeks` 추가) |
+| 메서드                           | 역할                                                                                                                                                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_fetch_with_retry`              | 모든 API 호출 게이트. 403/429 시 Retry-After 파싱 + 지수 백오프 (최대 3회)                                                                                                                                          |
+| `_fetch_repo_text_files`         | **v4.0** 의존성 파일 등 contents API로 텍스트 조회                                                                                                                                                                  |
+| `_fetch_all_commits_paginated`   | 커밋 목록 수집. `MAX_COMMIT_PAGES=3` (최대 300커밋) 상한                                                                                                                                                            |
+| `_fetch_author_census` (v7.2-upgrade.2) | 작성자 판정 전용 전수 커밋 수집. `MAX_CENSUS_PAGES=20` (최대 2000커밋) 상한                                                                                                                                       |
+| `_commit_author_key` (v6.1)      | **신규**: GitHub login > email > name 우선순위로 작성자 안정 식별. prefix(`login:`/`email:`/`name:`)로 카테고리 충돌 방지                                                                                           |
+| `_commit_author_label` (v6.1)    | **신규**: 리포트 표시용 작성자 이름                                                                                                                                                                                 |
+| `_stratified_sample_commits`     | 초기/중간/최근 각 최대 25개씩, 레포 내부 + 전역 SHA dedup                                                                                                                                                           |
+| `_cicd_and_test_ratio_from_tree` | tree blob size>200B로 CI/CD 실질성 판별, 테스트 파일 비율 계산                                                                                                                                                      |
+| `_count_active_weeks`            | author 커밋 목록 기준 ISO 주(년+주차) 개수                                                                                                                                                                          |
+| `_calc_consistency_score`        | 커밋 간격 표준편차 → `max(0, 10 - std * 0.5)`. 전체 author 커밋 목록 기준                                                                                                                                           |
+| `evaluate_repository`            | 레포 1개 완전 분석. **v7.2-upgrade.4**: 점수 경로(`MAX_COMMIT_PAGES`)와 작성자 판정 경로(`MAX_CENSUS_PAGES`) 분리. `distinct_author_count`는 전수 기준, `dominance_ratio`는 **지원자 기준 비율**로 계산하고 `has_team_experience`/`target_commit_ratio_census`/`contribution_role`를 함께 반환 |
+| `extract_applicant_profile`      | LOC 가중 github_score + `profile_for_matching` + `domain_hits_merged` + `per_repo`(v7.2-upgrade.4: `has_team_experience`·`target_commit_ratio_census`·`contribution_role` 포함) |
 
-**클래스 상수:** `MAX_COMMIT_PAGES = 3`
+**클래스 상수:** `MAX_COMMIT_PAGES = 3`, `MAX_CENSUS_PAGES = 20`, `MIN_AUTHOR_COMMITS_ABSOLUTE = 3`, `MIN_AUTHOR_COMMIT_RATIO = 0.02`
 
 **환경변수:** `Github_api_token`
 
@@ -136,15 +261,18 @@ repo_commits_list_url = f"{repo_url}/commits?sha={branch}&per_page=100"
 
 #### v6.1 신규: 레포 분류 필드
 
-| 필드 | 의미 |
-|---|---|
-| `repo_type` | `"team"` (distinct_author_count >= 2) 또는 `"personal"` |
-| `distinct_author_count` | 레포 전체 커밋 작성자 수 (login > email > name 우선순위) |
-| `repo_author_names` | 표시용 작성자 라벨 리스트 (최대 10명) |
-| `target_commit_count` | 지원자 본인 커밋 수 |
-| `total_repo_commits` | 레포 전체 커밋 수 |
-| `target_commit_ratio` | 지원자 커밋 / 레포 전체 커밋 비율 |
-| `repo_active_weeks` | 레포 전체 커밋 기준 활성 주 수 (지원자 기준 `active_weeks`와 별도) |
+| 필드                    | 의미                                                               |
+| ----------------------- | ------------------------------------------------------------------ |
+| `repo_type`             | `"team"` (distinct_author_count >= 2) 또는 `"personal"`            |
+| `distinct_author_count` | 레포 전체 커밋 작성자 수 (login > email > name 우선순위)           |
+| `repo_author_names`     | 표시용 작성자 라벨 리스트 (최대 10명)                              |
+| `target_commit_count`   | 지원자 본인 커밋 수                                                |
+| `total_repo_commits`    | 레포 전체 커밋 수                                                  |
+| `target_commit_ratio`   | 지원자 커밋 / 레포 전체 커밋 비율                                  |
+| `has_team_experience` (v7.2-upgrade.4) | 티어 판정용 팀 경험 플래그 (`distinct_author_count >= 2`) |
+| `target_commit_ratio_census` (v7.2-upgrade.2) | 전수 기준 지원자 커밋 / 레포 전체(봇 제외) 비율 |
+| `contribution_role` (v7.2-upgrade.2) | 팀 레포 기여 역할 (`주도 기여` / `적극 기여` / `협업`) |
+| `repo_active_weeks`     | 레포 전체 커밋 기준 활성 주 수 (지원자 기준 `active_weeks`와 별도) |
 
 ---
 
@@ -165,11 +293,11 @@ repo_commits_list_url = f"{repo_url}/commits?sha={branch}&per_page=100"
 
 #### README 활용 분기 로직 (v5.3)
 
-| 잔량 | 티어 | `build_profile_text` 반영 |
-|---|---|---|
-| 200자 이상 | long | 키워드 추출 성공 시에만 압축 문장 추가 |
-| 50~199자 | medium | README 본문 미반영 (구조·언어·의존성 데이터만) |
-| 49자 이하 | short | 동일 |
+| 잔량       | 티어   | `build_profile_text` 반영                      |
+| ---------- | ------ | ---------------------------------------------- |
+| 200자 이상 | long   | 키워드 추출 성공 시에만 압축 문장 추가         |
+| 50~199자   | medium | README 본문 미반영 (구조·언어·의존성 데이터만) |
+| 49자 이하  | short  | 동일                                           |
 
 원칙: 부실 README는 프로필에 넣지 않는다. 키워드 추출 실패 시에도 **원문 폴백 없음** (v5.3).
 
@@ -202,30 +330,30 @@ diagnose_single_repo(repo) →
 
 #### 주요 함수
 
-| 함수 | 역할 |
-|---|---|
-| `classify_repo_type(repo)` (v6.1) | `repo.repo_type` 우선 사용, 폴백으로 `distinct_author_count >= 2` 판정 |
-| `_readme_diagnosis_single(repo)` (v6.1) | 단일 레포 README 평가 (3차원 + 길이) |
-| `_structure_diagnosis_single(repo)` (v6.1) | 단일 레포 구조 평가 |
-| `_commit_quality_diagnosis_single(repo)` (v6.1) | 무의미 커밋 비율 + Conventional Commits 변환 힌트 |
-| `_test_diagnosis_single(repo, game_engines)` (v6.1) | 단일 레포 테스트 (게임 엔진 맥락 반영) |
-| `_cicd_diagnosis_single(repo, game_engines)` (v6.1) | 단일 레포 CI/CD |
-| `_deployment_diagnosis_single(repo, game_engines)` (v6.1) | 단일 레포 배포 |
-| `_commit_pattern_diagnosis_single(repo)` (v6.1) | **지원자 본인 기준** 커밋 리듬 (`target_commit_count` / `active_weeks`) |
-| `_team_required_items(extra_items)` (v6.1) | 팀 레포의 extra를 "필수 미흡"으로 격상 |
-| `diagnose_single_repo(repo)` (v6.1) | 레포 1개 진단 결과 반환 |
-| `expected_level(per_repo_diags, team_repo_count)` (v6.1) | 등급 판정. **팀 레포가 없으면 Competitive 이상 도달 불가** |
-| `evaluate_readme_quality(readme_text)` (v6.0) | 3차원 룰베이스 (목적/스택/시각화) |
-| `COMMIT_REWRITE_HINTS` / `get_rewrite_hint(msg)` (v6.0) | 무의미 커밋 → Conventional Commits 변환 힌트 |
-| `_aggregate_strengths(per_repo_diags)` (v6.1) | 양호 항목 빈도순 강점 추출 (개인 레포는 core만, 팀은 core+extra) |
-| `_aggregate_quick_wins(per_repo_diags)` (v6.1) | 미흡 항목 빈도순 Quick wins 추출 |
-| `_portfolio_composition_lines()` (v6.1) | 레포 구성 요약 (개인 N개 + 팀 M개) |
-| `generate_summary_block()` (v6.1) | 종합 분석 블록 — GitHub 점수 + 레포 구성 + 강점 + Quick wins |
-| `repo_classification_note(repo)` (v6.0) | 레포의 협업 여부 한 줄 요약 |
-| `mod_context_message()` / `config_repo_message()` (v5.7) | 모드/설정 프로젝트 안내 |
-| `blockchain_context_message()` / `data_engineer_context_message()` / `tool_dev_context_message()` (v5.8) | 신규 도메인 맥락 메시지 |
-| `_build_repo_classifications(per_repo)` | 레포별 분류(main/mod/config) + 안내 메시지 |
-| `run_diagnosis(profile)` (v6.1) | 진입점. 반환에 **`per_repo_diagnoses`** (이전 `portfolio_diagnosis` 대체) |
+| 함수                                                                                                     | 역할                                                                      |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `classify_repo_type(repo)` (v6.1)                                                                        | `repo.repo_type` 우선 사용, 폴백으로 `distinct_author_count >= 2` 판정    |
+| `_readme_diagnosis_single(repo)` (v6.1)                                                                  | 단일 레포 README 평가 (3차원 + 길이)                                      |
+| `_structure_diagnosis_single(repo)` (v6.1)                                                               | 단일 레포 구조 평가                                                       |
+| `_commit_quality_diagnosis_single(repo)` (v6.1)                                                          | 무의미 커밋 비율 + Conventional Commits 변환 힌트                         |
+| `_test_diagnosis_single(repo, game_engines)` (v6.1)                                                      | 단일 레포 테스트 (게임 엔진 맥락 반영)                                    |
+| `_cicd_diagnosis_single(repo, game_engines)` (v6.1)                                                      | 단일 레포 CI/CD                                                           |
+| `_deployment_diagnosis_single(repo, game_engines)` (v6.1)                                                | 단일 레포 배포                                                            |
+| `_commit_pattern_diagnosis_single(repo)` (v6.1)                                                          | **지원자 본인 기준** 커밋 리듬 (`target_commit_count` / `active_weeks`)   |
+| `_team_required_items(extra_items)` (v6.1)                                                               | 팀 레포의 extra를 "필수 미흡"으로 격상                                    |
+| `diagnose_single_repo(repo)` (v6.1)                                                                      | 레포 1개 진단 결과 반환                                                   |
+| `expected_level(per_repo_diags, team_repo_count)` (v6.1)                                                 | 등급 판정. **팀 레포가 없으면 Competitive 이상 도달 불가**                |
+| `evaluate_readme_quality(readme_text)` (v6.0)                                                            | 3차원 룰베이스 (목적/스택/시각화)                                         |
+| `COMMIT_REWRITE_HINTS` / `get_rewrite_hint(msg)` (v6.0)                                                  | 무의미 커밋 → Conventional Commits 변환 힌트                              |
+| `_aggregate_strengths(per_repo_diags)` (v6.1)                                                            | 양호 항목 빈도순 강점 추출 (개인 레포는 core만, 팀은 core+extra)          |
+| `_aggregate_quick_wins(per_repo_diags)` (v6.1)                                                           | 미흡 항목 빈도순 Quick wins 추출                                          |
+| `_portfolio_composition_lines()` (v6.1)                                                                  | 레포 구성 요약 (개인 N개 + 팀 M개)                                        |
+| `generate_summary_block()` (v6.1)                                                                        | 종합 분석 블록 — GitHub 점수 + 레포 구성 + 강점 + Quick wins              |
+| `repo_classification_note(repo)` (v6.0)                                                                  | 레포의 협업 여부 한 줄 요약                                               |
+| `mod_context_message()` / `config_repo_message()` (v5.7)                                                 | 모드/설정 프로젝트 안내                                                   |
+| `blockchain_context_message()` / `data_engineer_context_message()` / `tool_dev_context_message()` (v5.8) | 신규 도메인 맥락 메시지                                                   |
+| `_build_repo_classifications(per_repo)`                                                                  | 레포별 분류(main/mod/config) + 안내 메시지                                |
+| `run_diagnosis(profile)` (v6.1)                                                                          | 진입점. 반환에 **`per_repo_diagnoses`** (이전 `portfolio_diagnosis` 대체) |
 
 #### v6.1 등급 판정 로직 변경
 
@@ -248,18 +376,18 @@ return "Entry"
 
 #### 상태 라벨 (v6.1)
 
-| 상태 | 의미 | _BAD_STATUSES 포함 |
-|---|---|---|
-| 양호 | 충족 | ❌ |
-| 규칙적 | 커밋 리듬 양호 | ❌ |
-| 보통 | 부분 충족 | ❌ |
-| 미흡 | 부족 | ✅ |
-| 개선 필요 | 일부 충돌 | ✅ |
-| 미경험 | 시도 흔적 없음 | ✅ |
-| 선택 가점 | 테스트 미감지 (Top 차별화 요소) | ✅ |
-| **없음** (v6.1) | 운영 항목 부재 | ✅ |
-| **필수 미흡** (v6.1) | 팀 레포에서 운영 항목 부재 | ✅ |
-| **확인 필요** (v6.1) | 산출 불가 (커밋 리듬) | ✅ |
+| 상태                 | 의미                            | \_BAD_STATUSES 포함 |
+| -------------------- | ------------------------------- | ------------------- |
+| 양호                 | 충족                            | ❌                  |
+| 규칙적               | 커밋 리듬 양호                  | ❌                  |
+| 보통                 | 부분 충족                       | ❌                  |
+| 미흡                 | 부족                            | ✅                  |
+| 개선 필요            | 일부 충돌                       | ✅                  |
+| 미경험               | 시도 흔적 없음                  | ✅                  |
+| 선택 가점            | 테스트 미감지 (Top 차별화 요소) | ✅                  |
+| **없음** (v6.1)      | 운영 항목 부재                  | ✅                  |
+| **필수 미흡** (v6.1) | 팀 레포에서 운영 항목 부재      | ✅                  |
+| **확인 필요** (v6.1) | 산출 불가 (커밋 리듬)           | ✅                  |
 
 ---
 
@@ -292,21 +420,21 @@ EXPERIENCE_PATTERNS = [
 ]
 ```
 
-| 함수 | 역할 |
-|---|---|
-| `extract_experience_requirement(position, text)` | 정규식으로 경력 요건 추출. `requirement_type` 6분류 (`unspecified`/`open_to_all`/`junior`/`senior`/`min_years`/`specific_years`) |
-| `is_applicant_eligible(exp_req, applicant_years)` (v6.1) | 추천 후보 적격 여부. **0년차는 `unspecified`/`open_to_all`/`junior`만 허용 + `min_years <= 0`** |
-| `load_or_build_cache(metadata, cache_path)` | 사이드카 캐시(`vector/experience_cache.json`) 로드/빌드. v6.1: 누락 항목(`requirement_type` 없음) 갱신 |
-| `split_by_experience(top_matches, applicant_years, cache)` (v6.1) | 적격/제외 공고 분리 반환 |
-| `filter_by_experience(...)` (하위 호환) | `split_by_experience` 결과를 합쳐서 반환 |
+| 함수                                                              | 역할                                                                                                                             |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `extract_experience_requirement(position, text)`                  | 정규식으로 경력 요건 추출. `requirement_type` 6분류 (`unspecified`/`open_to_all`/`junior`/`senior`/`min_years`/`specific_years`) |
+| `is_applicant_eligible(exp_req, applicant_years)` (v6.1)          | 추천 후보 적격 여부. **0년차는 `unspecified`/`open_to_all`/`junior`만 허용 + `min_years <= 0`**                                  |
+| `load_or_build_cache(metadata, cache_path)`                       | 사이드카 캐시(`vector/experience_cache.json`) 로드/빌드. v6.1: 누락 항목(`requirement_type` 없음) 갱신                           |
+| `split_by_experience(top_matches, applicant_years, cache)` (v6.1) | 적격/제외 공고 분리 반환                                                                                                         |
+| `filter_by_experience(...)` (하위 호환)                           | `split_by_experience` 결과를 합쳐서 반환                                                                                         |
 
 #### 0년차 기준 차이
 
-| 패턴 | v6.0 처리 | v6.1 처리 |
-|---|---|---|
-| "1년 이상" | 신입+1년 여유로 통과 | **추천에서 제외** (`min_years > 0`) |
-| "신입/경력" | `junior_only` 매칭 → 통과 | `open_to_all` 매칭 → 통과 |
-| "경력무관" | `unspecified` 폴백 → 통과 | `open_to_all` 명시 → 통과 |
+| 패턴        | v6.0 처리                 | v6.1 처리                           |
+| ----------- | ------------------------- | ----------------------------------- |
+| "1년 이상"  | 신입+1년 여유로 통과      | **추천에서 제외** (`min_years > 0`) |
+| "신입/경력" | `junior_only` 매칭 → 통과 | `open_to_all` 매칭 → 통과           |
+| "경력무관"  | `unspecified` 폴백 → 통과 | `open_to_all` 명시 → 통과           |
 
 ---
 
@@ -323,11 +451,11 @@ EXPERIENCE_PATTERNS = [
 
 API 서버 환경에서 인프라를 1회 로드하고 요청마다 분석만 실행하는 클래스.
 
-| 메서드 | 역할 |
-|---|---|
-| `__init__()` | FAISS 인덱스·메타데이터, `SentenceTransformer`, `Git2ValueEngine`, 경험 캐시, `GitHubExtractor`, `ReadmeEvaluator` 1회 로드 |
-| `check_llm()` | vLLM 서버 가용 여부 확인 + `self.llm_available` 설정. `lifespan` 또는 CLI 시작 시 1회 호출 |
-| `analyze(username, repos, applicant_years)` | E2E 분석. **print 없이 dict 반환.** 오류 시 `{"status": "error", "error": "..."}` |
+| 메서드                                      | 역할                                                                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `__init__()`                                | FAISS 인덱스·메타데이터, `SentenceTransformer`, `Git2ValueEngine`, 경험 캐시, `GitHubExtractor`, `ReadmeEvaluator` 1회 로드 |
+| `check_llm()`                               | vLLM 서버 가용 여부 확인 + `self.llm_available` 설정. `lifespan` 또는 CLI 시작 시 1회 호출                                  |
+| `analyze(username, repos, applicant_years)` | E2E 분석. **print 없이 dict 반환.** 오류 시 `{"status": "error", "error": "..."}`                                           |
 
 `analyze()` 반환 dict:
 
@@ -338,15 +466,15 @@ API 서버 환경에서 인프라를 1회 로드하고 요청마다 분석만 �
 
 `analyze()` 내부에서 호출하는 순수 변환 함수. 모두 모듈 레벨 정의.
 
-| 함수 | 역할 |
-|---|---|
-| `_build_github_score_dict(profile)` | `github_score`, `score_breakdown` 구조화 |
-| `_build_per_repo_dict(profile, per_repo_diags)` | `profile["per_repo"]`와 `diag_bundle["per_repo_diagnoses"]` 를 `repo_name` 기준으로 병합 |
-| `_build_job_matching_dict(...)` | FAISS 매칭 + 도메인 리랭킹 + `similarity_label` 포함 |
-| `_build_salary_band_dict(band_report, ref_salary_categories, alt_salary_band)` | 연봉 밴드 + 참고 직무 |
-| `_build_tech_analysis_dict(tech_result)` | 기술 매칭 분석 그대로 전달 |
-| `_build_level_dict(diag_bundle)` | `expected_level` dict |
-| `_build_summary_dict(diag_bundle, per_repo_diags)` | `summary_block` 텍스트 + `_aggregate_strengths` / `_aggregate_quick_wins` 구조화 데이터 병렬 제공 |
+| 함수                                                                           | 역할                                                                                              |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `_build_github_score_dict(profile)`                                            | `github_score`, `score_breakdown` 구조화                                                          |
+| `_build_per_repo_dict(profile, per_repo_diags)`                                | `profile["per_repo"]`와 `diag_bundle["per_repo_diagnoses"]` 를 `repo_name` 기준으로 병합          |
+| `_build_job_matching_dict(...)`                                                | FAISS 매칭 + 도메인 리랭킹 + `similarity_label` 포함                                              |
+| `_build_salary_band_dict(band_report, ref_salary_categories, alt_salary_band)` | 연봉 밴드 + 참고 직무                                                                             |
+| `_build_tech_analysis_dict(tech_result)`                                       | 기술 매칭 분석 그대로 전달                                                                        |
+| `_build_level_dict(diag_bundle)`                                               | `expected_level` dict                                                                             |
+| `_build_summary_dict(diag_bundle, per_repo_diags)`                             | `summary_block` 텍스트 + `_aggregate_strengths` / `_aggregate_quick_wins` 구조화 데이터 병렬 제공 |
 
 #### v7.1 신규: `_print_full_report()` / `run_e2e_pipeline()` 래퍼 전환
 
@@ -355,16 +483,16 @@ API 서버 환경에서 인프라를 1회 로드하고 요청마다 분석만 �
 
 #### 모듈 A 핵심 함수
 
-| 함수 | 역할 |
-|---|---|
-| `route_job_category_safe()` (v6.0) | 콤마/슬래시 포함 결과 방어 래퍼 |
-| `rerank_by_domain()` (v5.3) | 단일 도메인에서 +0.05 가산. 다중 도메인 시 억제 |
-| `recommend_multi_domain()` (v6.0) | 히트 비율 < 2배이면 도메인별 상위 1~2개씩 분리 추천 |
-| `similarity_label()` (v6.1) | **절대값 기준 도입**: max_s < 0.70 시 "약함" 통일, score >= 0.85 시 "강함", 그 외 spread 기반 분기 |
-| `diagnose_domain_mismatch()` (v6.0) | db_coverage/weak_signal/consistent/ambiguous 4분기 |
-| `analyze_tech_match()` (v6.1) | **3단계 정교화**: 포함관계 처리(`TECH_INCLUSION_MAP`) + 도메인 무관 기술 필터(`DOMAIN_IRRELEVANT_TECHS`) + 미보유 3개 제한 + 학습 권장(`CATEGORY_TARGET_TECHS`) |
-| `filter_techs_by_inclusion()` (v6.1) | Spring Boot 있으면 Spring 제거, Next.js 있으면 React 제거 등 |
-| `filter_techs_by_domain()` (v6.1) | 매칭 직무와 무관한 기술 필터 |
+| 함수                                 | 역할                                                                                                                                                            |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `route_job_category_safe()` (v6.0)   | 콤마/슬래시 포함 결과 방어 래퍼                                                                                                                                 |
+| `rerank_by_domain()` (v5.3)          | 단일 도메인에서 +0.05 가산. 다중 도메인 시 억제                                                                                                                 |
+| `recommend_multi_domain()` (v6.0)    | 히트 비율 < 2배이면 도메인별 상위 1~2개씩 분리 추천                                                                                                             |
+| `similarity_label()` (v6.1)          | **절대값 기준 도입**: max_s < 0.70 시 "약함" 통일, score >= 0.85 시 "강함", 그 외 spread 기반 분기                                                              |
+| `diagnose_domain_mismatch()` (v6.0)  | db_coverage/weak_signal/consistent/ambiguous 4분기                                                                                                              |
+| `analyze_tech_match()` (v6.1)        | **3단계 정교화**: 포함관계 처리(`TECH_INCLUSION_MAP`) + 도메인 무관 기술 필터(`DOMAIN_IRRELEVANT_TECHS`) + 미보유 3개 제한 + 학습 권장(`CATEGORY_TARGET_TECHS`) |
+| `filter_techs_by_inclusion()` (v6.1) | Spring Boot 있으면 Spring 제거, Next.js 있으면 React 제거 등                                                                                                    |
+| `filter_techs_by_domain()` (v6.1)    | 매칭 직무와 무관한 기술 필터                                                                                                                                    |
 
 #### 모듈 A 출력 (v6.1: 레포별 카드)
 
@@ -442,13 +570,13 @@ CATEGORY_TARGET_TECHS = {         # 학습 권장 (v6.1)
 
 #### 엔드포인트 전체 (v7.1 기준)
 
-| 메서드 | 경로 | 입력 | 응답 | 비고 |
-|---|---|---|---|---|
-| `GET` | `/health` | — | `HealthResponse` | vLLM 연결 상태 |
-| `POST` | `/v1/readme/evaluate` | JSON body | `EvaluateReadmeResponse` | README LLM 평가 |
-| `POST` | `/v1/readme/evaluate/file` | multipart | `EvaluateWithSourceResponse` | 파일 업로드 |
-| `POST` | `/v1/readme/evaluate/url` | form | `EvaluateWithSourceResponse` | GitHub URL |
-| **`POST`** | **`/v1/analyze`** | **JSON body** | **`AnalyzeResponse`** | **★ v7.1 신규: E2E 분석** |
+| 메서드     | 경로                       | 입력          | 응답                         | 비고                      |
+| ---------- | -------------------------- | ------------- | ---------------------------- | ------------------------- |
+| `GET`      | `/health`                  | —             | `HealthResponse`             | vLLM 연결 상태            |
+| `POST`     | `/v1/readme/evaluate`      | JSON body     | `EvaluateReadmeResponse`     | README LLM 평가           |
+| `POST`     | `/v1/readme/evaluate/file` | multipart     | `EvaluateWithSourceResponse` | 파일 업로드               |
+| `POST`     | `/v1/readme/evaluate/url`  | form          | `EvaluateWithSourceResponse` | GitHub URL                |
+| **`POST`** | **`/v1/analyze`**          | **JSON body** | **`AnalyzeResponse`**        | **★ v7.1 신규: E2E 분석** |
 
 #### `POST /v1/analyze` 요청 / 응답 모델
 
@@ -531,11 +659,11 @@ contribution_axis = (blend_100 / 100) * 60
 
 **CI/CD 10 + 테스트 10 + 활성 주 10**
 
-| 항목 | 조건 | 점수 |
-|---|---|---|
-| CI/CD | 워크플로우/Dockerfile blob > 200B | 10 또는 0 |
-| 테스트 비율 | < 5% | 0 / 5~20% → 5 / ≥20% → 10 |
-| 활성 주 수 | `all_author_commits` ISO 주 개수 | ≥8주 → 10, ≥4주 → 5, 그 외 0 |
+| 항목        | 조건                              | 점수                         |
+| ----------- | --------------------------------- | ---------------------------- |
+| CI/CD       | 워크플로우/Dockerfile blob > 200B | 10 또는 0                    |
+| 테스트 비율 | < 5%                              | 0 / 5~20% → 5 / ≥20% → 10    |
+| 활성 주 수  | `all_author_commits` ISO 주 개수  | ≥8주 → 10, ≥4주 → 5, 그 외 0 |
 
 ### Consistency (최대 10점)
 
@@ -615,14 +743,17 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 
 #### v6.1 신규 필드
 
-| 필드 | 의미 |
-|---|---|
-| `repo_type` | `"team"` / `"personal"` |
-| `repo_author_names` | 표시용 작성자 리스트 (최대 10명) |
-| `repo_active_weeks` | 레포 전체 커밋 기준 활성 주 |
-| `total_repo_commits` | 레포 전체 커밋 수 (author 필터 없음) |
-| `target_commit_count` | 지원자 본인 커밋 수 |
-| `target_commit_ratio` | 지원자 / 레포 전체 비율 |
+| 필드                  | 의미                                 |
+| --------------------- | ------------------------------------ |
+| `repo_type`           | `"team"` / `"personal"`              |
+| `repo_author_names`   | 표시용 작성자 리스트 (최대 10명)     |
+| `repo_active_weeks`   | 레포 전체 커밋 기준 활성 주          |
+| `total_repo_commits`  | 레포 전체 커밋 수 (author 필터 없음) |
+| `target_commit_count` | 지원자 본인 커밋 수                  |
+| `target_commit_ratio` | 지원자 / 레포 전체 비율              |
+| `has_team_experience` | 팀 경험 플래그 (`distinct>=2`)       |
+| `target_commit_ratio_census` | 전수 기준 지원자 / 레포 전체 비율 |
+| `contribution_role` | 팀 레포 역할 라벨 (`주도 기여`/`적극 기여`/`협업`) |
 
 ### `run_diagnosis()` 반환 (v6.1)
 
@@ -748,6 +879,137 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 
 ## 6. 버전 이력 및 주요 결정 사항
 
+### v7.2-upgrade.4 (2026.05.29 — 팀 경험 플래그 분리)
+
+**`repo_type`(배점 기준)과 팀 경험(`has_team_experience`, 티어 기준)을 분리해 지배적 기여자 레포의 팀 경험 소실 부작용을 완화.**
+
+- **`github_extractor.py`**:
+  - `evaluate_repository()` 반환에 `has_team_experience` 추가 (`distinct_author_count >= 2`).
+  - `extract_applicant_profile()`의 `per_repo`에도 `has_team_experience` 전달.
+- **`portfolio_diagnosis.py`**:
+  - `diagnose_single_repo()` 반환에 `has_team_experience`, `target_commit_ratio_census`, `contribution_role`, `dominance_ratio`, `is_dominance_override` 포함.
+  - `run_diagnosis()`의 `team_repo_count` 산정을 `has_team_experience` 우선 기준으로 전환(없으면 기존 `repo_type=="team"` 폴백).
+- **`run_git2value.py`**:
+  - `_build_per_repo_dict()`에 `has_team_experience` 포함.
+  - `_print_repo_card()`에서 `is_dominance_override=True` + `has_team_experience=True` 조합을
+    `"팀 경험 레포 · N명 중 주도 기여 (X%) · 배점: 개인 기준"`으로 명시 출력.
+
+---
+
+### v7.2-upgrade.3 (2026.05.29 — 동일 레포 다계정 판정 정합화)
+
+**같은 레포를 서로 다른 GitHub 계정으로 분석할 때, 팀/개인 판정이 의도와 다르게 동일해지는 문제를 보정.**
+
+- **`github_extractor.py`**:
+  - `evaluate_repository()`의 dominance override 기준을 **최다 기여자(global)** 에서 **지원자(target) 기여 비율**로 변경.
+  - 조건: `distinct_author_count >= 2`이고, 지원자 비율(`dominance_ratio`)이 `>= 0.85`일 때만 `repo_type = "personal"` 재판정.
+  - 효과: 같은 팀 레포라도 지원자별로 `repo_type`이 달라질 수 있음.
+- **검증 (실측):**
+  - 레포 `siheon012/Deepsentinel`
+  - `siheon012` → personal (`is_dominance_override=True`, `dominance_ratio=0.946`)
+  - `protove` → team (`is_dominance_override=False`, `dominance_ratio=0.054`)
+  - `Kimdoyeon123` → team (`is_dominance_override=False`, `target_commit_ratio_census=0.0049`)
+
+---
+
+### v7.2-upgrade.2 (2026.05.29 — 작성자 전수 조사 분리 + 팀 기여 역할 라벨)
+
+**작성자 판정 정확도를 높이기 위해 점수 경로와 작성자 전수 경로를 분리하고, 팀 레포에 역할 라벨을 노출.**
+
+- **`github_extractor.py`**:
+  - `MAX_CENSUS_PAGES = 20`, `_fetch_author_census()` 추가 (작성자 판정 전용 전수 수집).
+  - `MIN_AUTHOR_COMMITS_ABSOLUTE=3`, `MIN_AUTHOR_COMMIT_RATIO=0.02` 이중 게이트 추가.
+  - `evaluate_repository()`에서 `distinct_author_count`/`dominance_ratio`를 전수 기준으로 계산.
+  - `target_commit_ratio_census`, `contribution_role` 반환 필드 추가.
+  - 전수 실패 시 제한 페이지 데이터로 폴백 + 경고 누적.
+- **`run_git2value.py`**:
+  - `_print_repo_card()` 팀 라벨을 `팀 레포 · N명 중 {역할} (X%)` 형식으로 확장.
+  - `_build_per_repo_dict()`에 `target_commit_ratio_census`, `contribution_role` 포함.
+- **출력/호환성**:
+  - 기존 `target_commit_ratio`/`repo_type` 필드 유지(하위 호환).
+  - 신규 필드는 선택적 확장으로 추가되어 API 응답 구조를 깨지 않음.
+
+---
+
+### v7.2-upgrade.1 (2026.05.29 — 도구 개발 과검출 완화 + README 키워드 버그 픽스)
+
+**`도구 개발` 도메인 오탐으로 인한 false mixed를 줄이고, README 키워드 압축 경로 NameError를 수정.**
+
+- **`profile_builder.py`**:
+  - `DOMAIN_SIGNALS["도구 개발"]` 키워드 정밀화 (`manifest`/`plugin` 단순 substring 의존 완화).
+  - `_match_tool_domain_keywords()` 신규 — 브라우저 확장/VS Code 확장 패턴 기반 보강 신호 추가.
+  - `merge_readme_domain_hits()` 가드 추가:
+    - `도구 개발`은 README 단독 신호로 신규 생성하지 않고, tree 선행 신호가 있을 때만 +1 허용.
+  - `extract_readme_keywords()` 버그 픽스: `text_lower` 누락 선언 복구 (`name 'text_lower' is not defined` 해소).
+- **`run_git2value.py`**:
+  - `_filtered_domains_for_mixed_check()` 신규.
+  - `rerank_by_domain()` / `recommend_multi_domain()`에 저강도 `도구 개발` hit 보수 처리 규칙 적용:
+    - `도구 개발` hit가 낮고(<=3), 타 도메인이 충분히 강하면 mixed 비율 계산에서 제외.
+  - 목적: 프론트/백엔드 주도 레포에서 `도구 개발` 동반 false mixed 감소.
+- **`tests/test_domain_taxonomy.py`**:
+  - `extract_readme_keywords()` NameError 회귀 테스트 추가.
+  - `도구 개발` 과검출 억제/정상검출/mixed 완화 회귀 테스트 확장.
+- **`tests/fixtures/trees/`**:
+  - `frontend_manifest_noise_tree.json` 추가 (일반 웹 레포 노이즈 fixture).
+  - `browser_extension_tree.json` 추가 (실제 확장 레포 fixture).
+
+**검증 결과:**
+
+- `.venv\\Scripts\\python.exe -m pytest tests/test_domain_taxonomy.py -q`
+- `16 passed, 3 warnings`
+
+---
+
+### v7.2-upgrade (2026.05.28 — 도메인 체계 연결 보강)
+
+**README 보조 도메인 병합 + 웹개발 라우팅 보강 + 누락 카테고리 매핑 추가.**
+
+- **`profile_builder.py`**:
+  - `README_DOMAIN_ALIAS` 추가 (`데이터 -> 빅데이터 엔지니어`, `도구개발 -> 도구 개발` 포함).
+  - `README_DOMAIN_BOOST = 1` 정책 추가 (README는 보조 신호만 반영).
+  - `_count_readme_domain_hits()` 신규.
+  - `merge_readme_domain_hits()` 신규 — tree 기반 `domain_hits`에 README 보조치(+1) 병합.
+  - `extract_readme_keywords()`는 `_count_readme_domain_hits()`를 재사용하도록 정리.
+- **`github_extractor.py`**:
+  - `evaluate_repository()`에서 `detect_domain_hits()` 직후 `merge_readme_domain_hits()` 호출.
+  - README 키워드가 트리 신호 부재 레포에서 보조 도메인으로 반영됨.
+- **`run_git2value.py`**:
+  - `route_job_category()`에 "웹 개발" 분기 추가.
+    - 우선순위: 풀스택 -> 웹개발+프론트 단서 -> 웹개발+백엔드 단서 -> 웹개발 단독(웹 풀스택).
+  - `DOMAIN_TO_CATEGORIES` 확장:
+    - `HW/임베디드 -> ["HW/임베디드"]`
+    - `DBA/데이터 -> ["DBA"]`
+    - `그래픽스 -> ["VR/AR/3D"]`
+- **`tests/test_domain_taxonomy.py`** (신규):
+  - README 보조 병합, 웹개발 라우팅, 신규 매핑, 리랭킹 분기 테스트 추가.
+  - 다중 도메인 히트 근접 시 리랭킹 미적용(기존 가드) 테스트 고정.
+- **`tests/fixtures/trees/frontend_mini_tree.json`** (신규):
+  - `detect_domain_hits()` 고정 fixture.
+
+**Phase 3 판단(다중 도메인 disambiguation):**
+
+- 현재 `rerank_by_domain()`의 히트 비율 가드(`top < second * 2`)가 동작 중이라,
+  v7.2-upgrade에서는 정렬 강제 규칙 추가를 **보류**.
+- 동일 패턴 오분류 재현 케이스가 누적될 때만 최소 규칙 추가 예정.
+
+---
+
+### HandOff 갱신 (2026.05.30 — AI 리랭킹 ex2 재실험 결과·현상 유지 결정)
+
+- **§2.1**에 `evaluate_ex2` 3-way 재실험 결과(eval_v2 n=29, comments_refined n=13, gpt_domain n=150) 및 **프로덕션 `rerank_by_domain` 유지** 결정 기록.
+- 산출물: `experiments/results/comparison_all_datasets_20260530.csv`, gpt_domain 스냅샷·GPT 재학습 모델(`job_classifier_from_gpt_domain_20260530.pkl`) 경로 명시.
+- §7 #30 보류 사유에 재실험 확인 내용 반영. **코드·프로덕션 파이프라인 변경 없음** (문서만).
+
+---
+
+### HandOff 갱신 (2026.05.19 — AI 직무 분류 리랭킹 연구 도입 보류 명시)
+
+- **`ml/`**, **`experiments/`**, **`run_git2value_trying_reranking.py`**를 **도입 보류(Deferred)** 로 문서화.
+- 에이전트용 상단 안내·§2.1·§7 #51 추가. 프로덕션 모듈 A는 **`run_git2value.py`의 `rerank_by_domain()`** 만 유효함을 명시.
+- 코드 변경 없음 (문서만).
+
+---
+
 ### v7.1 (2026.05.18 — E2E 분석 API 엔드포인트 + Git2ValuePipeline 리팩토링)
 
 **백엔드 API화: `run_git2value.py`를 클래스 기반으로 리팩토링하고 `POST /v1/analyze` 엔드포인트 추가.**
@@ -841,11 +1103,11 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 
 **골든 셋 검증 결과 (25개):**
 
-| 지표 | 값 | 기준 |
-|------|-----|------|
-| tier 일치율 | **91% (21/23)** | 80% 이상 |
-| 1단계 이내 오차 | **100% (23/23)** | 100% |
-| JSON 파싱 오류 | 0건 | 0건 |
+| 지표            | 값               | 기준     |
+| --------------- | ---------------- | -------- |
+| tier 일치율     | **91% (21/23)**  | 80% 이상 |
+| 1단계 이내 오차 | **100% (23/23)** | 100%     |
+| JSON 파싱 오류  | 0건              | 0건      |
 
 ---
 
@@ -938,7 +1200,8 @@ UX 용어 정리 + 경력 필터 강화 + Quick Wins 게임 맥락 분기 + 캐�
 ### v6.1 → v6.2 (2026.05.04)
 
 v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 (가) 계열,
-+ 점수 공정성 피드백 4건 (나) 계열 통합 적용.
+
+- 점수 공정성 피드백 4건 (나) 계열 통합 적용.
 
 #### (가) 계열 — 코드 검증 후속 패치
 
@@ -1120,35 +1383,37 @@ v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 
 9. ~~FAISS 유사도 레이블 없음~~ ✅ v5.2 → v6.1 절대값 기준
 10. ~~도메인 불일치 감지 없음~~ ✅ v5.1 + v6.0
 11. ~~공통 기술 키워드 노이즈~~ ✅ v5.2 → v6.1 정교화
-11b. ~~README/의존성 없을 때 엔진 미특정~~ ✅ v5.4
-11c. ~~협업·데이터/설정 전담 기여도 과소~~ ✅ v5.5
-11d. ~~Lua 등 서브 언어 단독 처리~~ ✅ v5.6
-20. ~~모드/플러그인 플랫폼 감지~~ ✅ v5.7
-21. ~~`is_config_repo` 매칭 입력 제외~~ ✅ v5.7
-23. ~~시그너처 오탐 (7종)~~ ✅ v5.8
-24. ~~모바일/블록체인/데이터/인프라/도구 미감지~~ ✅ v5.8
-26. ~~경력직 공고 신입 상위 노출~~ ✅ v6.0 → v6.1 강화
-27. ~~다중 도메인 프로젝트 균형 추천 없음~~ ✅ v6.0
-28. ~~진단 항목 신뢰도 낮음~~ ✅ v6.0 7개 → v6.1 레포별 카드
-29. ~~종합 행동 안내 없음~~ ✅ v6.0 → v6.1 GitHub 점수 분해 추가
-33. ~~분석 레포 개수 제한 없음~~ ✅ v6.1 (`MAX_REPO_COUNT=3`)
-34. ~~팀/개인 레포 판정 부정확~~ ✅ v6.1 (레포 전체 커밋 분리 수집)
-35. ~~Fork 라벨이 개인/팀 판정과 섞임~~ ✅ v6.1 (별도 라벨 분리)
-36. ~~커밋 리듬이 레포 전체 기준~~ ✅ v6.1 (지원자 본인 기준)
-37. ~~매칭 직무와 참고 직무 혼동~~ ✅ v6.1
-38. ~~참고 직무 연봉 누락 (프론트엔드 등)~~ ✅ v6.1 (직접 조회)
-31. ~~봇 작성자 필터링~~ ✅ v6.2 (`_is_bot_author` + evaluate_repository 봇 제외)
-32. ~~`similarity_label`에 "보통" 라벨 누락~~ ✅ v6.2 (`score >= 0.65` 분기 추가)
-33. ~~`_print_extra_one_liner` dead code~~ ✅ v6.2 (개인 레포 양호 항목 표시에 활용)
-34. ~~개인 레포만 있는 사용자 등급 안내 강화~~ ✅ v6.2 (`expected_level` + `generate_summary_block` 명시 안내)
-37. ~~`repo_active_weeks` 사용처 정의~~ ✅ v6.2 (팀 레포 활동 기간 비율 표시에 활용)
-39. ~~Fork 패널티 일괄 감산 불공정~~ ✅ v6.2 (기여 비율 기반 3단계: 0.7/0.5/0.3)
-40. ~~총점 산출 LOC 가중 편중~~ ✅ v6.2 (대표 프로젝트 70% + 전체 평균 30%)
-41. ~~Quality 점수 개인/팀 모순~~ ✅ v6.2 (개인 레포 활성 주 중심 + CI/CD·테스트 가산점)
-42. ~~개인 레포 우수 사용자 등급 누락~~ ✅ v6.2 (`Competitive (개인)` 경로 추가)
-43. ~~README 평가 패턴 커버리지 부족 (About/Built With 등 누락)~~ ✅ v6.4 (패턴 8개 추가)
-44. ~~사실상 1인 프로젝트가 팀으로 오분류 (기여 1~3커밋 팀원)~~ ✅ v6.4 (지배적 기여자 85% 임계값 판정)
-36. ~~LLM 도입 (로컬 Qwen2.5-32B-AWQ 등)~~ ✅ v7.0 (`llm_readme_evaluator.py` + `portfolio_diagnosis.py` 통합. vLLM 서버 Optional, 다운 시 룰베이스 폴백)
+    11b. ~~README/의존성 없을 때 엔진 미특정~~ ✅ v5.4
+    11c. ~~협업·데이터/설정 전담 기여도 과소~~ ✅ v5.5
+    11d. ~~Lua 등 서브 언어 단독 처리~~ ✅ v5.6
+12. ~~모드/플러그인 플랫폼 감지~~ ✅ v5.7
+13. ~~`is_config_repo` 매칭 입력 제외~~ ✅ v5.7
+14. ~~시그너처 오탐 (7종)~~ ✅ v5.8
+15. ~~모바일/블록체인/데이터/인프라/도구 미감지~~ ✅ v5.8
+16. ~~경력직 공고 신입 상위 노출~~ ✅ v6.0 → v6.1 강화
+17. ~~다중 도메인 프로젝트 균형 추천 없음~~ ✅ v6.0
+18. ~~진단 항목 신뢰도 낮음~~ ✅ v6.0 7개 → v6.1 레포별 카드
+19. ~~종합 행동 안내 없음~~ ✅ v6.0 → v6.1 GitHub 점수 분해 추가
+20. ~~분석 레포 개수 제한 없음~~ ✅ v6.1 (`MAX_REPO_COUNT=3`)
+21. ~~팀/개인 레포 판정 부정확~~ ✅ v6.1 (레포 전체 커밋 분리 수집)
+22. ~~Fork 라벨이 개인/팀 판정과 섞임~~ ✅ v6.1 (별도 라벨 분리)
+23. ~~커밋 리듬이 레포 전체 기준~~ ✅ v6.1 (지원자 본인 기준)
+24. ~~매칭 직무와 참고 직무 혼동~~ ✅ v6.1
+25. ~~참고 직무 연봉 누락 (프론트엔드 등)~~ ✅ v6.1 (직접 조회)
+26. ~~봇 작성자 필터링~~ ✅ v6.2 (`_is_bot_author` + evaluate_repository 봇 제외)
+27. ~~`similarity_label`에 "보통" 라벨 누락~~ ✅ v6.2 (`score >= 0.65` 분기 추가)
+28. ~~`_print_extra_one_liner` dead code~~ ✅ v6.2 (개인 레포 양호 항목 표시에 활용)
+29. ~~개인 레포만 있는 사용자 등급 안내 강화~~ ✅ v6.2 (`expected_level` + `generate_summary_block` 명시 안내)
+30. ~~`repo_active_weeks` 사용처 정의~~ ✅ v6.2 (팀 레포 활동 기간 비율 표시에 활용)
+31. ~~Fork 패널티 일괄 감산 불공정~~ ✅ v6.2 (기여 비율 기반 3단계: 0.7/0.5/0.3)
+32. ~~총점 산출 LOC 가중 편중~~ ✅ v6.2 (대표 프로젝트 70% + 전체 평균 30%)
+33. ~~Quality 점수 개인/팀 모순~~ ✅ v6.2 (개인 레포 활성 주 중심 + CI/CD·테스트 가산점)
+34. ~~개인 레포 우수 사용자 등급 누락~~ ✅ v6.2 (`Competitive (개인)` 경로 추가)
+35. ~~README 평가 패턴 커버리지 부족 (About/Built With 등 누락)~~ ✅ v6.4 (패턴 8개 추가)
+36. ~~사실상 1인 프로젝트가 팀으로 오분류 (기여 1~3커밋 팀원)~~ ✅ v6.4 (지배적 기여자 85% 임계값 판정)
+37. ~~LLM 도입 (로컬 Qwen2.5-32B-AWQ 등)~~ ✅ v7.0 (`llm_readme_evaluator.py` + `portfolio_diagnosis.py` 통합. vLLM 서버 Optional, 다운 시 룰베이스 폴백)
+38. ~~`extract_readme_keywords()` NameError (`text_lower` 미정의)~~ ✅ v7.2-upgrade.1 (README 200자 이상 경로 런타임 오류 해소)
+39. ~~`도구 개발` 저강도 신호로 인한 false mixed 빈발~~ ✅ v7.2-upgrade.1 (도메인 감지/혼합 판정 보수 처리 규칙 추가)
 
 ### 남은 항목
 
@@ -1160,16 +1425,18 @@ v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 
 17. **PR/이슈 협업 분석** — 추가 API 필요, 우선순위 낮음.
 18. **공고 임베딩 재구성** — 직무명+요구기술만 추출 재임베딩.
 19. **게임 포트폴리오 `expected_level` 웹 편향** — v5.4 피드백만 조정, 등급 산정 별도 검토.
-22. **신규 도메인 매핑** — `HW/임베디드`/`DBA/데이터`/`그래픽스`는 `DOMAIN_TO_CATEGORIES` 미매핑.
-25. **블록체인·도구 개발 공고 DB 매칭 품질** — 점핏 JD 코퍼스 보강 필요.
-30. **차등 가산점 (시그너처 vs 휴리스틱)** — 정확도 측정 후 결정.
-35. **리멤버 400개 데이터 처리 결정** — 신입 대상 피벗 후 분석 보류. 분석 스크립트 + 분포 확인 후 결정.
-45. ~~**LLM 골든 셋 검증 실행**~~ ✅ 91% 달성 (25개 케이스, tier 일치율 21/23, 1단계 이내 오차 100%).
-46. **LLM 프롬프트 A/B 테스트** — 골든 셋 확장(30개+) 후 프롬프트 변형별 일치율 비교 (v7.1 검토).
-47. **커밋 메시지 품질 LLM 평가** — 현재 룰베이스 무의미 커밋 비율 판정의 정확도 한계 보완 (v7.1 검토).
-48. **LLM 결과를 FAISS 키워드 압축 폴백으로 활용** — 도메인 사전 미등록 README의 매칭 개선 (v7.2 검토).
-49. **`/v1/analyze` 동시 요청 제어** — GitHub API 토큰 1개 기준 2~3 요청 이내 가정 (캡스톤 데모 규모). 프로덕션 전환 시 Rate Limiter 또는 큐 도입 필요.
-50. **`CORS_ORIGINS` 환경변수 미설정 시 Vercel 도메인 하드코딩** — 실제 프로덕션 배포 전 `CORS_ORIGINS` 확인 필요.
+20. ~~**신규 도메인 매핑**~~ ✅ v7.2-upgrade (`HW/임베디드`/`DBA/데이터`/`그래픽스` 매핑 반영)
+21. **블록체인·도구 개발 공고 DB 매칭 품질** — 점핏 JD 코퍼스 보강 필요.
+22. **차등 가산점 (시그너처 vs 휴리스틱)** — 정확도 측정 후 결정.
+23. **리멤버 400개 데이터 처리 결정** — 신입 대상 피벗 후 분석 보류. 분석 스크립트 + 분포 확인 후 결정.
+24. ~~**LLM 골든 셋 검증 실행**~~ ✅ 91% 달성 (25개 케이스, tier 일치율 21/23, 1단계 이내 오차 100%).
+25. **LLM 프롬프트 A/B 테스트** — 골든 셋 확장(30개+) 후 프롬프트 변형별 일치율 비교 (v7.1 검토).
+26. **커밋 메시지 품질 LLM 평가** — 현재 룰베이스 무의미 커밋 비율 판정의 정확도 한계 보완 (v7.1 검토).
+27. **LLM 결과를 FAISS 키워드 압축 폴백으로 활용** — 도메인 사전 미등록 README의 매칭 개선 (v7.2 검토).
+28. **`/v1/analyze` 동시 요청 제어** — GitHub API 토큰 1개 기준 2~3 요청 이내 가정 (캡스톤 데모 규모). 프로덕션 전환 시 Rate Limiter 또는 큐 도입 필요.
+29. **`CORS_ORIGINS` 환경변수 미설정 시 Vercel 도메인 하드코딩** — 실제 프로덕션 배포 전 `CORS_ORIGINS` 확인 필요.
+30. **AI 직무 분류 리랭킹 (`ml/` + `experiments/`)** — **도입 보류 (2026.05.30 재확인, 현상 유지)**. ex2 3-way 재실험(eval_v2·comments_refined·gpt_domain) 결과 AI 일관 우위 없음 → 프로덕션 **`rerank_by_domain` 유지**. 시험본 `run_git2value_trying_reranking.py`는 메인 미대체. 상세 수치·결정: **§2.1**. 재개 전 §2.1 체크리스트·프로덕션 로직 반영 재실험 필요. **에이전트는 당분간 본 항목을 구현 대상으로 삼지 않음.**
+31. **풀스택/이중 hit primary disambiguation** — v7.2-upgrade에서 기존 히트 비율 가드 유지, 추가 규칙은 재현 데이터 축적 후 판단.
 
 ---
 
@@ -1252,13 +1519,13 @@ python main.py
 
 Swagger UI: `http://localhost:8080/docs`
 
-| 엔드포인트 | 설명 |
-|-----------|------|
-| `GET /health` | vLLM 연결 상태 확인 |
-| `POST /v1/readme/evaluate` | JSON body로 평가 (프로그래밍 통합용) |
-| `POST /v1/readme/evaluate/file` | README.md 파일 업로드 → 평가 |
-| `POST /v1/readme/evaluate/url` | GitHub URL → 평가 (blob/raw 모두 가능) |
-| **`POST /v1/analyze`** | **GitHub 포트폴리오 E2E 분석 → JSON 반환 (v7.1)** |
+| 엔드포인트                      | 설명                                              |
+| ------------------------------- | ------------------------------------------------- |
+| `GET /health`                   | vLLM 연결 상태 확인                               |
+| `POST /v1/readme/evaluate`      | JSON body로 평가 (프로그래밍 통합용)              |
+| `POST /v1/readme/evaluate/file` | README.md 파일 업로드 → 평가                      |
+| `POST /v1/readme/evaluate/url`  | GitHub URL → 평가 (blob/raw 모두 가능)            |
+| **`POST /v1/analyze`**          | **GitHub 포트폴리오 E2E 분석 → JSON 반환 (v7.1)** |
 
 ### E2E 분석 API 호출 (v7.1)
 
@@ -1289,11 +1556,13 @@ curl -X POST http://localhost:8080/v1/analyze \
 ```
 
 **입력 제약:**
+
 - `github_username`: 영문/숫자/`-` 조합, 1~39자
 - `repos`: 1~3개. 형식: `user/repo` 또는 `user/repo/tree/branch`
 - `applicant_years`: 0 이상 정수 (신입=0)
 
 **에러 코드:**
+
 - `400` — 입력 검증 실패 (잘못된 username / repo 형식 / 개수 초과)
 - `503` — 파이프라인 초기화 실패 (서버 재시작 필요)
 - `500` — 분석 중 오류 (GitHub API 한도 초과 등)
@@ -1304,12 +1573,12 @@ curl -X POST http://localhost:8080/v1/analyze \
 
 v6.1 적용 시 다음 문서들도 함께 갱신해야 함:
 
-| 문서 | 갱신 방향 |
-|---|---|
-| `Git2Value_Spec_v3.md` | Phase 7(모듈 B) 레포별 카드 진단 구조로 재작성, Phase 1-3 anti-cheating에 봇 필터링 한 줄 추가 |
-| `Git2Value_논문_수정본.pdf` | 진단 구조 전환·팀/개인 분리 반영, 표 1 갱신 |
-| 발표 슬라이드 | 큰 변경 없음 (v6.2는 안정성·완성도 마무리 작업) |
+| 문서                        | 갱신 방향                                                                                      |
+| --------------------------- | ---------------------------------------------------------------------------------------------- |
+| `Git2Value_Spec_v3.md`      | Phase 7(모듈 B) 레포별 카드 진단 구조로 재작성, Phase 1-3 anti-cheating에 봇 필터링 한 줄 추가 |
+| `Git2Value_논문_수정본.pdf` | 진단 구조 전환·팀/개인 분리 반영, 표 1 갱신                                                    |
+| 발표 슬라이드               | 큰 변경 없음 (v6.2는 안정성·완성도 마무리 작업)                                                |
 
 ---
 
-*Git2Value HandOff v7.1 — 2026.05.18 (E2E 분석 API `POST /v1/analyze` + `Git2ValuePipeline` 리팩토링 + CORS 명시적 출처 + FastAPI LLM 게이트웨이)*
+_Git2Value HandOff v7.2-upgrade.4 — 2026.05.30 (AI 리랭킹 ex2 재실험·현상 유지 결정 문서화)_

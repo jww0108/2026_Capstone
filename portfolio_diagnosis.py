@@ -575,11 +575,16 @@ def diagnose_single_repo(
     return {
         "repo_name": repo.get("repo_name", "repo"),
         "repo_type": repo_type,
+        "has_team_experience": bool(repo.get("has_team_experience", distinct >= 2)),
         "distinct_author_count": distinct,
         "repo_author_names": repo.get("repo_author_names") or [],
         "target_commit_count": int(repo.get("target_commit_count") or repo.get("total_commits") or 0),
         "total_repo_commits": int(repo.get("total_repo_commits") or repo.get("total_commits") or 0),
         "target_commit_ratio": float(repo.get("target_commit_ratio") or 0.0),
+        "target_commit_ratio_census": float(repo.get("target_commit_ratio_census") or repo.get("target_commit_ratio") or 0.0),
+        "contribution_role": repo.get("contribution_role"),
+        "dominance_ratio": repo.get("dominance_ratio"),
+        "is_dominance_override": bool(repo.get("is_dominance_override")),
         "is_fork": bool(repo.get("is_fork")),
         "context_label": context_label,
         # v6.2: 활동 기간 비율 표시용 필드
@@ -975,7 +980,12 @@ def run_diagnosis(
     vl = int(ms.get("total_valid_loc") or 0)
     el = int(ms.get("total_evidence_loc") or 0)
 
-    team_repo_count = sum(1 for d in per_repo_diags if d["repo_type"] == "team")
+    team_repo_count = sum(
+        1
+        for i, d in enumerate(per_repo_diags)
+        if bool((per_repo[i].get("has_team_experience") if i < len(per_repo) else False))
+        or d.get("repo_type") == "team"
+    )
     level_dict = expected_level(per_repo_diags, team_repo_count)
 
     primary_domain = _primary_domain_from_profile(profile)

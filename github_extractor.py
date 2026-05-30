@@ -47,6 +47,11 @@ class GitHubExtractor:
 
     # author 커밋 목록 페이지네이션 상한 (per_page=100 × 3 = 최대 300커밋)
     MAX_COMMIT_PAGES = 3
+    # 작성자 전수 조사 페이지네이션 상한 (per_page=100 × 20 = 최대 2000커밋)
+    MAX_CENSUS_PAGES = 20
+    # 전수 기준 유의미 작성자 임계값 (절대값 + 비율 이중 게이트)
+    MIN_AUTHOR_COMMITS_ABSOLUTE = 3
+    MIN_AUTHOR_COMMIT_RATIO = 0.02
 
     # v6.3: 봇 작성자 식별 패턴 (7종 → 22종)
     _BOT_LOGIN_PATTERN = re.compile(
@@ -169,6 +174,30 @@ class GitHubExtractor:
         next_url: Optional[str] = first_url
         pages_fetched = 0
         while next_url and pages_fetched < self.MAX_COMMIT_PAGES:
+            ok, data, link = await self._fetch_with_retry(session, next_url)
+            if not ok:
+                if _is_hard_api_error(data):
+                    return all_commits, True
+                break
+            if not isinstance(data, list):
+                break
+            all_commits.extend(data)
+            pages_fetched += 1
+            next_url = self._parse_rel_link(link, "next")
+        return all_commits, False
+
+    async def _fetch_author_census(
+        self, session: aiohttp.ClientSession, first_url: str
+    ) -> Tuple[List[Dict[str, Any]], bool]:
+        """
+        작성자 판정 전용 전수 커밋 목록 수집.
+        점수 산출 경로와 분리하기 위해 별도 상한(MAX_CENSUS_PAGES)을 사용한다.
+        Returns: (commits, hard_error)
+        """
+        all_commits: List[Dict[str, Any]] = []
+        next_url: Optional[str] = first_url
+        pages_fetched = 0
+        while next_url and pages_fetched < self.MAX_CENSUS_PAGES:
             ok, data, link = await self._fetch_with_retry(session, next_url)
             if not ok:
                 if _is_hard_api_error(data):
@@ -578,69 +607,130 @@ class GitHubExtractor:
             # 레포 전체 커밋 조회가 실패하면 기존 author 커밋으로 폴백한다.
             all_repo_commits = list(all_author_commits)
 
-        repo_author_keys: Set[str] = set()
-        repo_author_labels: List[str] = []
-        seen_label_keys: Set[str] = set()
-        author_commit_counts: Dict[str, int] = {}      # v6.4: 작성자별 커밋 수 집계
-        bot_count = 0
-        unlinked_count = 0                              # v6.3: GitHub 계정 미연결 커밋 수
-        human_commit_count = 0                          # v6.3: 봇 제외 커밋 수
-        for c in all_repo_commits:
-            # v6.2: 봇 작성자 제외 — 개인 레포가 팀 레포로 잘못 분류되는 결함 방지
+        # v7.1: 작성자 판정 전용 전수 조사 (페이지 상한을 점수 경로와 분리)
+        author_census, census_hard_err = await self._fetch_author_census(session, repo_commits_list_url)
+        if census_hard_err:
+            repo_warnings.append(
+                f"repo '{repo}' Rate Limit/API 오류로 작성자 전수 조사가 불완전할 수 있음"
+            )
+        if not author_census:
+            # 전수 조사 실패/빈 결과 시 기존 경로 폴백
+            author_census = list(all_repo_commits)
+            repo_warnings.append(
+                f"repo '{repo}' 전수 조사 결과가 없어 제한 페이지 커밋으로 작성자 판정 폴백"
+            )
+
+        census_author_counts: Dict[str, int] = {}
+        census_author_labels: Dict[str, str] = {}
+        census_bot_count = 0
+        census_unlinked_count = 0
+
+        for c in author_census:
+            # v6.2: 봇 작성자 제외
             if self._is_bot_author(c):
-                bot_count += 1
+                census_bot_count += 1
                 continue
-            human_commit_count += 1                     # v6.3: 봇 제외 카운트 (미연결 포함)
-            # v6.3: GitHub 계정 미연결 커밋 → 작성자 수 집계에서만 제외 (커밋 수는 포함)
-            # email fallback으로 별도 key가 생성되어 distinct_author_count를 부풀리는 것 방지
+            # v6.3: GitHub 계정 미연결 커밋은 작성자 수 집계에서 제외
             if c.get("author") is None:
-                unlinked_count += 1
+                census_unlinked_count += 1
                 continue
             key = self._commit_author_key(c)
             if key:
-                repo_author_keys.add(key)
-                author_commit_counts[key] = author_commit_counts.get(key, 0) + 1  # v6.4
-                label = self._commit_author_label(c)
-                if label and key not in seen_label_keys:
-                    repo_author_labels.append(str(label))
-                    seen_label_keys.add(key)
+                census_author_counts[key] = census_author_counts.get(key, 0) + 1
+                if key not in census_author_labels:
+                    label = self._commit_author_label(c)
+                    census_author_labels[key] = str(label) if label else key
 
-        if bot_count >= 5:
+        if census_bot_count >= 5:
             repo_warnings.append(
-                f"repo '{repo}' 봇 작성자 커밋 {bot_count}개 제외 (팀/개인 판정에 미반영)"
+                f"repo '{repo}' 봇 작성자 커밋 {census_bot_count}개 제외 (팀/개인 판정에 미반영)"
             )
-        if unlinked_count >= 3:
+        if census_unlinked_count >= 3:
             repo_warnings.append(
-                f"repo '{repo}' GitHub 계정 미연결 커밋 {unlinked_count}개 — "
+                f"repo '{repo}' GitHub 계정 미연결 커밋 {census_unlinked_count}개 — "
                 "서비스 자동 커밋(Streamlit 등) 또는 이메일 미연결 커밋으로 팀/개인 판정에서 제외됨"
             )
 
-        distinct_author_count = len(repo_author_keys) if repo_author_keys else 1
+        total_census_authored = sum(census_author_counts.values())
+        significant_threshold = max(
+            self.MIN_AUTHOR_COMMITS_ABSOLUTE,
+            math.ceil(total_census_authored * self.MIN_AUTHOR_COMMIT_RATIO),
+        ) if total_census_authored > 0 else self.MIN_AUTHOR_COMMITS_ABSOLUTE
+        significant_author_keys = {
+            key for key, count in census_author_counts.items()
+            if count >= significant_threshold
+        }
+        insignificant_count = len(census_author_counts) - len(significant_author_keys)
+        if insignificant_count > 0:
+            repo_warnings.append(
+                f"전수 조사 기준 작성자 {insignificant_count}명이 "
+                f"커밋 {significant_threshold}개 미만으로 팀/개인 판정에서 제외됨"
+            )
 
-        # v6.4: 지배적 기여자 판정 — 최다 기여자가 커밋의 85% 이상이면 사실상 개인 프로젝트
+        effective_author_keys = significant_author_keys if significant_author_keys else set(census_author_counts.keys())
+        effective_author_counts = {
+            k: v for k, v in census_author_counts.items() if k in effective_author_keys
+        }
+        distinct_author_count = len(effective_author_keys) if effective_author_keys else 1
+        sorted_author_keys = sorted(
+            effective_author_keys,
+            key=lambda k: effective_author_counts.get(k, 0),
+            reverse=True,
+        )
+        repo_author_labels = [
+            census_author_labels.get(k, k)
+            for k in sorted_author_keys[:10]
+        ]
+
+        target_author_keys: Set[str] = set()
+        for c in all_author_commits:
+            k = self._commit_author_key(c)
+            if k:
+                target_author_keys.add(k)
+        if not target_author_keys:
+            # author=username API로 연결되지 않는 케이스 방어용 fallback
+            target_author_keys.add(f"login:{username.lower()}")
+
+        # v7.2-upgrade.3: 지원자 기준 지배적 기여자 판정
         dominance_ratio = 0.0
         is_dominance_override = False
-        if distinct_author_count >= 2 and author_commit_counts:
-            max_commits = max(author_commit_counts.values())
-            total_authored = sum(author_commit_counts.values())
-            dominance_ratio = max_commits / total_authored if total_authored > 0 else 0.0
-            if dominance_ratio >= 0.85:
+        if distinct_author_count >= 2 and effective_author_counts:
+            total_authored = sum(effective_author_counts.values())
+            target_effective_commits = sum(
+                effective_author_counts.get(k, 0) for k in target_author_keys
+            )
+            dominance_ratio = (
+                target_effective_commits / total_authored if total_authored > 0 else 0.0
+            )
+            if target_effective_commits > 0 and dominance_ratio >= 0.85:
                 is_dominance_override = True
                 repo_warnings.append(
-                    f"작성자 {distinct_author_count}명이나 최다 기여자가 "
-                    f"커밋의 {dominance_ratio:.0%}를 차지하여 개인 프로젝트로 판정"
+                    f"작성자 {distinct_author_count}명이나 지원자 커밋 비율이 "
+                    f"{dominance_ratio:.0%}로 높아 개인 프로젝트로 판정"
                 )
+
+        has_team_experience = distinct_author_count >= 2
 
         if is_dominance_override:
             repo_type = "personal"
         else:
             repo_type = "team" if distinct_author_count >= 2 else "personal"
         target_commit_count = len(all_author_commits)
-        total_repo_commit_count = human_commit_count    # v6.3: 봇 제외 (분모 정확화)
+        total_repo_commit_count = total_census_authored + census_unlinked_count  # 전수 기준 봇 제외 전체 커밋
         target_commit_ratio = (
             round(target_commit_count / total_repo_commit_count, 4)
             if total_repo_commit_count > 0 else 0.0
         )
+        target_commit_ratio_census = target_commit_ratio
+        contribution_role: Optional[str] = None
+        if repo_type == "team" and distinct_author_count > 0:
+            fair_share = 1.0 / distinct_author_count
+            if target_commit_ratio_census >= 0.5:
+                contribution_role = "주도 기여"
+            elif target_commit_ratio_census >= fair_share:
+                contribution_role = "적극 기여"
+            else:
+                contribution_role = "협업"
 
         sampled = self._stratified_sample_commits(all_author_commits, global_seen_sha)
         # 분석 전에 전역 dedup: 샘플에서 global에 이미 있는 SHA 제외는 stratified에서 처리됨.
@@ -690,6 +780,10 @@ class GitHubExtractor:
         mod_labels = [mod_platform["label"]] if mod_platform else []
         frameworks = list(dict.fromkeys(engine_detected + mod_labels + frameworks))
         domain_hits = profile_builder.detect_domain_hits(tree_data)
+        domain_hits = profile_builder.merge_readme_domain_hits(
+            domain_hits,
+            readme_raw_text or readme_content,
+        )
         detected_domains = sorted(domain_hits.keys(), key=lambda d: domain_hits[d], reverse=True)
         # v5.8: 엔진 시그너처에 domain 필드가 있으면 detected_domains 앞에 삽입 (미포함 시에만)
         for eng_name in reversed(engine_detected):
@@ -850,6 +944,7 @@ class GitHubExtractor:
             "commit_messages": commit_messages,
             "distinct_author_count": distinct_author_count,
             "repo_type": repo_type,
+            "has_team_experience": has_team_experience,                                    # v7.2: 티어용 팀 경험 플래그
             "repo_author_names": repo_author_labels[:10],
             "dominance_ratio": round(dominance_ratio, 3) if dominance_ratio > 0 else None,  # v6.4
             "is_dominance_override": is_dominance_override,                                  # v6.4
@@ -863,6 +958,8 @@ class GitHubExtractor:
             "total_repo_commits": total_repo_commit_count,
             "target_commit_count": target_commit_count,
             "target_commit_ratio": target_commit_ratio,
+            "target_commit_ratio_census": target_commit_ratio_census,
+            "contribution_role": contribution_role,
             "score_breakdown": {
                 "contribution": contribution_axis,
                 "quality": round(quality_axis, 1),
@@ -1065,6 +1162,7 @@ class GitHubExtractor:
                     "commit_messages": res.get("commit_messages") or [],
                     "distinct_author_count": int(res.get("distinct_author_count") or 1),
                     "repo_type": res.get("repo_type") or ("team" if int(res.get("distinct_author_count") or 1) >= 2 else "personal"),
+                    "has_team_experience": bool(res.get("has_team_experience", int(res.get("distinct_author_count") or 1) >= 2)),
                     "repo_author_names": res.get("repo_author_names") or [],
                     "dominance_ratio": res.get("dominance_ratio"),                          # v6.4
                     "is_dominance_override": bool(res.get("is_dominance_override")),        # v6.4
@@ -1078,6 +1176,8 @@ class GitHubExtractor:
                     "total_repo_commits": int(res.get("total_repo_commits") or 0),
                     "target_commit_count": int(res.get("target_commit_count") or 0),
                     "target_commit_ratio": float(res.get("target_commit_ratio") or 0.0),
+                    "target_commit_ratio_census": float(res.get("target_commit_ratio_census") or 0.0),
+                    "contribution_role": res.get("contribution_role"),
                     "frameworks": res.get("frameworks") or [],
                     "detected_domains": res.get("detected_domains") or [],
                     "language_category": res.get("language_category") or {},    # v5.6

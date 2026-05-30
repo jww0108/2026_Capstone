@@ -1,0 +1,8 @@
+{
+  "tree": [
+    { "path": "manifest.json", "type": "blob" },
+    { "path": "src/extension/content_script.ts", "type": "blob" },
+    { "path": "src/background.ts", "type": "blob" },
+    { "path": "src/popup.html", "type": "blob" }
+  ]
+}

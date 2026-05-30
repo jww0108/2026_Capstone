@@ -258,8 +258,8 @@ DOMAIN_SIGNALS: Dict[str, List[str]] = {
         "spark", "kafka", "datalake", "batch",
     ],
     "도구 개발": [
-        "extension", "plugin", "addon", "vscode",
-        "manifest", "contributes",
+        "extension", "addon", "vscode", "contributes",
+        ".vscodeignore", "content_script", "service_worker",
     ],
 }
 
@@ -592,6 +592,22 @@ README_KEYWORDS: Dict[str, List[str]] = {
     ],
 }
 
+# README 키워드 라벨 -> 레포 도메인 키 alias
+README_DOMAIN_ALIAS: Dict[str, str] = {
+    "웹": "웹 프론트엔드",
+    "서버": "서버/백엔드",
+    "게임": "게임 개발",
+    "ML/AI": "ML/AI",
+    "모바일": "모바일 앱",
+    "인프라": "DevOps/인프라",
+    "블록체인": "블록체인",
+    "데이터": "빅데이터 엔지니어",
+    "도구개발": "도구 개발",
+}
+
+# README 기반 보조 hit는 도메인당 +1까지만 반영
+README_DOMAIN_BOOST = 1
+
 
 # ---------------------------------------------------------------------------
 # v5.6: 언어 분류 함수
@@ -862,12 +878,7 @@ def extract_readme_keywords(readme_text: str) -> str:
         return ""
 
     text_lower = readme_text.lower()
-    hit_domains: Dict[str, int] = {}
-
-    for domain, keywords in README_KEYWORDS.items():
-        hits = sum(1 for kw in keywords if kw.lower() in text_lower)
-        if hits >= 1:
-            hit_domains[domain] = hits
+    hit_domains = _count_readme_domain_hits(readme_text)
 
     if not hit_domains:
         return ""
@@ -883,6 +894,41 @@ def extract_readme_keywords(readme_text: str) -> str:
     if matched_keywords:
         return f"{', '.join(matched_keywords[:6])} 관련 프로젝트"
     return ""
+
+
+def _count_readme_domain_hits(readme_text: str) -> Dict[str, int]:
+    """README_KEYWORDS 기준으로 도메인별 hit 수 집계."""
+    if not readme_text:
+        return {}
+    text_lower = readme_text.lower()
+    hit_domains: Dict[str, int] = {}
+    for domain, keywords in README_KEYWORDS.items():
+        hits = sum(1 for kw in keywords if kw.lower() in text_lower)
+        if hits >= 1:
+            hit_domains[domain] = hits
+    return hit_domains
+
+
+def merge_readme_domain_hits(domain_hits: Dict[str, int], readme_text: str) -> Dict[str, int]:
+    """
+    tree 기반 domain_hits에 README 보조 신호를 merge.
+    - README는 도메인당 +1 보조치만 적용
+    - 기존 tree 강신호를 덮어쓰지 않음
+    """
+    merged: Dict[str, int] = dict(domain_hits or {})
+    pre_detected_domains: Set[str] = set(merged.keys())
+    readme_hits = _count_readme_domain_hits(readme_text)
+    for readme_domain, hits in readme_hits.items():
+        if hits < 1:
+            continue
+        canonical = README_DOMAIN_ALIAS.get(readme_domain)
+        if not canonical:
+            continue
+        # 도구 개발은 README 단독 신호로 신규 생성하지 않음.
+        if canonical == "도구 개발" and canonical not in pre_detected_domains:
+            continue
+        merged[canonical] = merged.get(canonical, 0) + README_DOMAIN_BOOST
+    return merged
 
 
 def _tree_blobs(tree_data: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -1104,14 +1150,49 @@ def detect_domain_hits(tree_data: Dict[str, Any]) -> Dict[str, int]:
     all_paths = [b["path"].lower().replace("\\", "/") for b in blobs]
     domain_hits: Dict[str, int] = {}
     for domain, keywords in DOMAIN_SIGNALS.items():
-        matched_keywords: Set[str] = set()
-        for p in all_paths:
-            for kw in keywords:
-                if kw in p:
-                    matched_keywords.add(kw)
+        if domain == "도구 개발":
+            matched_keywords = _match_tool_domain_keywords(all_paths, keywords)
+        else:
+            matched_keywords: Set[str] = set()
+            for p in all_paths:
+                for kw in keywords:
+                    if kw in p:
+                        matched_keywords.add(kw)
         if len(matched_keywords) >= 2:
             domain_hits[domain] = len(matched_keywords)
     return domain_hits
+
+
+def _match_tool_domain_keywords(all_paths: List[str], keywords: List[str]) -> Set[str]:
+    """도구 개발 도메인은 범용 키워드 오탐을 줄이기 위해 패턴 기반 보강 신호를 함께 사용."""
+    matched_keywords: Set[str] = set()
+    basenames = [p.rsplit("/", 1)[-1] for p in all_paths]
+
+    for p in all_paths:
+        for kw in keywords:
+            if kw in p:
+                matched_keywords.add(kw)
+
+    has_manifest_json = "manifest.json" in basenames
+    has_browser_support = any(
+        b in {"background.js", "background.ts", "popup.html", "options.html", "content.js", "content.ts"}
+        for b in basenames
+    ) or any("content_script" in p or "service_worker" in p for p in all_paths)
+    if has_manifest_json and has_browser_support:
+        matched_keywords.add("browser_extension_manifest")
+
+    has_package_json = "package.json" in basenames
+    has_vscode_support = ".vscodeignore" in basenames or any(
+        p.endswith("/extension.ts")
+        or p.endswith("/extension.js")
+        or p.endswith("/src/extension.ts")
+        or p.endswith("/src/extension.js")
+        for p in all_paths
+    )
+    if has_package_json and has_vscode_support:
+        matched_keywords.add("vscode_extension_manifest")
+
+    return matched_keywords
 
 
 def merge_domain_hits(per_repo_hits: List[Dict[str, int]]) -> List[str]:

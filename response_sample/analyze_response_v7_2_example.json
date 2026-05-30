@@ -1,0 +1,202 @@
+{
+  "status": "success",
+  "error": null,
+  "github_score": {
+    "total": 78.4,
+    "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+    "breakdown": {
+      "contribution": 47.3,
+      "quality": 24.0,
+      "consistency": 7.1
+    },
+    "breakdown_note": "최고 레포 기준"
+  },
+  "per_repo": [
+    {
+      "repo_name": "Deepsentinel (main)",
+      "repo_type": "personal",
+      "has_team_experience": true,
+      "distinct_author_count": 2,
+      "repo_author_names": [
+        "siheon012",
+        "protove"
+      ],
+      "is_fork": false,
+      "fork_penalty": 1.0,
+      "dominance_ratio": 0.946,
+      "is_dominance_override": true,
+      "repo_total_score": 78.4,
+      "score_breakdown": {
+        "contribution": 47.3,
+        "quality": 24.0,
+        "consistency": 7.1,
+        "quality_mode": "personal"
+      },
+      "target_commit_count": 192,
+      "total_repo_commits": 204,
+      "target_commit_ratio": 0.9412,
+      "target_commit_ratio_census": 0.9412,
+      "contribution_role": null,
+      "active_weeks": 19,
+      "repo_active_weeks": 20,
+      "detected_domains": [
+        "웹 프론트엔드",
+        "서버/백엔드",
+        "DevOps/인프라"
+      ],
+      "frameworks": [
+        "React",
+        "FastAPI",
+        "Docker"
+      ],
+      "language_category": {
+        "main": [
+          [
+            "Python",
+            72.1
+          ],
+          [
+            "TypeScript",
+            21.4
+          ]
+        ],
+        "sub": [
+          [
+            "HTML",
+            4.3
+          ],
+          [
+            "CSS",
+            2.2
+          ]
+        ],
+        "trivial": []
+      },
+      "diagnosis": {
+        "core_items": {
+          "readme_quality": {
+            "status": "보통",
+            "detail": "README 길이와 구성은 기본 요건을 충족합니다.",
+            "action": null
+          },
+          "project_structure": {
+            "status": "양호",
+            "detail": "디렉터리 구조와 산출물 제외 상태가 안정적입니다.",
+            "action": null
+          },
+          "commit_quality": {
+            "status": "양호",
+            "detail": "커밋 메시지의 의도가 비교적 명확합니다.",
+            "action": null
+          }
+        },
+        "extra_items": {
+          "test_coverage": {
+            "status": "양호",
+            "detail": "테스트 파일이 충분히 감지됩니다.",
+            "action": null
+          },
+          "cicd": {
+            "status": "양호",
+            "detail": "CI/CD 신호가 감지됩니다.",
+            "action": null
+          },
+          "deployment": {
+            "status": "양호",
+            "detail": "배포 관련 설정이 확인됩니다.",
+            "action": null
+          },
+          "commit_pattern": {
+            "status": "규칙적",
+            "detail": "활성 주 기준 커밋 패턴이 안정적입니다.",
+            "action": null
+          }
+        }
+      }
+    }
+  ],
+  "level": {
+    "grade": "Competitive",
+    "description": "중견 IT·시리즈 B급 이상 스타트업에 맞설 만한 포트폴리오 완성도로 볼 수 있습니다."
+  },
+  "summary": {
+    "text": "샘플 요약 텍스트",
+    "highlights": [],
+    "strengths": [
+      "프로젝트 구조",
+      "커밋 메시지"
+    ],
+    "quick_wins": [
+      "README에 프로젝트 목적/기술 스택/스크린샷 보강"
+    ]
+  },
+  "job_matching": {
+    "eligible_matches": [],
+    "routing_category": "웹 풀스택",
+    "domain_check": {
+      "consistent": true,
+      "warning": null,
+      "suggested_category": null
+    },
+    "mismatch_diagnosis": {
+      "type": "consistent",
+      "message": null
+    },
+    "detected_domains_merged": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "DevOps/인프라"
+    ],
+    "rerank_note": "도메인 리랭킹 적용",
+    "multi_domain_recommendation": null
+  },
+  "salary_band": {
+    "category": "웹 풀스택",
+    "experience_level": "신입 (0~3년)",
+    "median_manwon": 3449.0,
+    "realistic_range": {
+      "low_manwon": 2931.0,
+      "high_manwon": 4138.0
+    },
+    "platform_cross_check": {
+      "jumpit": 3587.0,
+      "wanted": 3310.0
+    },
+    "reference_categories": [
+      "프론트엔드",
+      "서버/백엔드"
+    ],
+    "alt_category_band": null,
+    "source_note": "점핏·원티드 2025 채용공고 기반 / 참고용"
+  },
+  "tech_analysis": {
+    "matched": [
+      "TypeScript",
+      "React"
+    ],
+    "missing": [
+      "Spring Boot",
+      "Docker"
+    ],
+    "company_types": [
+      "웹서비스",
+      "SaaS"
+    ],
+    "applicant_techs": [
+      "Python",
+      "React",
+      "TypeScript"
+    ],
+    "learning_suggestions": [
+      "Spring Boot",
+      "Docker"
+    ]
+  },
+  "meta": {
+    "version": "v7.2",
+    "llm_available": false,
+    "analysis_time_seconds": 18.2,
+    "repos_analyzed": 1,
+    "applicant_years": 0
+  }
+}

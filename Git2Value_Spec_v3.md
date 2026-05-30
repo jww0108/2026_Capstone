@@ -13,31 +13,31 @@
 
 본 문서는 v2.2(2026.04.01) 이후 약 한 달간의 시스템 진화를 반영하여 전면 개정한 것입니다.
 
-| 영역 | v2.2 → v3.0 변경 요지 |
-|---|---|
-| 시스템 정체성 | GitHub 추출 파이프라인 → **3개 독립 모듈(직무 매칭 / 포트폴리오 진단 / 연봉 밴드) 통합 서비스** |
-| 점수 수식 | 선형 만점 → **로그 스케일 + 동적 가중치 + Evidence LOC 보조** |
-| 직무 매칭 | 단순 FAISS → **하이브리드 리랭킹 + 다중 도메인 균형 추천** |
-| 환경 식별 | 언어 통계만 활용 → **시그너처 기반 감지 (게임 엔진, Lua 호스트, 모드 플랫폼, 모바일·블록체인 등)** |
-| 연봉 모듈 | 멀티플라이어 모델 → **시장 밴드 독립 조회 + 3그룹 비교** |
-| 진단 항목 | 9개 항목 → **7개 정직 항목 + 종합 분석 블록** |
-| 신뢰도 보강 | 균등 샘플링 + Rate Limit | + **경력 필터링 + 시그너처 오탐 강화 + manifest 내용 검증** |
+| 영역          | v2.2 → v3.0 변경 요지                                                                              |
+| ------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| 시스템 정체성 | GitHub 추출 파이프라인 → **3개 독립 모듈(직무 매칭 / 포트폴리오 진단 / 연봉 밴드) 통합 서비스**    |
+| 점수 수식     | 선형 만점 → **로그 스케일 + 동적 가중치 + Evidence LOC 보조**                                      |
+| 직무 매칭     | 단순 FAISS → **하이브리드 리랭킹 + 다중 도메인 균형 추천**                                         |
+| 환경 식별     | 언어 통계만 활용 → **시그너처 기반 감지 (게임 엔진, Lua 호스트, 모드 플랫폼, 모바일·블록체인 등)** |
+| 연봉 모듈     | 멀티플라이어 모델 → **시장 밴드 독립 조회 + 3그룹 비교**                                           |
+| 진단 항목     | 9개 항목 → **7개 정직 항목 + 종합 분석 블록**                                                      |
+| 신뢰도 보강   | 균등 샘플링 + Rate Limit                                                                           | + **경력 필터링 + 시그너처 오탐 강화 + manifest 내용 검증** |
 
 ### 단계별 버전 매핑
 
-| 버전 | 적용일 | 핵심 변경 |
-|---|---|---|
-| v3.0 → v4.0 | 2026.04.06 | 서비스 리프레이밍, 모듈 A/B/C 분리, 멀티플라이어 제거 |
-| v4.0 → v5.0 | 2026.04.06 | Contribution 로그 스케일, Quality 균등 배점 |
-| v5.0 → v5.1 | 2026.04.06 | 게임 카테고리 라우팅, 도메인 키워드 압축 |
-| v5.1 → v5.2 | 2026.04.09 | 유사도 상대 레이블, 기술 매칭 교차 분석 |
-| v5.2 → v5.3 | 2026.04.09 | **하이브리드 도메인 리랭킹 (+0.05)** |
-| v5.3.1~6 | 2026.04.09 | 다중 도메인 억제, 영어 키워드 보강, 풀스택 분기 |
-| v5.4 | 2026.04.13 | **게임 엔진 시그너처 감지 (Unity/Unreal/Godot/Flutter)** |
-| v5.5 | 2026.04.16 | **Evidence LOC + 동적 가중치 + 테스트 항목 재배치** |
-| v5.6 | 2026.04.27 | **언어 메인/서브 분류 + Lua 호스트 추론** |
-| v5.7 | 2026.04.27 | **모드 플랫폼 감지 + 설정 프로젝트 매칭 제외** |
-| v5.8 | 2026.04.27 | **시그너처 오탐 강화 + manifest 내용 검증 + 8개 신규 카테고리** |
+| 버전        | 적용일     | 핵심 변경                                                           |
+| ----------- | ---------- | ------------------------------------------------------------------- |
+| v3.0 → v4.0 | 2026.04.06 | 서비스 리프레이밍, 모듈 A/B/C 분리, 멀티플라이어 제거               |
+| v4.0 → v5.0 | 2026.04.06 | Contribution 로그 스케일, Quality 균등 배점                         |
+| v5.0 → v5.1 | 2026.04.06 | 게임 카테고리 라우팅, 도메인 키워드 압축                            |
+| v5.1 → v5.2 | 2026.04.09 | 유사도 상대 레이블, 기술 매칭 교차 분석                             |
+| v5.2 → v5.3 | 2026.04.09 | **하이브리드 도메인 리랭킹 (+0.05)**                                |
+| v5.3.1~6    | 2026.04.09 | 다중 도메인 억제, 영어 키워드 보강, 풀스택 분기                     |
+| v5.4        | 2026.04.13 | **게임 엔진 시그너처 감지 (Unity/Unreal/Godot/Flutter)**            |
+| v5.5        | 2026.04.16 | **Evidence LOC + 동적 가중치 + 테스트 항목 재배치**                 |
+| v5.6        | 2026.04.27 | **언어 메인/서브 분류 + Lua 호스트 추론**                           |
+| v5.7        | 2026.04.27 | **모드 플랫폼 감지 + 설정 프로젝트 매칭 제외**                      |
+| v5.8        | 2026.04.27 | **시그너처 오탐 강화 + manifest 내용 검증 + 8개 신규 카테고리**     |
 | v5.8 → v6.0 | 2026.05.02 | **경력 필터링 + 다중 도메인 균형 추천 + 진단 7개 + 종합 분석 블록** |
 
 ---
@@ -168,6 +168,7 @@ SUB_LANGUAGE_SIGNALS = {
 ```
 
 **프로필 텍스트 예시:**
+
 ```
 변경 전: "Lua (80%), C++ (20%) 기반 게임 개발 경험"
 변경 후: "C++ (70%) 기반 게임 개발 경험. Lua 스크립팅 활용."
@@ -179,51 +180,51 @@ SUB_LANGUAGE_SIGNALS = {
 
 #### v5.4: ENGINE_SIGNATURES (게임 엔진 + 분석 환경)
 
-| 환경 | 시그너처 |
-|---|---|
-| Unity | `Assets/` + `.meta` |
-| Unreal Engine | `.uproject` 또는 `.uasset` |
-| Godot | `.tscn` + `.gd` |
-| Flutter | `pubspec.yaml` + `android/`/`ios/` 중 하나 (v5.8 강화) |
-| Jupyter/ML 실험 | `.ipynb` 파일 3개 이상 (v5.8 강화) |
-| Kubernetes/IaC | `.tf`, `.hcl`, `kubernetes/`, `terraform/` 중 다수 |
+| 환경            | 시그너처                                               |
+| --------------- | ------------------------------------------------------ |
+| Unity           | `Assets/` + `.meta`                                    |
+| Unreal Engine   | `.uproject` 또는 `.uasset`                             |
+| Godot           | `.tscn` + `.gd`                                        |
+| Flutter         | `pubspec.yaml` + `android/`/`ios/` 중 하나 (v5.8 강화) |
+| Jupyter/ML 실험 | `.ipynb` 파일 3개 이상 (v5.8 강화)                     |
+| Kubernetes/IaC  | `.tf`, `.hcl`, `kubernetes/`, `terraform/` 중 다수     |
 
 #### v5.6: LUA_HOST_SIGNATURES (Lua 호스트 환경 9종)
 
-| 환경 | 도메인 | 시그너처 |
-|---|---|---|
-| Roblox | 게임 개발 | `.rbxl`, `.rbxlx`, `.rbxm` |
-| Love2D | 게임 개발 | `main.lua` + `conf.lua` (루트, `build.settings` 부재) |
-| Defold | 게임 개발 | `game.project` + `.script` |
-| Solar2D/Corona | 모바일 앱 | `main.lua` + `build.settings` (루트) |
-| Cocos2d-x Lua | 게임 개발 | `cocos.lua` + `project.json` |
-| OpenResty/Nginx-Lua | DevOps/인프라 | `nginx.conf` + `lua/` (v5.8 `.lua` 필수) |
-| NodeMCU/임베디드 Lua | HW/임베디드 | `init.lua` + `wifi.lua`/`uart.lua`/`spi.lua`/`i2c.lua` |
+| 환경                            | 도메인             | 시그너처                                                     |
+| ------------------------------- | ------------------ | ------------------------------------------------------------ |
+| Roblox                          | 게임 개발          | `.rbxl`, `.rbxlx`, `.rbxm`                                   |
+| Love2D                          | 게임 개발          | `main.lua` + `conf.lua` (루트, `build.settings` 부재)        |
+| Defold                          | 게임 개발          | `game.project` + `.script`                                   |
+| Solar2D/Corona                  | 모바일 앱          | `main.lua` + `build.settings` (루트)                         |
+| Cocos2d-x Lua                   | 게임 개발          | `cocos.lua` + `project.json`                                 |
+| OpenResty/Nginx-Lua             | DevOps/인프라      | `nginx.conf` + `lua/` (v5.8 `.lua` 필수)                     |
+| NodeMCU/임베디드 Lua            | HW/임베디드        | `init.lua` + `wifi.lua`/`uart.lua`/`spi.lua`/`i2c.lua`       |
 | Neovim 설정 (`is_config: True`) | (직무 시그널 없음) | `init.lua` + `lua/`/`plugin/`/`after/` 또는 `lazy-lock.json` |
 
 #### v5.7: MOD_PLATFORM_SIGNATURES (모드/플러그인 6종)
 
-| 플랫폼 | 시그너처 | 비고 |
-|---|---|---|
-| EDOPro 카드 스크립트 | `c\d{8}\.lua` 정규식 5개 이상 | mod_context |
-| Garry's Mod | `gamemodes/` + `entities/`/`lua/` | mod_context |
-| Factorio 모드 | `info.json` + `control.lua`/`data.lua` | mod_context |
-| Minecraft 플러그인 | `plugin.yml` + `org/bukkit/`/`io/papermc/` (v5.8) | mod_context |
-| Stardew Valley (SMAPI) | 루트 `manifest.json` + `.cs` (v5.8 루트 한정) | mod_context |
-| WoW 애드온 | `.toc` + `.lua` | mod_context, is_hobby |
+| 플랫폼                 | 시그너처                                          | 비고                  |
+| ---------------------- | ------------------------------------------------- | --------------------- |
+| EDOPro 카드 스크립트   | `c\d{8}\.lua` 정규식 5개 이상                     | mod_context           |
+| Garry's Mod            | `gamemodes/` + `entities/`/`lua/`                 | mod_context           |
+| Factorio 모드          | `info.json` + `control.lua`/`data.lua`            | mod_context           |
+| Minecraft 플러그인     | `plugin.yml` + `org/bukkit/`/`io/papermc/` (v5.8) | mod_context           |
+| Stardew Valley (SMAPI) | 루트 `manifest.json` + `.cs` (v5.8 루트 한정)     | mod_context           |
+| WoW 애드온             | `.toc` + `.lua`                                   | mod_context, is_hobby |
 
 #### v5.8: 추가 8개 카테고리 (모바일·블록체인·인프라·데이터·도구)
 
-| 카테고리 | 도메인 | 시그너처 |
-|---|---|---|
-| Expo | 모바일 앱 | `app.json` + manifest 키 `"expo"` (비동기 검증) |
-| React Native | 모바일 앱 | `package.json` + `android/`/`ios/` + `pubspec.yaml` 부재 |
-| Hardhat | 블록체인 | `hardhat.config.js`/`.ts` + `contracts/` + `.sol` |
-| Foundry | 블록체인 | `foundry.toml` + `src/`/`test/` + `.sol` |
-| Helm Chart | DevOps/인프라 | `Chart.yaml` + `templates/` |
-| dbt | 빅데이터 엔지니어 | `dbt_project.yml` + `models/`/`seeds/` |
-| VS Code 확장 | 도구 개발 | 루트 `package.json` + manifest 키 `vscode`+`contributes` |
-| Browser Extension | 도구 개발 | 루트 `manifest.json` + manifest 키 `manifest_version`+`permissions` |
+| 카테고리          | 도메인            | 시그너처                                                            |
+| ----------------- | ----------------- | ------------------------------------------------------------------- |
+| Expo              | 모바일 앱         | `app.json` + manifest 키 `"expo"` (비동기 검증)                     |
+| React Native      | 모바일 앱         | `package.json` + `android/`/`ios/` + `pubspec.yaml` 부재            |
+| Hardhat           | 블록체인          | `hardhat.config.js`/`.ts` + `contracts/` + `.sol`                   |
+| Foundry           | 블록체인          | `foundry.toml` + `src/`/`test/` + `.sol`                            |
+| Helm Chart        | DevOps/인프라     | `Chart.yaml` + `templates/`                                         |
+| dbt               | 빅데이터 엔지니어 | `dbt_project.yml` + `models/`/`seeds/`                              |
+| VS Code 확장      | 도구 개발         | 루트 `package.json` + manifest 키 `vscode`+`contributes`            |
+| Browser Extension | 도구 개발         | 루트 `manifest.json` + manifest 키 `manifest_version`+`permissions` |
 
 #### manifest 내용 검증 메커니즘 (v5.8)
 
@@ -234,6 +235,7 @@ SUB_LANGUAGE_SIGNALS = {
 3. **3단계:** 키워드 매칭으로 환경 확정
 
 같은 `manifest.json`이라도:
+
 - `"manifest_version" + "permissions"` → 브라우저 확장
 - `"UniqueID" + "MinimumApiVersion"` → Stardew Valley
 - `"vscode" + "contributes"` → VS Code 확장
@@ -262,11 +264,11 @@ DOMAIN_SIGNALS = {
 
 ### 4-1. 점수 구조 (v2.2 유지)
 
-| 축 | 배점 | 산출 방식 |
-|---|---|---|
+| 축           | 배점      | 산출 방식                                       |
+| ------------ | --------- | ----------------------------------------------- |
 | contribution | 최대 60점 | LOC + 커밋 수 (동적 가중치) + Evidence LOC 보조 |
-| quality | 최대 30점 | CI/CD + 테스트 + 활성 ISO 주 |
-| consistency | 최대 10점 | 커밋 간격 표준편차 |
+| quality      | 최대 30점 | CI/CD + 테스트 + 활성 ISO 주                    |
+| consistency  | 최대 10점 | 커밋 간격 표준편차                              |
 
 ### 4-2. Contribution Score 개정 ★ (v5.0 + v5.5)
 
@@ -304,11 +306,11 @@ contribution_axis = (loc_score * loc_w + commit_score * commit_w) * 0.6
 
 **✅ v5.0 개선:** CI/CD 10 + 테스트 10 + 활성 ISO 주 10 (균등 배점)
 
-| 항목 | 조건 | 점수 |
-|---|---|---|
-| CI/CD | 워크플로우/Dockerfile blob > 200B | 10 또는 0 |
-| 테스트 비율 | < 5% / 5~20% / ≥ 20% | 0 / 5 / 10 |
-| 활성 주 수 | `all_author_commits` ISO 주 개수 | ≥ 8주 → 10, ≥ 4주 → 5, 그 외 0 |
+| 항목        | 조건                              | 점수                           |
+| ----------- | --------------------------------- | ------------------------------ |
+| CI/CD       | 워크플로우/Dockerfile blob > 200B | 10 또는 0                      |
+| 테스트 비율 | < 5% / 5~20% / ≥ 20%              | 0 / 5 / 10                     |
+| 활성 주 수  | `all_author_commits` ISO 주 개수  | ≥ 8주 → 10, ≥ 4주 → 5, 그 외 0 |
 
 ### 4-4. Consistency Score (v5.0)
 
@@ -337,22 +339,22 @@ GitHub 추출 데이터(`"Python (45%), C# (30%)"`)와 채용 공고 텍스트(`
 
 ### 5-2. build_profile_text() 우선순위 (v5.6)
 
-| 우선순위 | 시그널 | 처리 |
-|---|---|---|
-| 1 | 시그너처 감지 (엔진/모드/Lua 호스트) | 도메인 + 라벨로 프로필 시작 |
-| 2 | 메인 언어 + 도메인 | "{Lang} ({pct}%) 기반 {domain} 경험" |
-| 3 | 프레임워크 (의존성 파싱) | "{Frameworks} 활용 경험" |
-| 4 | 서브 언어 (메인 있을 때) | "{SubLang} 활용" 보조 표기 |
-| 5 | CI/CD, 테스트, 배포 | 양호 시 한 줄 추가 |
-| 6 | README 키워드 (long 티어만) | 도메인 키워드 압축 문장 |
+| 우선순위 | 시그널                               | 처리                                 |
+| -------- | ------------------------------------ | ------------------------------------ |
+| 1        | 시그너처 감지 (엔진/모드/Lua 호스트) | 도메인 + 라벨로 프로필 시작          |
+| 2        | 메인 언어 + 도메인                   | "{Lang} ({pct}%) 기반 {domain} 경험" |
+| 3        | 프레임워크 (의존성 파싱)             | "{Frameworks} 활용 경험"             |
+| 4        | 서브 언어 (메인 있을 때)             | "{SubLang} 활용" 보조 표기           |
+| 5        | CI/CD, 테스트, 배포                  | 양호 시 한 줄 추가                   |
+| 6        | README 키워드 (long 티어만)          | 도메인 키워드 압축 문장              |
 
 ### 5-3. README 활용 분기 (v5.3)
 
-| 잔량 | 티어 | 처리 |
-|---|---|---|
-| 200자 이상 | long | 키워드 추출 성공 시에만 압축 문장 추가 |
-| 50~199자 | medium | 구조화 데이터만 |
-| 49자 이하 | short | 의존성·도메인 감지 시도 |
+| 잔량       | 티어   | 처리                                   |
+| ---------- | ------ | -------------------------------------- |
+| 200자 이상 | long   | 키워드 추출 성공 시에만 압축 문장 추가 |
+| 50~199자   | medium | 구조화 데이터만                        |
+| 49자 이하  | short  | 의존성·도메인 감지 시도                |
 
 **원칙:** 부실 README는 프로필에 넣지 않음. 키워드 추출 실패 시 원문 폴백 안 함 (v5.3에서 v5.2의 폴백 정책 제거).
 
@@ -454,12 +456,12 @@ def recommend_multi_domain(top_matches_extended, detected_domains, domain_hits):
 
 ### 6-5. 사용자 안내 강화 (v6.0)
 
-| 기능 | 동작 |
-|---|---|
-| `similarity_label()` | spread < 0.02 시 "약한 매칭" 시스템 안내 출력 (A-1) |
-| `route_job_category_safe()` | 콤마 결합 카테고리 방어 (A-4) |
+| 기능                         | 동작                                                |
+| ---------------------------- | --------------------------------------------------- |
+| `similarity_label()`         | spread < 0.02 시 "약한 매칭" 시스템 안내 출력 (A-1) |
+| `route_job_category_safe()`  | 콤마 결합 카테고리 방어 (A-4)                       |
 | `diagnose_domain_mismatch()` | DB 커버리지 / 프로필 약함 / 일관 / 모호 4분기 (A-3) |
-| `analyze_tech_match()` | 도메인 일치 공고만 미보유 기술 추출 (A-5) |
+| `analyze_tech_match()`       | 도메인 일치 공고만 미보유 기술 추출 (A-5)           |
 
 ---
 
@@ -471,15 +473,15 @@ def recommend_multi_domain(top_matches_extended, detected_domains, domain_hits):
 
 **✅ v6.0 해결:** 신뢰도 낮은 3개 항목 제거, 7개로 축소.
 
-| 진단 항목 | 판별 방법 | 수치화 기준 |
-|---|---|---|
-| README 품질 | 길이 + 3차원 룰베이스 (목적/스택/시각화) | 200자+양호: 양호 |
-| 프로젝트 구조 | 디렉토리 모듈화, .gitignore | 모듈화+.gitignore: 양호 |
-| 테스트 작성 | test 파일 / 전체 비율 | ≥10%: 양호 (Top 차별화) |
-| CI/CD 구성 | Actions/Dockerfile + 200B 이상 | 파일 양호: 양호 |
-| 커밋 메시지 | 길이 + 무의미 비율 + 변환 힌트 | < 20%: 양호 |
-| 배포 경험 | Docker/Vercel/docker-compose | 설정 존재: 양호 |
-| 기여 유형 안내 | 단독 vs 협업 (레포 메타) | 분류 안내만 |
+| 진단 항목      | 판별 방법                                | 수치화 기준             |
+| -------------- | ---------------------------------------- | ----------------------- |
+| README 품질    | 길이 + 3차원 룰베이스 (목적/스택/시각화) | 200자+양호: 양호        |
+| 프로젝트 구조  | 디렉토리 모듈화, .gitignore              | 모듈화+.gitignore: 양호 |
+| 테스트 작성    | test 파일 / 전체 비율                    | ≥10%: 양호 (Top 차별화) |
+| CI/CD 구성     | Actions/Dockerfile + 200B 이상           | 파일 양호: 양호         |
+| 커밋 메시지    | 길이 + 무의미 비율 + 변환 힌트           | < 20%: 양호             |
+| 배포 경험      | Docker/Vercel/docker-compose             | 설정 존재: 양호         |
+| 기여 유형 안내 | 단독 vs 협업 (레포 메타)                 | 분류 안내만             |
 
 ### 7-2. 종합 분석 블록 ★ 신규 (v6.0)
 
@@ -517,11 +519,11 @@ COMMIT_REWRITE_HINTS = {
 
 ### 7-5. 기대 수준 가이드
 
-| 레벨 | 충족 조건 (v5.5 갱신) | 설명 |
-|---|---|---|
-| Entry | README 존재, 프로젝트 1~2개 | 중소/중견 SI, 일반 스타트업 |
+| 레벨        | 충족 조건 (v5.5 갱신)                     | 설명                         |
+| ----------- | ----------------------------------------- | ---------------------------- |
+| Entry       | README 존재, 프로젝트 1~2개               | 중소/중견 SI, 일반 스타트업  |
 | Competitive | + (CI/CD 또는 배포) + 멀티 프로젝트 + s≥4 | 시리즈B+ 스타트업, IT 서비스 |
-| Top | + 테스트 + CI/CD + 배포 + 멀티 + s≥6 | 대형 테크 기업 서류 통과 |
+| Top         | + 테스트 + CI/CD + 배포 + 멀티 + s≥6      | 대형 테크 기업 서류 통과     |
 
 ### 7-6. 레포 분류 안내 (v5.7)
 
@@ -562,6 +564,7 @@ realistic_high = int(median * 1.20)  # P75 추정
 ```
 
 **출력 예시:**
+
 ```
 시장 중앙값: 약 3,700만원
 실제 분포:   3,145만 ~ 4,440만원 (회사·지역·협상에 따라)
@@ -606,7 +609,11 @@ realistic_high = int(median * 1.20)  # P75 추정
     {
       "repo_name": "repo (main)",
       "readme_tier": "long",
-      "tree_stats": { "source_file_count": 42, "avg_loc_per_file": 120.5, "has_gitignore": true },
+      "tree_stats": {
+        "source_file_count": 42,
+        "avg_loc_per_file": 120.5,
+        "has_gitignore": true
+      },
       "has_cicd": true,
       "has_tests": true,
       "has_deployment": false,
@@ -673,16 +680,16 @@ realistic_high = int(median * 1.20)  # P75 추정
 
 ## 부록 A: 기술 스택
 
-| 구분 | 기술 |
-|---|---|
-| 언어 | Python 3.11+ |
-| GitHub 데이터 수집 | aiohttp + asyncio (비동기) |
-| 임베딩 모델 | jhgan/ko-sroberta-multitask |
-| 벡터 검색 | FAISS-CPU 1.8.0 |
-| Sentence Transformers | 2.6.1 (버전 고정 필수) |
-| 채용 공고 데이터 | 원티드 2,000 + 점핏 1,000 + 리멤버 400건 |
-| 연봉 데이터 | 점핏·원티드 2025 직무별 연차별 중앙값 |
-| 환경 | RTX 4090, Windows 11, Docker, PyTorch |
+| 구분                  | 기술                                     |
+| --------------------- | ---------------------------------------- |
+| 언어                  | Python 3.11+                             |
+| GitHub 데이터 수집    | aiohttp + asyncio (비동기)               |
+| 임베딩 모델           | jhgan/ko-sroberta-multitask              |
+| 벡터 검색             | FAISS-CPU 1.8.0                          |
+| Sentence Transformers | 2.6.1 (버전 고정 필수)                   |
+| 채용 공고 데이터      | 원티드 2,000 + 점핏 1,000 + 리멤버 400건 |
+| 연봉 데이터           | 점핏·원티드 2025 직무별 연차별 중앙값    |
+| 환경                  | RTX 4090, Windows 11, Docker, PyTorch    |
 
 ---
 
@@ -718,14 +725,14 @@ basic/
 
 ## 부록 C: 시스템 한계
 
-| 한계 | 이유 |
-|---|---|
-| 깃허브 없는 지원자 분석 불가 | 입력 데이터 자체 부재 |
-| 코드 전체 품질 판단 불가 | 샘플 기반 간접 평가의 본질적 한계 |
-| 정확한 연봉 예측 불가 | GitHub 점수와 연봉 간 검증된 상관관계 부재 |
-| 깃허브 미사용 개발자 커버 불가 | 신입 중에서도 깃허브를 적극 관리하는 비율 일부 |
-| 면접 합격 여부 예측 불가 | 컬쳐핏, 면접 퍼포먼스 등 깃허브 외 변수 |
-| 경력직 깊이 분석 불가 | 신입 대상 설계 (경력직은 LinkedIn/이력서 결합 필요) |
+| 한계                           | 이유                                                |
+| ------------------------------ | --------------------------------------------------- |
+| 깃허브 없는 지원자 분석 불가   | 입력 데이터 자체 부재                               |
+| 코드 전체 품질 판단 불가       | 샘플 기반 간접 평가의 본질적 한계                   |
+| 정확한 연봉 예측 불가          | GitHub 점수와 연봉 간 검증된 상관관계 부재          |
+| 깃허브 미사용 개발자 커버 불가 | 신입 중에서도 깃허브를 적극 관리하는 비율 일부      |
+| 면접 합격 여부 예측 불가       | 컬쳐핏, 면접 퍼포먼스 등 깃허브 외 변수             |
+| 경력직 깊이 분석 불가          | 신입 대상 설계 (경력직은 LinkedIn/이력서 결합 필요) |
 
 ---
 

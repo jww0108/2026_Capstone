@@ -1,0 +1,151 @@
+﻿repo_url,label
+https://github.com/spring-projects/spring-boot,서버/백엔드
+https://github.com/nestjs/nest,서버/백엔드
+https://github.com/fastapi/fastapi,서버/백엔드
+https://github.com/expressjs/express,서버/백엔드
+https://github.com/laravel/laravel,서버/백엔드
+https://github.com/django/django,서버/백엔드
+https://github.com/gin-gonic/gin,서버/백엔드
+https://github.com/go-gitea/gitea,서버/백엔드
+https://github.com/quarkusio/quarkus,서버/백엔드
+https://github.com/micronaut-projects/micronaut-core,서버/백엔드
+https://github.com/facebook/react,프론트엔드
+https://github.com/vuejs/core,프론트엔드
+https://github.com/angular/angular,프론트엔드
+https://github.com/vercel/next.js,프론트엔드
+https://github.com/sveltejs/svelte,프론트엔드
+https://github.com/remix-run/remix,프론트엔드
+https://github.com/nuxt/nuxt,프론트엔드
+https://github.com/tailwindlabs/tailwindcss,프론트엔드
+https://github.com/storybookjs/storybook,프론트엔드
+https://github.com/vitejs/vite,프론트엔드
+https://github.com/calcom/cal.com,웹 풀스택
+https://github.com/appwrite/appwrite,웹 풀스택
+https://github.com/strapi/strapi,웹 풀스택
+https://github.com/directus/directus,웹 풀스택
+https://github.com/novuhq/novu,웹 풀스택
+https://github.com/supabase/supabase,웹 풀스택
+https://github.com/rocket-chat/rocket.chat,웹 풀스택
+https://github.com/mattermost/mattermost,웹 풀스택
+https://github.com/discourse/discourse,웹 풀스택
+https://github.com/open-project/openproject,웹 풀스택
+https://github.com/huggingface/transformers,인공지능/머신러닝
+https://github.com/langchain-ai/langchain,인공지능/머신러닝
+https://github.com/vllm-project/vllm,인공지능/머신러닝
+https://github.com/pytorch/pytorch,인공지능/머신러닝
+https://github.com/tensorflow/tensorflow,인공지능/머신러닝
+https://github.com/scikit-learn/scikit-learn,인공지능/머신러닝
+https://github.com/mlflow/mlflow,인공지능/머신러닝
+https://github.com/openai/openai-cookbook,인공지능/머신러닝
+https://github.com/Lightning-AI/pytorch-lightning,인공지능/머신러닝
+https://github.com/deepspeedai/DeepSpeed,인공지능/머신러닝
+https://github.com/android/nowinandroid,안드로이드
+https://github.com/android/sunflower,안드로이드
+https://github.com/square/okhttp,안드로이드
+https://github.com/square/retrofit,안드로이드
+https://github.com/android/architecture-samples,안드로이드
+https://github.com/chrisbanes/tivi,안드로이드
+https://github.com/android/compose-samples,안드로이드
+https://github.com/android/iosched,안드로이드
+https://github.com/coil-kt/coil,안드로이드
+https://github.com/google/accompanist,안드로이드
+https://github.com/Alamofire/Alamofire,iOS
+https://github.com/onevcat/Kingfisher,iOS
+https://github.com/realm/realm-swift,iOS
+https://github.com/ReactiveX/RxSwift,iOS
+https://github.com/pointfreeco/swift-composable-architecture,iOS
+https://github.com/airbnb/lottie-ios,iOS
+https://github.com/SwiftyJSON/SwiftyJSON,iOS
+https://github.com/SnapKit/SnapKit,iOS
+https://github.com/yonaskolb/XcodeGen,iOS
+https://github.com/tuist/tuist,iOS
+https://github.com/godotengine/godot,게임 클라이언트
+https://github.com/Unity-Technologies/ml-agents,게임 클라이언트
+https://github.com/libsdl-org/SDL,게임 클라이언트
+https://github.com/raysan5/raylib,게임 클라이언트
+https://github.com/cocos/cocos-engine,게임 클라이언트
+https://github.com/ocornut/imgui,게임 클라이언트
+https://github.com/bevyengine/bevy,게임 클라이언트
+https://github.com/MonoGame/MonoGame,게임 클라이언트
+https://github.com/openmw/openmw,게임 클라이언트
+https://github.com/urho3d/Urho3D,게임 클라이언트
+https://github.com/heroiclabs/nakama,게임 서버
+https://github.com/colyseus/colyseus,게임 서버
+https://github.com/PlayFab/thundernetes,게임 서버
+https://github.com/Agones/Agones,게임 서버
+https://github.com/skynetservices/skynet,게임 서버
+https://github.com/apache/dolphinscheduler,게임 서버
+https://github.com/bitnami-labs/sealed-secrets,게임 서버
+https://github.com/zeromq/libzmq,게임 서버
+https://github.com/akka/akka,게임 서버
+https://github.com/etcd-io/etcd,게임 서버
+https://github.com/kubernetes/kubernetes,devops/시스템 엔지니어
+https://github.com/hashicorp/terraform,devops/시스템 엔지니어
+https://github.com/ansible/ansible,devops/시스템 엔지니어
+https://github.com/prometheus/prometheus,devops/시스템 엔지니어
+https://github.com/grafana/grafana,devops/시스템 엔지니어
+https://github.com/helm/helm,devops/시스템 엔지니어
+https://github.com/argoproj/argo-cd,devops/시스템 엔지니어
+https://github.com/fluxcd/flux2,devops/시스템 엔지니어
+https://github.com/istio/istio,devops/시스템 엔지니어
+https://github.com/elastic/elasticsearch,devops/시스템 엔지니어
+https://github.com/ethereum/go-ethereum,블록체인
+https://github.com/hyperledger/fabric,블록체인
+https://github.com/paritytech/polkadot-sdk,블록체인
+https://github.com/solana-labs/solana,블록체인
+https://github.com/bitcoin/bitcoin,블록체인
+https://github.com/stellar/stellar-core,블록체인
+https://github.com/cardano-foundation/cardano-wallet,블록체인
+https://github.com/ava-labs/avalanchego,블록체인
+https://github.com/Uniswap/v3-core,블록체인
+https://github.com/OpenZeppelin/openzeppelin-contracts,블록체인
+https://github.com/apache/spark,빅데이터 엔지니어
+https://github.com/apache/hadoop,빅데이터 엔지니어
+https://github.com/apache/flink,빅데이터 엔지니어
+https://github.com/apache/airflow,빅데이터 엔지니어
+https://github.com/trinodb/trino,빅데이터 엔지니어
+https://github.com/prestodb/presto,빅데이터 엔지니어
+https://github.com/delta-io/delta,빅데이터 엔지니어
+https://github.com/dbt-labs/dbt-core,빅데이터 엔지니어
+https://github.com/apache/kafka,빅데이터 엔지니어
+https://github.com/apache/druid,빅데이터 엔지니어
+https://github.com/flutter/flutter,크로스플랫폼 앱
+https://github.com/facebook/react-native,크로스플랫폼 앱
+https://github.com/dotnet/maui,크로스플랫폼 앱
+https://github.com/ionic-team/ionic-framework,크로스플랫폼 앱
+https://github.com/tauri-apps/tauri,크로스플랫폼 앱
+https://github.com/electron/electron,크로스플랫폼 앱
+https://github.com/appium/appium,크로스플랫폼 앱
+https://github.com/nativescript/nativescript,크로스플랫폼 앱
+https://github.com/apache/cordova,크로스플랫폼 앱
+https://github.com/expo/expo,크로스플랫폼 앱
+https://github.com/zephyrproject-rtos/zephyr,HW/임베디드
+https://github.com/espressif/esp-idf,HW/임베디드
+https://github.com/arduino/Arduino,HW/임베디드
+https://github.com/RIOT-OS/RIOT,HW/임베디드
+https://github.com/raspberrypi/linux,HW/임베디드
+https://github.com/micropython/micropython,HW/임베디드
+https://github.com/ARMmbed/mbed-os,HW/임베디드
+https://github.com/PlatformIO/platformio-core,HW/임베디드
+https://github.com/MarlinFirmware/Marlin,HW/임베디드
+https://github.com/Klipper3d/klipper,HW/임베디드
+https://github.com/SeleniumHQ/selenium,QA 엔지니어
+https://github.com/cypress-io/cypress,QA 엔지니어
+https://github.com/microsoft/playwright,QA 엔지니어
+https://github.com/appium/appium,QA 엔지니어
+https://github.com/karatelabs/karate,QA 엔지니어
+https://github.com/rest-assured/rest-assured,QA 엔지니어
+https://github.com/gauge/gauge,QA 엔지니어
+https://github.com/apache/jmeter,QA 엔지니어
+https://github.com/RobotFramework/RobotFramework,QA 엔지니어
+https://github.com/allure-framework/allure2,QA 엔지니어
+https://github.com/postgres/postgres,DBA
+https://github.com/mysql/mysql-server,DBA
+https://github.com/MariaDB/server,DBA
+https://github.com/mongodb/mongo,DBA
+https://github.com/cockroachdb/cockroach,DBA
+https://github.com/timescale/timescaledb,DBA
+https://github.com/apache/cassandra,DBA
+https://github.com/ClickHouse/ClickHouse,DBA
+https://github.com/redis/redis,DBA
+https://github.com/pingcap/tidb,DBA

@@ -1,0 +1,13 @@
+﻿tag,scope,method,top1_hit,top3_hit,top5_hit
+old_comment_set,full,ai_classifier_rerank,0.6153846153846154,0.6923076923076923,0.6923076923076923
+old_comment_set,full,domain_rerank,0.6923076923076923,0.6923076923076923,0.6923076923076923
+old_comment_set,full,faiss_only,0.46153846153846156,0.6923076923076923,0.6923076923076923
+old_comment_set,quality_gated,ai_classifier_rerank,0.7142857142857143,0.7142857142857143,0.7142857142857143
+old_comment_set,quality_gated,domain_rerank,0.7142857142857143,0.7142857142857143,0.7142857142857143
+old_comment_set,quality_gated,faiss_only,0.5714285714285714,0.7142857142857143,0.7142857142857143
+refined_comment_set,full,ai_classifier_rerank,0.6153846153846154,0.7692307692307693,0.7692307692307693
+refined_comment_set,full,domain_rerank,0.7692307692307693,0.7692307692307693,0.7692307692307693
+refined_comment_set,full,faiss_only,0.5384615384615384,0.7692307692307693,0.7692307692307693
+refined_comment_set,quality_gated,ai_classifier_rerank,0.625,0.75,0.75
+refined_comment_set,quality_gated,domain_rerank,0.75,0.75,0.75
+refined_comment_set,quality_gated,faiss_only,0.625,0.75,0.75

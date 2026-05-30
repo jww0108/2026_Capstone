@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.05.30 | 현재 스펙 버전: v4.0 | 현재 구현 버전: **v7.2-upgrade.4**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.05.30 | 현재 스펙 버전: v4.0 | 현재 구현 버전: **v7.2-upgrade.5**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -284,7 +284,7 @@ repo_commits_list_url = f"{repo_url}/commits?sha={branch}&per_page=100"
 - **`LUA_HOST_SIGNATURES` / `detect_lua_host()`** (v5.6): Roblox·Love2D·Defold·Solar2D·Cocos2d-x·OpenResty·NodeMCU·Neovim 9종
 - **`MAIN_LANGUAGES` / `SUB_LANGUAGE_SIGNALS`** (v5.6): 언어 메인/서브 분류
 - **`categorize_languages(lang_stats)`** (v5.6): main/sub/trivial 분리
-- **`detect_domain_hits` / `merge_domain_hits`**: 트리 경로 기반 도메인 히트. **고유 키워드 종류 수** 기준, 2종류 미만 도메인 제외 (v5.3.1)
+- **`detect_domain_hits` / `merge_domain_hits`**: 트리 경로 기반 도메인 히트. **고유 키워드 종류 수** 기준, 2종류 미만 도메인 제외 (v5.3.1). v7.2-upgrade.5: 모바일/게임은 강증거(엔진/네이티브 경로) 없으면 신규 도메인 생성 억제
 - **`find_dependency_paths` / `parse_dependency_contents`**: package.json 등에서 프레임워크 라벨 추출
 - **`has_deployment_signals`**: docker-compose, Vercel 등 배포 시그널
 - **`compute_tree_structure_stats`**: 파일당 평균 LOC, `.gitignore` 여부
@@ -878,6 +878,31 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 ---
 
 ## 6. 버전 이력 및 주요 결정 사항
+
+### v7.2-upgrade.5 (2026.05.30 — 팀 경험 정합 완성 + 모바일/게임 과검출 완화)
+
+**`has_team_experience`를 등급 내부 팀 신호 집계까지 확장해 Entry 고정 현상을 해소하고, 모바일/게임 도메인 오탐을 보수적으로 억제.**
+
+- **`portfolio_diagnosis.py`**:
+  - `expected_level()`의 `team_diags` 산정을 `has_team_experience` 우선 기준(없으면 `repo_type=="team"` 폴백)으로 전환.
+  - 효과: `repo_type="personal"` + `has_team_experience=true` 레포도 팀 운영 신호(`test/cicd/deploy/commit_pattern`) 평가 경로에 반영.
+- **`profile_builder.py`**:
+  - `detect_domain_hits()`에 모바일/게임 강증거 게이트 추가.
+    - 모바일: `android/`, `ios/`, React Native/Expo 단서(예: `metro.config.js`, `app.json`) 없으면 키워드만으로 신규 생성 금지.
+    - 게임: Unity/Unreal/Godot/Cocos 계열 경로·확장자·`assets/projectsettings` 등 강증거 없으면 키워드만으로 신규 생성 금지.
+  - `merge_readme_domain_hits()`에서 README 단독 신규 생성 제한 도메인에 `모바일 앱`, `게임 개발` 추가(`도구 개발`과 동일 정책).
+- **`run_git2value.py`**:
+  - `_filtered_domains_for_mixed_check()`에 저신뢰 도메인(`도구 개발`, `모바일 앱`, `게임 개발`) 약신호 제외 규칙 확장.
+  - `merged_detected_domains_from_profile()`에서 약신호 도메인은 primary 선정에 후순위 배치(응답에는 유지).
+- **`tests/test_domain_taxonomy.py` + fixtures**:
+  - 과검출 억제 fixture(`ai_backend_noise_tree.json`) 추가.
+  - 정상 검출 fixture(`mobile_react_native_tree.json`, `game_engine_tree.json`) 추가.
+  - 회귀 결과: `19 passed`.
+- **실측 검증**:
+  - `siheon012` 3레포(`Deepsentinel` + `langgraph-api` + `korean_finetuning`) 분석 시 등급 `Top` 확인.
+  - `Deepsentinel` 단일 3계정 시나리오는 단일 레포 조건(`multi_proj` 미충족)으로 `Entry` 유지(의도된 동작).
+
+---
 
 ### v7.2-upgrade.4 (2026.05.29 — 팀 경험 플래그 분리)
 
@@ -1581,4 +1606,4 @@ v6.1 적용 시 다음 문서들도 함께 갱신해야 함:
 
 ---
 
-_Git2Value HandOff v7.2-upgrade.4 — 2026.05.30 (AI 리랭킹 ex2 재실험·현상 유지 결정 문서화)_
+_Git2Value HandOff v7.2-upgrade.5 — 2026.05.30 (팀 경험 정합 완성 + 모바일/게임 과검출 완화 + 도메인 회귀 테스트 확장)_

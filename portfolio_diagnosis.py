@@ -635,7 +635,11 @@ def expected_level(
     struct_st = _agg_status("project_structure", "core_items")
     commit_st = _agg_status("commit_quality", "core_items")
 
-    team_diags = [d for d in per_repo_diags if d.get("repo_type") == "team"]
+    def _is_team_context(diag: Dict[str, Any]) -> bool:
+        # v7.2: 팀 경험 플래그 우선, 없으면 기존 repo_type으로 폴백
+        return bool(diag.get("has_team_experience")) or diag.get("repo_type") == "team"
+
+    team_diags = [d for d in per_repo_diags if _is_team_context(d)]
     team_test_yes = sum(
         1 for d in team_diags
         if d["extra_items"]["test_coverage"]["status"] == "양호"

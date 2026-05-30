@@ -67,6 +67,27 @@ def test_detect_domain_hits_keeps_tool_domain_on_browser_extension_fixture() -> 
     assert hits.get("도구 개발", 0) >= 2
 
 
+def test_detect_domain_hits_suppresses_mobile_game_without_strong_evidence() -> None:
+    tree_data = _load_tree_fixture("ai_backend_noise_tree.json")
+    hits = profile_builder.detect_domain_hits(tree_data)
+    assert hits.get("서버/백엔드", 0) >= 2
+    assert hits.get("ML/AI", 0) >= 2
+    assert "모바일 앱" not in hits
+    assert "게임 개발" not in hits
+
+
+def test_detect_domain_hits_keeps_mobile_with_strong_evidence() -> None:
+    tree_data = _load_tree_fixture("mobile_react_native_tree.json")
+    hits = profile_builder.detect_domain_hits(tree_data)
+    assert hits.get("모바일 앱", 0) >= 2
+
+
+def test_detect_domain_hits_keeps_game_with_strong_evidence() -> None:
+    tree_data = _load_tree_fixture("game_engine_tree.json")
+    hits = profile_builder.detect_domain_hits(tree_data)
+    assert hits.get("게임 개발", 0) >= 2
+
+
 @pytest.mark.parametrize(
     "title,expected",
     [

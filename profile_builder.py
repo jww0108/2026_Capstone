@@ -924,8 +924,8 @@ def merge_readme_domain_hits(domain_hits: Dict[str, int], readme_text: str) -> D
         canonical = README_DOMAIN_ALIAS.get(readme_domain)
         if not canonical:
             continue
-        # 도구 개발은 README 단독 신호로 신규 생성하지 않음.
-        if canonical == "도구 개발" and canonical not in pre_detected_domains:
+        # 특정 도메인은 README 단독 신호로 신규 생성하지 않음.
+        if canonical in {"도구 개발", "모바일 앱", "게임 개발"} and canonical not in pre_detected_domains:
             continue
         merged[canonical] = merged.get(canonical, 0) + README_DOMAIN_BOOST
     return merged
@@ -1149,6 +1149,44 @@ def detect_domain_hits(tree_data: Dict[str, Any]) -> Dict[str, int]:
     blobs = _tree_blobs(tree_data)
     all_paths = [b["path"].lower().replace("\\", "/") for b in blobs]
     domain_hits: Dict[str, int] = {}
+
+    def _has_mobile_strong_evidence(paths: List[str]) -> bool:
+        # 모바일 전용 강증거: 네이티브 디렉터리/엔트리 파일/React Native·Expo 시그너처
+        mobile_dirs = ("android/", "ios/")
+        mobile_files = (
+            "androidmanifest.xml",
+            "appdelegate.swift",
+            "mainactivity.kt",
+            "mainactivity.java",
+            "metro.config.js",
+        )
+        has_mobile_dirs = any(any(md in p for md in mobile_dirs) for p in paths)
+        has_mobile_files = any(
+            p.rsplit("/", 1)[-1] in mobile_files for p in paths
+        )
+        has_rn_expo_hint = (
+            any("react-native" in p for p in paths)
+            or any(p.endswith("/app.json") for p in paths)
+        )
+        return has_mobile_dirs or (has_mobile_files and has_rn_expo_hint)
+
+    def _has_game_strong_evidence(paths: List[str]) -> bool:
+        # 게임 전용 강증거: 엔진/모드 플랫폼에 가까운 고유 경로·확장자
+        game_dirs = (
+            "assets/",
+            "projectsettings/",
+            "content/",
+            "godot/",
+            "addons/",
+            "plugins/",
+            "mods/",
+        )
+        game_exts = (".uproject", ".uasset", ".umap", ".godot", ".tscn", ".tres")
+        has_game_dirs = any(any(gd in p for gd in game_dirs) for p in paths)
+        has_game_ext = any(p.endswith(ext) for ext in game_exts for p in paths)
+        has_unity_meta = any(p.endswith(".meta") for p in paths)
+        return has_game_dirs or has_game_ext or has_unity_meta
+
     for domain, keywords in DOMAIN_SIGNALS.items():
         if domain == "도구 개발":
             matched_keywords = _match_tool_domain_keywords(all_paths, keywords)
@@ -1159,6 +1197,10 @@ def detect_domain_hits(tree_data: Dict[str, Any]) -> Dict[str, int]:
                     if kw in p:
                         matched_keywords.add(kw)
         if len(matched_keywords) >= 2:
+            if domain == "모바일 앱" and not _has_mobile_strong_evidence(all_paths):
+                continue
+            if domain == "게임 개발" and not _has_game_strong_evidence(all_paths):
+                continue
             domain_hits[domain] = len(matched_keywords)
     return domain_hits
 

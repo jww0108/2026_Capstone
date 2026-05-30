@@ -156,11 +156,17 @@ def _filtered_domains_for_mixed_check(
         return detected_domains, {}
 
     filtered_hits = dict(domain_hits)
-    tool_hits = filtered_hits.get("도구 개발", 0)
-    if tool_hits > 0:
-        non_tool_max = max((v for k, v in filtered_hits.items() if k != "도구 개발"), default=0)
-        if tool_hits <= 3 and non_tool_max >= (tool_hits + 2):
-            filtered_hits.pop("도구 개발", None)
+    def _drop_if_weak(domain: str) -> None:
+        hits = filtered_hits.get(domain, 0)
+        if hits <= 0:
+            return
+        non_domain_max = max((v for k, v in filtered_hits.items() if k != domain), default=0)
+        if hits <= 3 and non_domain_max >= (hits + 2):
+            filtered_hits.pop(domain, None)
+
+    # v7.2: 저신뢰 도메인(도구/모바일/게임)의 혼합 판정 과민 반응 완화
+    for low_conf_domain in ("도구 개발", "모바일 앱", "게임 개발"):
+        _drop_if_weak(low_conf_domain)
 
     filtered_domains = [d for d in detected_domains if d in filtered_hits]
     return filtered_domains, filtered_hits
@@ -233,7 +239,23 @@ def merged_detected_domains_from_profile(profile: dict) -> list[str]:
     for r in profile.get("per_repo") or []:
         for d in r.get("detected_domains") or []:
             c[d] += 1
-    return [d for d, _ in c.most_common()]
+    ordered = [d for d, _ in c.most_common()]
+
+    # v7.2: 저신뢰 도메인은 primary 선정에서 후순위 처리 (응답에는 유지)
+    merged_hits = profile.get("domain_hits_merged") or {}
+    if merged_hits:
+        noisy_domains: list[str] = []
+        stable_domains: list[str] = []
+        for d in ordered:
+            if d in ("도구 개발", "모바일 앱", "게임 개발"):
+                d_hits = int(merged_hits.get(d, 0) or 0)
+                non_d_max = max((int(v or 0) for k, v in merged_hits.items() if k != d), default=0)
+                if d_hits <= 3 and non_d_max >= (d_hits + 2):
+                    noisy_domains.append(d)
+                    continue
+            stable_domains.append(d)
+        ordered = stable_domains + noisy_domains
+    return ordered
 
 
 def check_domain_match_consistency(
@@ -1455,6 +1477,8 @@ if __name__ == "__main__":
         #"tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone", # unity, C# 게임 개발
         #"tekyung/kyonggi-university_network-system-laboratory_webpage", # 프론트엔드
         "siheon012/Deepsentinel", # ai, 웹 풀스택
+        "siheon012/langgraph-api",
+        "siheon012/korean_finetuning",
         #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung", # ai 백엔드
         #"jww0108/2026_Capstone/tree/tekyung" # 백엔드
         #"honey766/Paint", # unity, 게임 개발

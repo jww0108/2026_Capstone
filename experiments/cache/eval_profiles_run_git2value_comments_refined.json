@@ -1,0 +1,1643 @@
+[
+  {
+    "repo_key": "tekyung/Ttakji_lab-mobile_development_dep",
+    "username": "tekyung",
+    "repo": "Ttakji_lab-mobile_development_dep",
+    "repo_url": "https://github.com/tekyung/Ttakji_lab-mobile_development_dep",
+    "label": "게임 개발",
+    "profile_for_matching": "C# (100%) 기반 게임 개발 경험. Unity 활용 경험.",
+    "domain_hits_merged": {
+      "게임 개발": 4,
+      "모바일 앱": 1
+    },
+    "detected_domains": [
+      "게임 개발",
+      "모바일 앱"
+    ],
+    "github_score": 48.9,
+    "score_breakdown": {
+      "contribution": 48.9,
+      "quality": 0.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 4151,
+      "total_evidence_loc": 561,
+      "top_languages": "C# (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 2
+    },
+    "warnings": [
+      "전수 조사 기준 작성자 2명이 커밋 3개 미만으로 팀/개인 판정에서 제외됨"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Ttakji_lab-mobile_development_dep (main)",
+        "repo_total_score": 48.9,
+        "score_breakdown": {
+          "contribution": 48.9,
+          "quality": 0.0,
+          "consistency": 0.0,
+          "quality_mode": "team"
+        },
+        "readme": "Ttakji_lab-mobile_development_dep 딱겜연 / 모바일 게임개발부",
+        "readme_raw": "# Ttakji_lab-mobile_development_dep\n딱겜연 / 모바일 게임개발부\n",
+        "readme_has_image": false,
+        "readme_tier": "short",
+        "tree_stats": {
+          "source_file_count": 54,
+          "avg_loc_per_file": 76.9,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "02.28 회의 후 업데이트 (README 참조)",
+          "Initial commit"
+        ],
+        "distinct_author_count": 2,
+        "repo_type": "team",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "jamgi",
+          "tekyung"
+        ],
+        "dominance_ratio": 0.5,
+        "is_dominance_override": false,
+        "valid_loc": 4151,
+        "evidence_loc": 561,
+        "is_fork": false,
+        "duration_days": 100,
+        "active_weeks": 2,
+        "repo_active_weeks": 3,
+        "total_commits": 2,
+        "total_repo_commits": 4,
+        "target_commit_count": 2,
+        "target_commit_ratio": 0.5,
+        "target_commit_ratio_census": 0.5,
+        "contribution_role": "주도 기여",
+        "frameworks": [
+          "Unity"
+        ],
+        "detected_domains": [
+          "게임 개발",
+          "모바일 앱"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "C#",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "tekyung/kyonggi-university_network-system-laboratory_webpage",
+    "username": "tekyung",
+    "repo": "kyonggi-university_network-system-laboratory_webpage",
+    "repo_url": "https://github.com/tekyung/kyonggi-university_network-system-laboratory_webpage",
+    "label": "프론트엔드",
+    "profile_for_matching": "JavaScript (79%) 기반 웹 프론트엔드 경험. React 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 배포 환경 구성 경험. web 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 3,
+      "서버/백엔드": 1,
+      "ML/AI": 1,
+      "모바일 앱": 1
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "ML/AI",
+      "모바일 앱"
+    ],
+    "github_score": 69.0,
+    "score_breakdown": {
+      "contribution": 50.5,
+      "quality": 17.0,
+      "consistency": 1.5
+    },
+    "metrics_summary": {
+      "total_valid_loc": 5583,
+      "total_evidence_loc": 20733,
+      "top_languages": "JavaScript (79%), HTML (19%), CSS (1%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 35
+    },
+    "warnings": [],
+    "per_repo": [
+      {
+        "repo_name": "kyonggi-university_network-system-laboratory_webpage (master)",
+        "repo_total_score": 69.0,
+        "score_breakdown": {
+          "contribution": 50.5,
+          "quality": 17.0,
+          "consistency": 1.5,
+          "quality_mode": "personal"
+        },
+        "readme": "Kyonggi University Network System Laboratory Webpage 경기대학교 네트워크 시스템 연구실 Getting Started with Create React App ` Runs the app in the development mode.\\ Open [http://localhost:3000](http://localhost:3000) to view it in your browser. `npm test` Launches the test runner in the interactive watch mode.\\ `npm run build` Builds the app for production to the `build` folder.\\ It correctly bundles React in production mode and optimizes the build for the best performance.",
+        "readme_raw": "# Kyonggi University Network System Laboratory Webpage\n\n경기대학교 네트워크 시스템 연구실\n\n## Getting Started with Create React App\n\nThis project was bootstrapped with [Create React App].\n\n## Available Scripts\n\nIn the project directory, you can run:\n\n### `npm start`\n\nRuns the app in the development mode.\\\nOpen [http://localhost:3000](http://localhost:3000) to view it in your browser.\n\n### `npm test`\n\nLaunches the test runner in the interactive watch mode.\\\n\n### `npm run build`\n\nBuilds the app for production to the `build` folder.\\\nIt correctly bundles React in production mode and optimizes the build for the best performance.\n",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 42,
+          "avg_loc_per_file": 132.9,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.047619047619047616,
+        "commit_messages": [
+          "index.html refresh",
+          "is it last commit?",
+          "json 파싱 고려",
+          "오타 수정",
+          "action 오류 무시 배포",
+          "action 수정",
+          "fix: 수정된 Puppeteer 의존성 설치 명령어 업데이트",
+          "feat: 자동 갱신 및 배포를 위한 GitHub Actions 워크플로우 추가",
+          "ok",
+          "프로젝트 발표용",
+          "라우터 정리",
+          "Merge branch 'master' of https://github.com/tekyung/kyonggi-university_network-system-laboratory_webpage",
+          "라우터 변경 실험",
+          "교수님 파일 수정본 추가",
+          "Delete public/assets/pro_Kim-ver2.jpg",
+          "Rename pro_kim-ver2.jpg to pro_Kim-ver2.jpg",
+          "교수님 데이터 Members로 완전 이월",
+          "교수님 데이터 파일 변경",
+          "실수",
+          "이미지 수정",
+          "교수님 이미지 경로 보완",
+          "turn back to React.StrictMode",
+          "될 것 같은 느낌",
+          "언제 되냐",
+          "111",
+          "!!!",
+          "아 쫌",
+          "악!",
+          "제발...",
+          "임시 커밋",
+          "3차 수정",
+          "Readme.md 파일을 .gitignore에 추가",
+          "1차 업데이트",
+          "초안 배포",
+          "Initialize project using Create React App"
+        ],
+        "distinct_author_count": 1,
+        "repo_type": "personal",
+        "has_team_experience": false,
+        "repo_author_names": [
+          "tekyung"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 5583,
+        "evidence_loc": 20733,
+        "is_fork": false,
+        "duration_days": 18,
+        "active_weeks": 5,
+        "repo_active_weeks": 5,
+        "total_commits": 35,
+        "total_repo_commits": 35,
+        "target_commit_count": 35,
+        "target_commit_ratio": 1.0,
+        "target_commit_ratio_census": 1.0,
+        "contribution_role": null,
+        "frameworks": [
+          "React"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "ML/AI",
+          "모바일 앱"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "JavaScript",
+              79.25696594427245
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              19.050567595459235
+            ],
+            [
+              "CSS",
+              1.692466460268318
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "siheon012/Deepsentinel",
+    "username": "siheon012",
+    "repo": "Deepsentinel",
+    "repo_url": "https://github.com/siheon012/Deepsentinel",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "Python (59%), TypeScript (33%) 기반 웹 프론트엔드 경험. Kubernetes/IaC, React, Next.js, Django, Hugging Face Transformers 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 테스트 코드 작성 경험 보유. 배포 환경 구성 경험. ai, detection, yolo, cctv, video analysis, natural language 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 8,
+      "서버/백엔드": 5,
+      "ML/AI": 3,
+      "DevOps/인프라": 4,
+      "빅데이터 엔지니어": 3,
+      "게임 개발": 1,
+      "모바일 앱": 1
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "ML/AI",
+      "DevOps/인프라",
+      "빅데이터 엔지니어",
+      "게임 개발",
+      "모바일 앱"
+    ],
+    "github_score": 90.7,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 28.0,
+      "consistency": 5.4
+    },
+    "metrics_summary": {
+      "total_valid_loc": 61057,
+      "total_evidence_loc": 46091,
+      "top_languages": "Python (58%), TypeScript (33%), CSS (6%), Go (1%), HTML (0%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [
+      "전수 조사 기준 작성자 1명이 커밋 5개 미만으로 팀/개인 판정에서 제외됨",
+      "작성자 2명이나 지원자 커밋 비율이 95%로 높아 개인 프로젝트로 판정"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Deepsentinel (main)",
+        "repo_total_score": 90.7,
+        "score_breakdown": {
+          "contribution": 57.3,
+          "quality": 28.0,
+          "consistency": 5.4,
+          "quality_mode": "personal"
+        },
+        "readme": "🦅 DeepSentinel **AI-powered CCTV Video Analysis Platform for Unmanned Stores** > **\"Replace expensive sensors with AI - Secure unmanned stores using existing CCTV infrastructure.\"** --- 📖 Introduction 🚨 Problem Statement As unmanned stores and convenience shops proliferate, **theft, vandalism, and juvenile delinquency** have become serious social issues. However, for small business owners, deploying **expensive security sensors or specialized CCTV systems** creates significant financial burden. 💡 Our Solution **DeepSentinel** is a **low-cost, high-efficiency security solution** that leverages existing CCTV footage with AI-powered anomaly detection and analysis - **no hardware replacement required**. - **Cost-Effective**: Utilize existing IP cameras - **Automated Monitoring**: 24/7 AI surveillance with automatic event tagging (theft, fights, vandalism, etc.) - **Intelligent Search**: RAG-based chatbot lets you ask \"What just happened?\" in natural language --- 🎯 Key Features ✅ **Multi-AI Model Pipeline**: YOLO v8x + MiVOLO + MEBOW + LLaVA + AWS Bedrock Claude ✅ **Serverless Architecture**: Auto-scaling GPU compute from 0 to 4 instances ✅ **Cost Optimized**: $1-3 per video analysis vs $720/month for 24/7 GPU server ✅ **Vector Search**: pgvector-powered semantic search for intelligent event retrieval ✅ **Real-time Monitoring**: Live analysis progress tracking and event timeline visualization ✅ **IaC Managed**: 153 AWS resources managed via Terraform with zero-downtime deployment ",
+        "readme_raw": "# 🦅 DeepSentinel\n\n**AI-powered CCTV Video Analysis Platform for Unmanned Stores**\n\n> **\"Replace expensive sensors with AI - Secure unmanned stores using existing CCTV infrastructure.\"**\n\n<div align=\"center\">\n  <img src=\"docs/assets/page_screenshots/main page.png\" width=\"80%\" alt=\"Main Dashboard\">\n</div>\n\n---\n\n## 📖 Introduction\n\n### 🚨 Problem Statement\n\nAs unmanned stores and convenience shops proliferate, **theft, vandalism, and juvenile delinquency** have become serious social issues. However, for small business owners, deploying **expensive security sensors or specialized CCTV systems** creates significant financial burden.\n\n### 💡 Our Solution\n\n**DeepSentinel** is a **low-cost, high-efficiency security solution** that leverages existing CCTV footage with AI-powered anomaly detection and analysis - **no hardware replacement required**.\n\n- **Cost-Effective**: Utilize existing IP cameras\n- **Automated Monitoring**: 24/7 AI surveillance with automatic event tagging (theft, fights, vandalism, etc.)\n- **Intelligent Search**: RAG-based chatbot lets you ask \"What just happened?\" in natural language\n\n---\n\n## 🎯 Key Features\n\n✅ **Multi-AI Model Pipeline**: YOLO v8x + MiVOLO + MEBOW + LLaVA + AWS Bedrock Claude  \n✅ **Serverless Architecture**: Auto-scaling GPU compute from 0 to 4 instances  \n✅ **Cost Optimized**: $1-3 per video analysis vs $720/month for 24/7 GPU server  \n✅ **Vector Search**: pgvector-powered semantic search for intelligent event retrieval  \n✅ **Real-time Monitoring**: Live analysis progress tracking and event timeline visualization  \n✅ **IaC Managed**: 153 AWS resources managed via Terraform with zero-downtime deployment  \n✅ **FinOps Automation**: Automated cost estimation via Infracost on every PR  \n✅ **Performance Validated**: 99.93% success rate with 50 concurrent users (p95 < 500ms)  \n✅ **DevSecOps Pipeline**: Trivy security scanning + AI-powered failure analysis\n\n---\n\n## 📸 Service Demo\n\nSee how the service works in action: **[Service Flow Demo →](FLOW.md)**\n\n|                         **Main Dashboard**                          |                          **AI Analysis Timeline**                          |\n| :-----------------------------------------------------------------: | :------------------------------------------------------------------------: |\n| <img src=\"docs/assets/page_screenshots/main page.png\" width=\"100%\"> | <img src=\"docs/assets/page_screenshots/sessions_id page.png\" width=\"100%\"> |\n|              Real-time performance metrics monitoring               |               Object detection visualization & RAG-based Q&A               |\n\n**Infrastructure Visualization**: See [Infrastructure Architecture →](INFRA.md)\n\n---\n\n## 🛠️ Architecture\n\nDeepSentinel combines **automated CI/CD & IaC Pipeline** with **AWS Cloud Infrastructure** to create a fully automated, cost-optimized platform. Based on GitOps principles, we integrate FinOps, DevSecOps, and Infrastructure Testing into our deployment pipeline.\n\n<div align=\"center\">\n  <img src=\"docs/assets/page_screenshots/deepsentinel-architecture.png\" width=\"100%\" alt=\"DeepSentinel Full Architecture\">\n</div>\n\n**📖 [Complete Architecture Documentation →](docs/ARCHITECTURE_NEW.md)** (CI/CD Pipeline + Infrastructure Details)\n\n### System Overview\n\nUsers upload videos through the frontend, which triggers the serverless GPU pipeline for AI analysis.\n\n```\n┌─────────────────────────────────────────────────────────────────────┐\n│                          User (Browser)                             │\n└─────────────────────────────────────────────────────────────────────┘\n                              ↓ HTTPS\n┌─────────────────────────────────────────────────────────────────────┐\n│  Route53 + CloudFront + ALB                                         │\n│  - deepsentinel.cloud                                               │\n│  - SSL/TLS Termination                                              │\n└─────────────────────────────────────────────────────────────────────┘\n                              ↓\n┌──────────────────────────────┬──────────────────────────────────────┐\n│  Frontend (Next.js 15)       │  Backend (Django 5.2)                │\n│  - ECS Fargate               │  - ECS Fargate                       │\n│  - TypeScript + React 19     │  - REST API + pgvector RAG           │\n└──────────────────────────────┴──────────────────────────────────────┘\n                              ↓\n┌─────────────────────────────────────────────────────────────────────┐\n│                   Serverless AI Pipeline                            │\n│                                                                     │\n│  S3 Upload → SQS Event → Lambda Trigger → AWS Batch (GPU)          │\n│                                              ↓                      │\n│                                      g5.xlarge (A10G)               │\n│                                      YOLOv8 + MiVOLO                │\n│                                      + MEBOW + LLaVA                │\n│                   ",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 296,
+          "avg_loc_per_file": 206.3,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": true,
+        "has_deployment": true,
+        "test_ratio": 0.05067567567567568,
+        "commit_messages": [
+          "Merge pull request #117 from siheon012/docs/manage-docs",
+          "fix architecture",
+          "Merge pull request #116 from siheon012/docs/manage-docs",
+          "fix architecture",
+          "Merge pull request #115 from siheon012/docs/manage-docs",
+          "upgrade ux architecture",
+          "Merge pull request #114 from siheon012/docs/manage-docs",
+          "upload architecture",
+          "Merge pull request #113 from siheon012/docs/manage-docs",
+          "off github actions",
+          "Merge pull request #112 from siheon012/docs/manage-docs",
+          "off github actions",
+          "Merge pull request #110 from siheon012/docs/manage-docs",
+          "update architecture",
+          "update architecture",
+          "update architecture",
+          "Merge pull request #108 from siheon012/docs/manage-docs",
+          "final docs",
+          "Merge pull request #106 from siheon012/feat/secure-iac-pipeline",
+          "update document about pakcer and batch processor",
+          "Merge pull request #104 from siheon012/feat/secure-iac-pipeline",
+          "clean up dummy file",
+          "update document about terratest & tfsec",
+          "complete develop terratest logic",
+          "fix: Terratest 모듈 테스트 변수 수정",
+          "update terraform-backend initialize",
+          "Merge pull request #14 from siheon012/docs/cleanup",
+          "upload document && refresh root/README.md",
+          "update documents v1",
+          "Merge pull request #13 from siheon012/chore/dependency-cleanup",
+          "finish optimization cleaning all dependency",
+          "test batch optimization",
+          "github actions setting is complete and is been automatic service",
+          "fix github actions v3",
+          "test github actions",
+          "github actions test",
+          "fix actions bug v2",
+          "fix actions bug",
+          "fix: Resolve YAML syntax error and SARIF upload permissions",
+          "upgrade github actions",
+          "fix err",
+          "add github actions",
+          "update github actions and reduce price",
+          "improve front ux",
+          "upgrade ux",
+          "fix frontend bug",
+          "fix frontend bug",
+          "improve ux",
+          "refactoring back/api v2",
+          "refactoring back/api/",
+          "prompt api upgrade",
+          "summary update",
+          "analysis api add",
+          "bug fix",
+          "scrollbar update",
+          "front-back api connection add",
+          "front back connection upgrade",
+          "django models.py update && front -> database api update",
+          "front ux update",
+          "django add models(depth_info model, space info model)",
+          "django models.py update events:scene_analysis, orientation add.",
+          "django models.py update",
+          "front function about video update",
+          "uploaded_video page web ver update",
+          "front ux upgrade",
+          "front ux upgrade",
+          "front ux upgrade",
+          "front ux upgrade",
+          "rm .zip",
+          "front update",
+          "back-database scheme update && front-UI/UX upgrade",
+          "db bug fix",
+          "url",
+          "setting first db",
+          "first"
+        ],
+        "distinct_author_count": 2,
+        "repo_type": "personal",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "siheon012",
+          "protove"
+        ],
+        "dominance_ratio": 0.946,
+        "is_dominance_override": true,
+        "valid_loc": 61057,
+        "evidence_loc": 46091,
+        "is_fork": false,
+        "duration_days": 375,
+        "active_weeks": 19,
+        "repo_active_weeks": 21,
+        "total_commits": 192,
+        "total_repo_commits": 204,
+        "target_commit_count": 192,
+        "target_commit_ratio": 0.9412,
+        "target_commit_ratio_census": 0.9412,
+        "contribution_role": null,
+        "frameworks": [
+          "Kubernetes/IaC",
+          "React",
+          "Next.js",
+          "Django",
+          "Hugging Face Transformers"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "DevOps/인프라",
+          "ML/AI",
+          "빅데이터 엔지니어",
+          "게임 개발",
+          "모바일 앱"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Python",
+              58.90900135451299
+            ],
+            [
+              "TypeScript",
+              33.38874522842015
+            ]
+          ],
+          "sub": [
+            [
+              "CSS",
+              6.061445634774042
+            ],
+            [
+              "HTML",
+              0.0
+            ]
+          ],
+          "trivial": [
+            [
+              "Go",
+              1.640807782292821
+            ]
+          ]
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "Virtual-Company-Mal-Geum/ai-server",
+    "username": "Virtual-Company-Mal-Geum",
+    "repo": "ai-server",
+    "repo_url": "https://github.com/Virtual-Company-Mal-Geum/ai-server",
+    "label": "서버/백엔드",
+    "profile_for_matching": "GitHub 저장소 기반 개발 경험 (상세 메타데이터 부족).",
+    "domain_hits_merged": {
+      "서버/백엔드": 1,
+      "ML/AI": 1
+    },
+    "detected_domains": [
+      "서버/백엔드",
+      "ML/AI"
+    ],
+    "github_score": 2.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 2.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'ai-server': 'Virtual-Company-Mal-Geum' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다.",
+      "전수 조사 기준 작성자 1명이 커밋 3개 미만으로 팀/개인 판정에서 제외됨"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "ai-server (main)",
+        "repo_total_score": 2.0,
+        "score_breakdown": {
+          "contribution": 0.0,
+          "quality": 2.0,
+          "consistency": 0.0,
+          "quality_mode": "personal"
+        },
+        "readme": "ai-server",
+        "readme_raw": "# ai-server",
+        "readme_has_image": false,
+        "readme_tier": "short",
+        "tree_stats": {
+          "source_file_count": 1,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [],
+        "distinct_author_count": 1,
+        "repo_type": "personal",
+        "has_team_experience": false,
+        "repo_author_names": [
+          "Song-Jihan"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 84,
+        "active_weeks": 0,
+        "repo_active_weeks": 1,
+        "total_commits": 0,
+        "total_repo_commits": 1,
+        "target_commit_count": 0,
+        "target_commit_ratio": 0.0,
+        "target_commit_ratio_census": 0.0,
+        "contribution_role": null,
+        "frameworks": [],
+        "detected_domains": [
+          "서버/백엔드",
+          "ML/AI"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "jww0108/2026_Capstone",
+    "username": "jww0108",
+    "repo": "2026_Capstone",
+    "repo_url": "https://github.com/jww0108/2026_Capstone",
+    "label": "서버/백엔드",
+    "profile_for_matching": "GitHub 저장소 기반 개발 경험 (상세 메타데이터 부족).",
+    "domain_hits_merged": {},
+    "detected_domains": [],
+    "github_score": 15.5,
+    "score_breakdown": {
+      "contribution": 13.5,
+      "quality": 2.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 207,
+      "total_evidence_loc": 1,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 1
+    },
+    "warnings": [
+      "전수 조사 기준 작성자 1명이 커밋 3개 미만으로 팀/개인 판정에서 제외됨"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "2026_Capstone (main)",
+        "repo_total_score": 15.5,
+        "score_breakdown": {
+          "contribution": 13.5,
+          "quality": 2.0,
+          "consistency": 0.0,
+          "quality_mode": "personal"
+        },
+        "readme": "2026_Capstone",
+        "readme_raw": "# 2026_Capstone",
+        "readme_has_image": false,
+        "readme_tier": "short",
+        "tree_stats": {
+          "source_file_count": 1,
+          "avg_loc_per_file": 207.0,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "repo_type": "personal",
+        "has_team_experience": false,
+        "repo_author_names": [
+          "jww0108"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 207,
+        "evidence_loc": 1,
+        "is_fork": false,
+        "duration_days": 73,
+        "active_weeks": 1,
+        "repo_active_weeks": 1,
+        "total_commits": 1,
+        "total_repo_commits": 1,
+        "target_commit_count": 1,
+        "target_commit_ratio": 1.0,
+        "target_commit_ratio_census": 1.0,
+        "contribution_role": null,
+        "frameworks": [],
+        "detected_domains": [],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "honey766/Paint",
+    "username": "honey766",
+    "repo": "Paint",
+    "repo_url": "https://github.com/honey766/Paint",
+    "label": "게임 개발",
+    "profile_for_matching": "C# (100%) 기반 게임 개발 경험. Unity 활용 경험.",
+    "domain_hits_merged": {
+      "게임 개발": 8,
+      "웹 프론트엔드": 4,
+      "서버/백엔드": 2,
+      "빅데이터 엔지니어": 2,
+      "ML/AI": 1
+    },
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "빅데이터 엔지니어",
+      "ML/AI"
+    ],
+    "github_score": 86.1,
+    "score_breakdown": {
+      "contribution": 57.3,
+      "quality": 20.0,
+      "consistency": 8.8
+    },
+    "metrics_summary": {
+      "total_valid_loc": 106286,
+      "total_evidence_loc": 1422,
+      "top_languages": "C# (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 75
+    },
+    "warnings": [
+      "작성자 2명이나 지원자 커밋 비율이 97%로 높아 개인 프로젝트로 판정"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Paint (main)",
+        "repo_total_score": 86.1,
+        "score_breakdown": {
+          "contribution": 57.3,
+          "quality": 20.0,
+          "consistency": 8.8,
+          "quality_mode": "personal"
+        },
+        "readme": "Paint",
+        "readme_raw": "# Paint",
+        "readme_has_image": false,
+        "readme_tier": "short",
+        "tree_stats": {
+          "source_file_count": 317,
+          "avg_loc_per_file": 335.3,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.006309148264984227,
+        "commit_messages": [
+          "힌트 에러 수정, 키보드 내비게이션 추가",
+          "7-11 최소횟수 갱신",
+          "Merge pull request #10 from honey766/toss_addressable",
+          "별 획득 횟수 조건 변경, 레벨 추가",
+          "최소 횟수 갱신, 레벨 추가, 앱인토스 대응",
+          "사소한 수정",
+          "WebGL 빌드 설정 최적화",
+          "비동기 로딩 개선, 엑스트라 진입 설명 개선, Extra1-2 최소 횟수 갱신, 해금 애니메이션 오류 수정",
+          "main 머지, 어드레서블 추가 적용",
+          "Merge branch 'main' into toss_addressable",
+          "스테이지 해금 연출, 설명 애니메이션 추가, 힌트 오류 수정, 6-8 최소 횟수 갱신",
+          "toss 브랜치 머지",
+          "Merge branch 'toss'",
+          "엑스트라 갇힘 문제 해결",
+          "back_img 위치 이동, 작은 수정",
+          "엑스트라 갇힘 문제 해결",
+          "어드레서블 적용",
+          "토스 백그라운드 재생 문제 해결, 레벨 추가",
+          "Merge pull request #9 from honey766/game_update",
+          "토스 음질/메모리 해결을 위한 노력",
+          "setting 효과음 누락 수정",
+          "엑스트라 해금 정보 접근성 완화, 오디오클립 정리",
+          "스테이지 조정, 힌트 표기 오류 수정",
+          "레벨 변경 및 수정",
+          "사소한 개선",
+          "사운드 추가, 레벨 추가, 세부 조정",
+          "오류 수정, 레벨 추가",
+          "스테이지 선택 화면과 Redo 오류 수정, 스테이지 레벨 조정",
+          "오류 수정",
+          "엑스트라 스테이지 구현, 레벨 소수 추가",
+          "소폭 리팩토링, Redo 추가",
+          "일부 UI 개선, 스테이지 별 획득 제한 변경",
+          "Merge pull request #7 from honey766/game_update",
+          "타일 그림자 추가, 튜토리얼 작은 개선",
+          "Stage6-7 오류 수정",
+          "브러쉬 블록 초기 색깔 옵션 추가",
+          "폰트 변경, 인게임 비주얼 리뉴얼",
+          "인게임UI 변경",
+          "Merge pull request #6 from honey766/game_update",
+          "스테이지2 배치 변경",
+          "튜토리얼 오류 수정",
+          "오류 수정, 7스테이지(임시) 조정, 튜토리얼 터치 이미지 레이어 조정",
+          "박스, 거울 외형 변경, 이동방법 튜토리얼 개선, 일부 UI 개선",
+          "박스, 거울 외형 변경",
+          "사용자 경험 개선",
+          "Merge pull request #5 from honey766/unity_version_up",
+          "6000.2.0b8 -> 6000.2.6f2 버전으로 버전업",
+          "사용자 경험 개선",
+          "Merge pull request #4 from honey766/jmap",
+          "다시 시작 시 별이 사라지는 버그 수정",
+          "MirrorBlock 스프라이트 변경",
+          "플레이어 얼음 상호작용 중 버그 수정",
+          "Block시스템, IceTile, MirrorBlock, StampBlock 구현",
+          "Merge pull request #1 from honey766/feature/directedSpray",
+          "Spray, ReversePaint 상호작용 추가, 임시레벨 추가",
+          "DirectedSpray 추가",
+          "PaintBeam -> Spray 이름 변경",
+          "PaintBeam 특수타일 추가",
+          "refactor(Board, PlayerController, Tile): 타일 로직 분리 및 구조 개선",
+          "게임 클리어 조건 변경",
+          "리버스 페인트 추가",
+          "로비 추가",
+          "black 추가",
+          "에디터 하단버튼 스크립트 리팩토링",
+          "에디터 빨강->파랑 색칠 시 보라가 아닌 파랑으로 바뀌도록 변경",
+          "redo 홀드 가능",
+          "Redo 초기 구현",
+          "보드 크기에 따른 카메라 범위 조절 추가",
+          "에디터 씬 추가",
+          "색깔 팔레트, 외곽선 구현",
+          "수정사항 반영",
+          "paint 모양 바꿈",
+          "초기 구현",
+          "init",
+          "Initial commit"
+        ],
+        "distinct_author_count": 2,
+        "repo_type": "personal",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "honey766",
+          "parkhoboy"
+        ],
+        "dominance_ratio": 0.975,
+        "is_dominance_override": true,
+        "valid_loc": 106286,
+        "evidence_loc": 1422,
+        "is_fork": false,
+        "duration_days": 120,
+        "active_weeks": 14,
+        "repo_active_weeks": 14,
+        "total_commits": 115,
+        "total_repo_commits": 118,
+        "target_commit_count": 115,
+        "target_commit_ratio": 0.9746,
+        "target_commit_ratio_census": 0.9746,
+        "contribution_role": null,
+        "frameworks": [
+          "Unity"
+        ],
+        "detected_domains": [
+          "게임 개발",
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "빅데이터 엔지니어",
+          "ML/AI"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "C#",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "honey766/Balls-Run",
+    "username": "honey766",
+    "repo": "Balls-Run",
+    "repo_url": "https://github.com/honey766/Balls-Run",
+    "label": "게임 개발",
+    "profile_for_matching": "Unity 활용 경험.",
+    "domain_hits_merged": {
+      "게임 개발": 8,
+      "웹 프론트엔드": 6,
+      "서버/백엔드": 2,
+      "도구 개발": 2
+    },
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "도구 개발"
+    ],
+    "github_score": 10.6,
+    "score_breakdown": {
+      "contribution": 8.6,
+      "quality": 2.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 83,
+      "total_evidence_loc": 77,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 2
+    },
+    "warnings": [
+      "전수 조사 기준 작성자 1명이 커밋 3개 미만으로 팀/개인 판정에서 제외됨"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "Balls-Run (main)",
+        "repo_total_score": 10.6,
+        "score_breakdown": {
+          "contribution": 8.6,
+          "quality": 2.0,
+          "consistency": 0.0,
+          "quality_mode": "personal"
+        },
+        "readme": "Balls-Run",
+        "readme_raw": "# Balls-Run\n\n",
+        "readme_has_image": false,
+        "readme_tier": "short",
+        "tree_stats": {
+          "source_file_count": 226,
+          "avg_loc_per_file": 0.4,
+          "has_gitignore": true
+        },
+        "has_cicd": false,
+        "has_tests": false,
+        "has_deployment": false,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "Init",
+          "Initial commit"
+        ],
+        "distinct_author_count": 1,
+        "repo_type": "personal",
+        "has_team_experience": false,
+        "repo_author_names": [
+          "honey766"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 83,
+        "evidence_loc": 77,
+        "is_fork": false,
+        "duration_days": 0,
+        "active_weeks": 1,
+        "repo_active_weeks": 1,
+        "total_commits": 2,
+        "total_repo_commits": 2,
+        "target_commit_count": 2,
+        "target_commit_ratio": 1.0,
+        "target_commit_ratio_census": 1.0,
+        "contribution_role": null,
+        "frameworks": [
+          "Unity"
+        ],
+        "detected_domains": [
+          "게임 개발",
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "도구 개발"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "2026TUKCOMCD/SyncLab",
+    "username": "2026TUKCOMCD",
+    "repo": "SyncLab",
+    "repo_url": "https://github.com/2026TUKCOMCD/SyncLab",
+    "label": "풀스택",
+    "profile_for_matching": "React, FastAPI, Uvicorn 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 테스트 코드 작성 경험 보유. 배포 환경 구성 경험. app, 모바일, mobile, android 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 5,
+      "서버/백엔드": 7,
+      "모바일 앱": 4,
+      "게임 개발": 1,
+      "ML/AI": 1,
+      "DevOps/인프라": 1
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "모바일 앱",
+      "게임 개발",
+      "ML/AI",
+      "DevOps/인프라"
+    ],
+    "github_score": 15.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 15.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'SyncLab': '2026TUKCOMCD' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "SyncLab (main)",
+        "repo_total_score": 15.0,
+        "score_breakdown": {
+          "contribution": 0.0,
+          "quality": 15.0,
+          "consistency": 0.0,
+          "quality_mode": "team"
+        },
+        "readme": "📹 SyncLab 📖 프로젝트 개요 본 프로젝트는 여러 각도에서 촬영한 스포츠 경기를 웹을 통해 하나의 영상으로 편집하는 시스템입니다. 이를 통해 사용자가 원하는 각도 또는 가장 적합한 각도에서 경기를 보여주거나 하이라이트를 생성하여 몰입감을 더해줄 수 있습니다. 웹 사이트 방문하기 www.synclab.click 📁 시스템 구성도 🛠️ 개발 환경 개발 언어 Python JavaScript Kotlin 서버 소프트웨어 Nginx Uvicorn 라이브러리 및 프레임워크 React FastAPI FFmpeg 저장소 mySQL AWS S3 개발 도구 Android Studio Visual Studio Code 협업 도구 Github Notion 그림으로 보기 📺 데모 환경 데모 환경 |구분|환경| |:---:|:---:| |서버 운영체제|macOS Sequoia| |하드웨어|Apple Macbook Pro (M4 Pro 칩셋)| |CPU|M4 Pro(12 Core)| |RAM|24GB| |모바일|Samsung Galaxy Series(S25, S24 Plus, Buddy2, Note10)| |저장소 및 DB|Amazon Web Service S3| 🚀 운용 환경 운용 환경 |구분|환경| |:---:|:---:| |서버 운영체제|Ubuntu Linux 24.04 LTS| |인스턴스 유형|t3.medium| |CPU|2 vCPU 2Core| |RAM|4GB| |Architecture|x86_64(Intel/AMD)| **서버 운용부분에서 Local -> AWS EC2 전환 / 저장소, Docker 사용 동일** Product Backlog Mobile |ID|사용자 스토리|구현 내용|우선순위|SP|예상시간|Sprint| |:---:|:---:|:---:|:---:|:---:|:---:|:---:| |MB-1|촬영자로서 영상을 업로드하기 위해 촬영하고 싶다.|기본 UI 및 촬영 권한 설정 구현|P0|2|12h|1| |MB-2|촬영자로서 동기화를 위해 서로 다른 영상들의 촬영 시간을 기록하여 전송하고 싶다.|외부 NTP 기반 절대 시간 기록 구현|P0|5|30h|1| |MB-3|촬영자로서 영상을 안정적으로 저장소로 업로드 하고 싶다.|서버 통신 없이 AWS S3로 직접 업로드 구현|P0|8|48h|1| |MB-4|촬영자로서 영상을 업로드 완료를 서버에 알려 트랜스코딩을 요청하고 싶다.|S3로 업로드 완료 후 서버와 통신 구현|P0|3|18h|1| |MB-5|촬영자로서 S3에 동영상을 업로드하기 위해 로그인 또는 서버로부터 임시의 코드를 발급받고 싶다.|로그인 기능 또는 임시 코드를 통한 권한 부여 구현|P3|3|18h|-| |MB-6|촬영자로서 영상 촬영 및 업로드 과정을 테스트 해보고 싶다.|실제 현장(WIFI or 5G) 업로드 테스트 및 버그 수정|P2|5|30h|-| |**합계**||||**26**|**156h**| --- Back-End |ID|사용자 스토리|구현 내용|우선순위|SP|예상시간|Sprint| |:---:|:---:|:---:|",
+        "readme_raw": "# 📹 SyncLab\n### 📖 프로젝트 개요\n본 프로젝트는 여러 각도에서 촬영한 스포츠 경기를 웹을 통해 하나의 영상으로 편집하는 시스템입니다. <br>\n이를 통해 사용자가 원하는 각도 또는 가장 적합한 각도에서 경기를 보여주거나 하이라이트를 생성하여 몰입감을 더해줄 수 있습니다.\n### 웹 사이트 방문하기\nwww.synclab.click\n## 📁 시스템 구성도\n<img width=\"1399\" height=\"803\" alt=\"system architecture\" src=\"https://github.com/user-attachments/assets/194f9430-72ae-4759-a62e-b3239b39ad2f\" />\n<details>\n<summary>🛠️ 개발 환경</summary>\n<div>\n \n#### 개발 언어\n<table>\n  <tr>\n    <td align=\"center\">\n      <img src = \"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1200px-Python-logo-notext.svg.png\" alt=\"Python\" width = \"50\" height = \"50\"/> \n      <br>Python\n    </td>\n      <td align=\"center\">\n        <img width=\"50\" height=\"50\" alt=\"JavaScript\" src=\"https://github.com/user-attachments/assets/f20c9003-b92f-4cc3-8c69-34178aed116e\" /> \n        <br>JavaScript\n      </td>\n      <td align=\"center\">\n        <img width=\"50\" height=\"50\" alt=\"Kotlin\" src=\"https://github.com/user-attachments/assets/aa33bfd4-fd96-41ca-bdcf-890113b989d0\" /> \n        <br>Kotlin\n      </td>\n  </tr>\n</table>\n\n#### 서버 소프트웨어\n<table>\n  <tr>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"Nginx\" src=\"https://nginxstore.com/wp-content/uploads/2024/06/nginx-svgrepo-com.svg\" />\n      <br>Nginx\n    </td>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"Uvicorn\" src=\"https://github.com/user-attachments/assets/57c235c9-8cd5-4430-bd20-1fcea426c678\"/>\n      <br>Uvicorn\n    </td>\n  </tr>\n</table>\n\n#### 라이브러리 및 프레임워크\n<table>\n  <tr>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"React\" src=\"https://github.com/user-attachments/assets/34b9d346-7e76-4642-8ca9-25488e5c2d5b\" />\n      <br>React\n    </td>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"FastAPI\" src=\"https://github.com/user-attachments/assets/d59f1229-3677-4fdf-ab27-a0e6f73b22fb\" />\n      <br>FastAPI\n    </td>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"ffmpeg\" src=\"https://github.com/user-attachments/assets/5d0990a4-9885-4f2d-9cf9-53e6a1735334\" />\n      <br>FFmpeg\n    </td>\n  </tr>\n</table>\n\n#### 저장소\n<table>\n  <tr>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"mySQL\" src=\"https://github.com/user-attachments/assets/72e5b32b-ad31-4451-b63e-1438612294df\" />\n      <br>mySQL\n    </td>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"AWS S3\" src = \"https://velog.velcdn.com/images/milkcoke/post/ca209f66-7ab8-45b4-a503-17a606ad13cd/image.svg\" />\n      <br>AWS S3\n    </td>\n  </tr>\n</table>\n\n#### 개발 도구\n<table>\n  <tr>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"android studio\" src=\"https://github.com/user-attachments/assets/63baf1f9-af8b-4b0b-b573-4c44ee5fba97\" />\n      <br>Android Studio\n    </td>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"visual studio code\" src=\"https://github.com/user-attachments/assets/418b2ed9-4ea4-4de8-b9bc-2b1592df9621\" />\n      <br>Visual Studio Code\n    </td>\n  </tr>\n</table>\n\n#### 협업 도구\n<table>\n  <tr>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"github\" src=\"https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg\" />\n      <br>Github\n    </td>\n    <td align=\"center\">\n      <img width=\"50\" height=\"50\" alt=\"Notion\" src=\"https://github.com/user-attachments/assets/c58ba527-20c4-4ac3-85a0-e0a357b0257e\" />\n      <br><a href=\"https://www.notion.so/SyncLab-DashBoard-2d8ae048205480abb3b2df51abe2e569?source=copy_link\">Notion</a>\n    </td>\n  </tr>\n</table>\n</div>\n<details>\n  <summary>그림으로 보기</summary>\n  <img width=\"1399\" height=\"803\" alt=\"image\" src=\"https://github.com/user-attachments/assets/7de31140-d713-4f9e-abd2-3f5cece5a7a8\" />\n</details>\n</details>\n<details>\n  <summary>📺 데모 환경</summary>\n\n  #### 데모 환경\n  |구분|환경|\n  |:---:|:---:|\n  |서버 운영체제|macOS Sequoia|\n  |하드웨어|Apple Macbook Pro (M4 Pro 칩셋)|\n  |CPU|M4 Pro(12 Core)|\n  |RAM|24GB|\n  |모바일|Samsung Galaxy Series(S25, S24 Plus, Buddy2, Note10)|\n  |저장소 및 DB|Amazon Web Service S3|\n</details>\n<details>\n  <summary>🚀 운용 환경</summary>\n\n  #### 운용 환경\n  |구분|환경|\n  |:---:|:---:|\n  |서버 운영체제|Ubuntu Linux 24.04 LTS|\n  |인스턴스 유형|t3.medium|\n  |CPU|2 vCPU 2Core|\n  |RAM|4GB|\n  |Architecture|x86_64(Intel/AMD)|\n  \n  **서버 운용부분에서 Local -> AWS EC2 전환 / 저장소, Docker 사용 동일**\n</details>\n\n## Product Backlog\n\n#### Mobile\n|ID|사용자 스토리|구현 내용|우선순위|SP|예상시간|Sprint|\n|:---:|:---:|:---:|:---:|:---:|:---:|:---:|\n|MB-1|촬영자로서 영상을 업로드하기 위해 촬영하고 싶다.|기본 UI 및 촬영 권한 설정 구현|P0|2|12h|1|\n|MB-2|촬영자로서 동기화를 위해 서로 다른 영상들의 촬영 시간을 기록하여 전송하고 싶다.|외부 NTP 기반 절대 시간 기록 구현|P0|5|30h|1|\n|MB-3|촬영자로서 영상을 안정적으로 저장소로 업로드 하고 싶다.|서버 통신 없이 AWS S3로 직접 업로드 구현|P0|8|48h|1|\n|MB-4|촬영자로서 영상을 업로드 완료를 서버에 알려 트랜스코딩을 요청하고 싶다.|S3로 업로드 완료 후 서버와 통신 구현|P0|3|18h|1|\n|MB-5|촬영자로서 S3에 동영상을 업로드하기 위해 로그인 또는 서버로부터 임시의 코드를 발급받고 싶다.|로그인 기능 또는 임시 코드를 통한 권한 부여 구현|P3|3|18h|-|\n|MB-6|촬영자로서 영상 촬영 및 업로드 과정을 테스트 해보고 싶다.|실제 현장(WIFI or 5G) 업로드 테스트 및 버그 수정|P2|5|30h|-|\n|**합계**||||**26**|**156h**|\n---\n#### Back-End\n|ID|사용자 스토리|구현 내용|우선순위|SP|예상시간|Sprint|\n|:---:|:---:|:---:|:---:|:---:|:---:|:",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 172,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": true,
+        "has_deployment": true,
+        "test_ratio": 0.06395348837209303,
+        "commit_messages": [],
+        "distinct_author_count": 3,
+        "repo_type": "team",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "devwooks",
+          "HJIWO",
+          "kusunghyun"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 171,
+        "active_weeks": 0,
+        "repo_active_weeks": 19,
+        "total_commits": 0,
+        "total_repo_commits": 171,
+        "target_commit_count": 0,
+        "target_commit_ratio": 0.0,
+        "target_commit_ratio_census": 0.0,
+        "contribution_role": "협업",
+        "frameworks": [
+          "React",
+          "FastAPI",
+          "Uvicorn"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "웹 프론트엔드",
+          "모바일 앱",
+          "게임 개발",
+          "ML/AI",
+          "DevOps/인프라"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "Central-MakeUs/AZIT_Front",
+    "username": "Central-MakeUs",
+    "repo": "AZIT_Front",
+    "repo_url": "https://github.com/Central-MakeUs/AZIT_Front",
+    "label": "프론트엔드",
+    "profile_for_matching": "Unity, React, React Native, Expo 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 배포 환경 구성 경험. 인증, orm 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 8,
+      "서버/백엔드": 3,
+      "모바일 앱": 3,
+      "도구 개발": 2,
+      "ML/AI": 1,
+      "DevOps/인프라": 1
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "모바일 앱",
+      "도구 개발",
+      "ML/AI",
+      "DevOps/인프라"
+    ],
+    "github_score": 10.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 10.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'AZIT_Front': 'Central-MakeUs' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "AZIT_Front (develop)",
+        "repo_total_score": 10.0,
+        "score_breakdown": {
+          "contribution": 0.0,
+          "quality": 10.0,
+          "consistency": 0.0,
+          "quality_mode": "team"
+        },
+        "readme": "🏃‍♂️ AZIT (아지트) - 러닝 크루를 위한 운영 및 제휴 서비스 **\"크루원과 함께하는 실시간 출석 인증부터 아지트 전용 스토어까지\"** AZIT는 러닝 크루의 일정을 체계적으로 관리하고, 위치 기반 출석 체크 및 포인트 적립을 통해 크루원들의 참여도를 높이는 러닝 크루 전용 플랫폼입니다. React Native와 React WebView를 결합한 하이브리드 앱을 개발 및 운영합니다. ✨ 핵심 기능 1. 📍 실시간 위치 기반 출석 체크 - **GPS 기반 인증**: 모임 장소 반경 100m 이내에서만 출석하기 버튼이 활성화되어 정확한 출석을 유도합니다. - **스마트 타임 윈도우**: 모임 시간 1시간 전부터 1시간 후까지만 출석이 가능하도록 제한하여 운영의 신뢰성을 높였습니다. - **홈 위젯**: 앱 진입 시 가장 가까운 일정의 출석 가능 상태(D-Day, 남은 시간)를 직관적으로 확인할 수 있습니다. 2. 📅 캘린더 기반 러닝 참여 및 생성 - **월별 일정 조회**: 정기런과 번개런을 캘린더에 색상 점(Dot)으로 구분하여 한눈에 크루 일정을 파악할 수 있습니다. - **충돌 방지 로직**: 내가 이미 참여 중인 일정과 시간이 겹치는 새로운 일정에는 참여할 수 없도록 검증 로직이 적용되어 있습니다. 3. 🎁 출석 보상 및 전용 스토어 - **포인트 적립**: 출석을 완료할 때마다 자동으로 100 포인트가 즉시 적립됩니다. - **아지트 크루 전용 스토어**: 모은 포인트를 활용해 러닝 용품 등 아지트만의 특별한 상품을 합리적인 가격에 주문할 수 있습니다. 4. 👥 크루 관리 - 운영진을 위한 가입 승인/거절, 멤버 방출 등의 원스톱 멤버 관리가 가능합니다. 🛠 기술 스택 | 영역 | 기술 | | ------------------------ | -------------------------------------- | | **Web Framework** | React 19.1, TypeScript, Vite | | **Mobile** | React Native 0.81, Expo 54, TypeScript | | **Routing** | Stackflow | | **State Management** | Zustand, TanStack Query | | **Styling** | Vanilla Extract | | **Design System** | Radix UI, Storybook | | **Validation** | Zod | | **HTTP Client** | Ky | | **Bridge** | webview-bridge | | **Package Manager** | pnpm | | **Monorepo** | Turborepo | | **Linting / Formatting** | ESLint, Prettier, commitlint | | **Git Hooks** | Lefthook | | **CI/CD** | GitHub Actions, Vercel, AWS | | **Code Review** | Gemini Code A",
+        "readme_raw": "# 🏃‍♂️ AZIT (아지트) - 러닝 크루를 위한 운영 및 제휴 서비스\n\n![](https://img.shields.io/badge/CMC_18th-청춘탐험대-blue) ![](https://img.shields.io/github/contributors/Central-MakeUs/AZIT_Front) ![](https://img.shields.io/github/last-commit/Central-MakeUs/AZIT_Front)\n<img width=\"1920\" height=\"1080\" alt=\"azit_ppt\" src=\"https://github.com/user-attachments/assets/9f771a69-1f18-42d4-9948-20c80396a81c\" />\n\n**\"크루원과 함께하는 실시간 출석 인증부터 아지트 전용 스토어까지\"**\n\nAZIT는 러닝 크루의 일정을 체계적으로 관리하고, 위치 기반 출석 체크 및 포인트 적립을 통해 크루원들의 참여도를 높이는 러닝 크루 전용 플랫폼입니다.  \nReact Native와 React WebView를 결합한 하이브리드 앱을 개발 및 운영합니다.\n\n<br>\n<div align=\"center\">\n  <a href=\"https://apps.apple.com/kr/app/%EC%95%84%EC%A7%80%ED%8A%B8-azit/id6758881115\" target=\"_blank\">\n    <img src=\"https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg\" alt=\"Download on the App Store\" height=\"40\" align=\"middle\">\n  </a>\n  <a href=\"https://play.google.com/store/apps/details?id=com.azitcrew.app&hl=ko\" target=\"_blank\">\n    <img src=\"https://play.google.com/intl/en_us/badges/static/images/badges/ko_badge_web_generic.png\" alt=\"Get it on Google Play\" height=\"54\" align=\"middle\">\n  </a>\n</div>\n<br>\n\n## ✨ 핵심 기능\n\n<div align=\"center\">\n  <img src=\"https://github.com/user-attachments/assets/d9faf147-acce-4c12-b06c-963053ac7d39\" alt=\"스크린샷1\" width=\"19%\">\n  <img src=\"https://github.com/user-attachments/assets/431a3f81-ac53-4280-ad90-e195c3749731\" alt=\"스크린샷2\" width=\"19%\">\n  <img src=\"https://github.com/user-attachments/assets/50411a62-8091-4d78-a1b9-482da3dcb199\" alt=\"스크린샷3\" width=\"19%\">\n  <img src=\"https://github.com/user-attachments/assets/707e9697-2091-4053-8d8b-071834341681\" alt=\"스크린샷4\" width=\"19%\">\n  <img src=\"https://github.com/user-attachments/assets/9c06c0a7-0aa8-48ee-af4a-f2b12ddb8a20\" alt=\"스크린샷5\" width=\"19%\">\n</div>\n<br>\n\n### 1. 📍 실시간 위치 기반 출석 체크\n\n- **GPS 기반 인증**: 모임 장소 반경 100m 이내에서만 출석하기 버튼이 활성화되어 정확한 출석을 유도합니다.\n- **스마트 타임 윈도우**: 모임 시간 1시간 전부터 1시간 후까지만 출석이 가능하도록 제한하여 운영의 신뢰성을 높였습니다.\n- **홈 위젯**: 앱 진입 시 가장 가까운 일정의 출석 가능 상태(D-Day, 남은 시간)를 직관적으로 확인할 수 있습니다.\n\n### 2. 📅 캘린더 기반 러닝 참여 및 생성\n\n- **월별 일정 조회**: 정기런과 번개런을 캘린더에 색상 점(Dot)으로 구분하여 한눈에 크루 일정을 파악할 수 있습니다.\n- **충돌 방지 로직**: 내가 이미 참여 중인 일정과 시간이 겹치는 새로운 일정에는 참여할 수 없도록 검증 로직이 적용되어 있습니다.\n\n### 3. 🎁 출석 보상 및 전용 스토어\n\n- **포인트 적립**: 출석을 완료할 때마다 자동으로 100 포인트가 즉시 적립됩니다.\n- **아지트 크루 전용 스토어**: 모은 포인트를 활용해 러닝 용품 등 아지트만의 특별한 상품을 합리적인 가격에 주문할 수 있습니다.\n\n### 4. 👥 크루 관리\n\n- 운영진을 위한 가입 승인/거절, 멤버 방출 등의 원스톱 멤버 관리가 가능합니다.\n\n<br>\n\n## 🛠 기술 스택\n\n| 영역                     | 기술                                   |\n| ------------------------ | -------------------------------------- |\n| **Web Framework**        | React 19.1, TypeScript, Vite           |\n| **Mobile**               | React Native 0.81, Expo 54, TypeScript |\n| **Routing**              | Stackflow                              |\n| **State Management**     | Zustand, TanStack Query                |\n| **Styling**              | Vanilla Extract                        |\n| **Design System**        | Radix UI, Storybook                    |\n| **Validation**           | Zod                                    |\n| **HTTP Client**          | Ky                                     |\n| **Bridge**               | webview-bridge                         |\n| **Package Manager**      | pnpm                                   |\n| **Monorepo**             | Turborepo                              |\n| **Linting / Formatting** | ESLint, Prettier, commitlint           |\n| **Git Hooks**            | Lefthook                               |\n| **CI/CD**                | GitHub Actions, Vercel, AWS            |\n| **Code Review**          | Gemini Code Assist                     |\n\n<br>\n\n## 🏗️ 프로젝트 구조\n\npnpm 워크스페이스 기반의 모노레포로 구성되어 있습니다.\n\n```\nAZIT_Front/\n├── apps/\n│   ├── web/       # React + Vite (메인 웹앱, FSD 아키텍처)\n│   └── mobile/    # Expo React Native (WebView 쉘)\n└── packages/\n    ├── bridge/        # 웹-앱 브릿지 공유 타입\n    └── design-system/ # 공유 디자인 시스템\n```\n\n웹앱은 [Feature-Sliced Design(FSD)](https://github.com/Central-MakeUs/AZIT_Front/wiki/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EA%B5%AC%EC%A1%B0) 아키텍처를 따릅니다.\n\n```\napps/web/src/\n├── app/       # 라우팅, 프로바이더, 글로벌 스타일\n├── pages/     # 화면 컴포넌트\n├── widgets/   # 여러 feature를 조합한 재사용 UI 블록\n├── features/  # 사용자 시나리오 단위 기능 (auth, schedule, store, cart, order …)\n├── entities/  # 도메인 엔티티 (user, crew, schedule, order, cart, address …)\n└── shared/    # 공통 유틸, UI 원자, API 클라이언트\n```\n\n<br>\n\n## 🚀 실행 방법\n\n### 설치\n\n```bash\npnpm install\n```\n\n### 개발 서버 실행\n\n```bash\n# Web + Mobile 전체\npnpm dev\n\n# Web만\npnpm dev:web\n\n# Mobile만\npnpm dev:mobile\n```\n\n### 빌드\n\n```bash\n# 전체 빌드\npnpm build\n\n\n# Web만\npnpm build:web\n```\n",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 664,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.006024096385542169,
+        "commit_messages": [],
+        "distinct_author_count": 2,
+        "repo_type": "team",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "seseoju",
+          "yummjin"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 153,
+        "active_weeks": 0,
+        "repo_active_weeks": 10,
+        "total_commits": 0,
+        "total_repo_commits": 1082,
+        "target_commit_count": 0,
+        "target_commit_ratio": 0.0,
+        "target_commit_ratio_census": 0.0,
+        "contribution_role": "협업",
+        "frameworks": [
+          "Unity",
+          "React",
+          "React Native",
+          "Expo"
+        ],
+        "detected_domains": [
+          "웹 프론트엔드",
+          "서버/백엔드",
+          "모바일 앱",
+          "도구 개발",
+          "ML/AI",
+          "DevOps/인프라"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "Project-Guideon/guideon-backend",
+    "username": "Project-Guideon",
+    "repo": "guideon-backend",
+    "repo_url": "https://github.com/Project-Guideon/guideon-backend",
+    "label": "서버/백엔드",
+    "profile_for_matching": "Spring Boot 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 배포 환경 구성 경험. 서버, server, API, 데이터베이스, database, 인증 관련 프로젝트.",
+    "domain_hits_merged": {
+      "서버/백엔드": 6,
+      "웹 프론트엔드": 1
+    },
+    "detected_domains": [
+      "서버/백엔드",
+      "웹 프론트엔드"
+    ],
+    "github_score": 10.0,
+    "score_breakdown": {
+      "contribution": 0.0,
+      "quality": 10.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 0,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 0
+    },
+    "warnings": [
+      "repo 'guideon-backend': 'Project-Guideon' 이름으로 등록된 커밋이 없습니다. GitHub 계정에 연결된 이메일과 git 커밋 이메일이 다르거나, 실제로 해당 레포에 커밋하지 않은 경우입니다. contribution·consistency 점수는 0으로 산출됩니다."
+    ],
+    "per_repo": [
+      {
+        "repo_name": "guideon-backend (main)",
+        "repo_total_score": 10.0,
+        "score_breakdown": {
+          "contribution": 0.0,
+          "quality": 10.0,
+          "consistency": 0.0,
+          "quality_mode": "team"
+        },
+        "readme": "GUIDEON - Backend Server 🏰 관광지 안내 키오스크 프로젝트 **GUIDEON**의 메인 백엔드 서버입니다. Core API, 데이터베이스 관리, 인증, WebSocket 통신을 담당합니다. 🛠 Tech Stack - **Language:** Java 21 (JDK 21) - **Framework:** Spring Boot 3.x - **Database:** PostgreSQL 16 (PostGIS + pgvector), Redis - **Build Tool:** Gradle",
+        "readme_raw": "# GUIDEON - Backend Server 🏰\r\n\r\n관광지 안내 키오스크 프로젝트 **GUIDEON**의 메인 백엔드 서버입니다.\r\nCore API, 데이터베이스 관리, 인증, WebSocket 통신을 담당합니다.\r\n\r\n## 🛠 Tech Stack\r\n- **Language:** Java 21 (JDK 21)\r\n- **Framework:** Spring Boot 3.x\r\n- **Database:** PostgreSQL 16 (PostGIS + pgvector), Redis\r\n- **Build Tool:** Gradle\r\n",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 283,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.0176678445229682,
+        "commit_messages": [],
+        "distinct_author_count": 2,
+        "repo_type": "team",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "hwangtae123",
+          "yyuneu"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 0,
+        "evidence_loc": 0,
+        "is_fork": false,
+        "duration_days": 125,
+        "active_weeks": 0,
+        "repo_active_weeks": 11,
+        "total_commits": 0,
+        "total_repo_commits": 522,
+        "target_commit_count": 0,
+        "target_commit_ratio": 0.0,
+        "target_commit_ratio_census": 0.0,
+        "contribution_role": "협업",
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "웹 프론트엔드"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "AstroJini/MKX-BE",
+    "username": "AstroJini",
+    "repo": "MKX-BE",
+    "repo_url": "https://github.com/AstroJini/MKX-BE",
+    "label": "풀스택",
+    "profile_for_matching": "Java (100%) 기반 서버/백엔드 경험. Spring Boot 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 배포 환경 구성 경험. ai 관련 프로젝트.",
+    "domain_hits_merged": {
+      "웹 프론트엔드": 3,
+      "서버/백엔드": 5,
+      "DevOps/인프라": 3,
+      "ML/AI": 1,
+      "모바일 앱": 1,
+      "빅데이터 엔지니어": 1
+    },
+    "detected_domains": [
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "DevOps/인프라",
+      "ML/AI",
+      "모바일 앱",
+      "빅데이터 엔지니어"
+    ],
+    "github_score": 36.2,
+    "score_breakdown": {
+      "contribution": 13.8,
+      "quality": 15.0,
+      "consistency": 7.4
+    },
+    "metrics_summary": {
+      "total_valid_loc": 16942,
+      "total_evidence_loc": 1939,
+      "top_languages": "Java (100%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 13
+    },
+    "warnings": [
+      "repo 'MKX-BE' GitHub 계정 미연결 커밋 60개 — 서비스 자동 커밋(Streamlit 등) 또는 이메일 미연결 커밋으로 팀/개인 판정에서 제외됨",
+      "전수 조사 기준 작성자 1명이 커밋 17개 미만으로 팀/개인 판정에서 제외됨",
+      "Fork 소극적 기여: 기여 비율 1.5% < 공정 기준의 50% → 기본 패널티 0.3"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "MKX-BE (develop)",
+        "repo_total_score": 36.2,
+        "score_breakdown": {
+          "contribution": 13.8,
+          "quality": 15.0,
+          "consistency": 7.4,
+          "quality_mode": "team"
+        },
+        "readme": "MKX — 증권사, 기업, 투자자를 하나로 잇는 통합 증권 거래 플랫폼 🏆 한화시스템 BEYOND SW CAMP 16기 최종프로젝트 1위 수상 작품 🏆 소개 MKX는 중소·중견 증권사의 높은 인프라 구축 비용과 운영 부담을 해결하기 위해 설계된, 입점형 B2B 디지털 증권 거래소 플랫폼입니다. 증권사는 MKX에 입점해 주문·체결 인프라를 즉시 사용할 수 있으며, 사용자는 원하는 증권사를 선택해 거래에 참여할 수 있습니다. 목차 1. 팀원 2. 프로젝트 기획서 3. 분석 및 설계 4. 기술 스택 5. 시스템 아키텍처 6. 기술 요약 7. 주요 기능 8. 기능 시연 영상 1. 팀원 소개 | **김진호** | **김형진** | **박혜성** | **이우영** | **윤세진** | |:------------------------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------:| | [ @jinnn12 **Domain & Listing Lead**](https://github.com/jinnn12) | [ @JeaPple **Trading Engine Lead**](https://github.com/JeaPple) | [ @solidify-d **Trading Engine Lead**](https://github.com/solidify-d) | [ @ggj0228 **Identity & Admin**](https://github.com/ggj0228) | [ @AstroJini**Data & Governance**](https://github.com/AstroJini) | 2. 프로젝트 기획서 1) 문제정의 & 가치제안 ①.1 문제정의 한국 증권 산업은 겉으로 보기에는 경쟁이 활발한 것처럼 보이지만, 실제 구조를 들여다보면 기술 인프라를",
+        "readme_raw": "<body>\n<main class=\"container\">\n  <h1>MKX — 증권사, 기업, 투자자를 하나로 잇는 통합 증권 거래 플랫폼</h1>\n  <h3>🏆 한화시스템 BEYOND SW CAMP 16기 최종프로젝트 1위 수상 작품 🏆</h3>\n  <img width=\"1920\" height=\"1080\" alt=\"MKX 리드미 배너\" src=\"https://github.com/user-attachments/assets/ef7b248f-7934-47f8-b402-eef19aaab2a8\" />\n\n  <hr/>\n\n  <div class=\"card\">\n    <h2>소개</h2>\n    <p align=\"center\">\n      MKX는 중소·중견 증권사의 높은 인프라 구축 비용과 운영 부담을 해결하기 위해 설계된,\n    </p>\n    <p align=\"center\">\n      <strong>입점형 B2B 디지털 증권 거래소 플랫폼</strong>입니다.\n    </p>\n    <p align=\"center\">\n      증권사는 MKX에 입점해 주문·체결 인프라를 즉시 사용할 수 있으며,  \n    </p>\n    <p align=\"center\">\n      사용자는 원하는 증권사를 선택해 거래에 참여할 수 있습니다.\n    </p>\n  </div>\n\n<h2 id=\"toc\">목차</h2>\n  <div class=\"toc\">\n  <a href=\"#team\">1. 팀원</a><br />\n  <a href=\"#project-plan\">2. 프로젝트 기획서</a><br />\n  <a href=\"#analysis-design\">3. 분석 및 설계</a><br />\n  <a href=\"#techstack\">4. 기술 스택</a><br />\n  <a href=\"#architecture\">5. 시스템 아키텍처</a><br />\n  <a href=\"#tech-summary\">6. 기술 요약</a><br />\n  <a href=\"#features\">7. 주요 기능</a><br />\n  <a href=\"#ui-ux-test\">8. 기능 시연 영상</a><br />\n  </div>\n\n<section id=\"team\">\n<h2>1. 팀원 소개</h2>\n\n|                                                                        **김진호**                                                                         |                                                    **김형진**                                                    |                                                        **박혜성**                                                         |                                                                       **이우영**                                                                        |                                                                      **윤세진**                                                                      |\n|:------------------------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------:|\n| [<img src=\"https://github.com/jinnn12.png\" height=150 width=150> <br/> @jinnn12 <br/><sub>**Domain & Listing Lead**</sub>](https://github.com/jinnn12) | [<img src=\"https://github.com/JeaPple.png\" height=150 width=150> <br/> @JeaPple <br/><sub>**Trading Engine Lead**</sub>](https://github.com/JeaPple) | [<img src=\"https://github.com/solidify-d.png\" height=150 width=150> <br/> @solidify-d <br/><sub>**Trading Engine Lead**</sub>](https://github.com/solidify-d) |          [<img src=\"https://github.com/ggj0228.png\" height=150 width=150> <br/> @ggj0228 <br/><sub>**Identity & Admin**</sub>](https://github.com/ggj0228)           |      [<img src=\"https://github.com/AstroJini.png\" height=150 width=150> <br/> @AstroJini<br/><sub>**Data & Governance**</sub>](https://github.com/AstroJini)       |\n</section>\n\n\n  <section id=\"project-plan\">\n    <h2>2. 프로젝트 기획서</h2>\n    \n  <h3>1) 문제정의 & 가치제안</h3>\n  <details>\n    <summary><b>①.1 문제정의</b></summary>\n    <p>\n      한국 증권 산업은 겉으로 보기에는 경쟁이 활발한 것처럼 보이지만, 실제 구조를 들여다보면 \n      <strong>기술 인프라를 갖춘 소수 대형 증권사 중심의 과점화</strong>가 심화된 시장이다.  \n      현재 60개 증권사가 존재하지만, 상위 10개사가 전체 리테일 거래의 70~80%를 차지한다는 점은 이러한 왜곡된 구조를 잘 보여준다.  \n      이는 단순한 브랜드 인지도 때문이 아니라, 각사가 보유한 <strong>주문·체결·정산 기술력의 격차</strong>에서 기인한 구조적 문제이다.\n    </p>\n    <img width=\"1920\" height=\"1080\" alt=\"image\" src=\"https://github.com/user-attachments/assets/4f4eca84-552e-425e-aeb2-26bb4707b412\" />\n    <p>\n      특히 많은 중소형 증권사는 1990~2000년대 구축된 레거시 시스템을 여전히 사용하고 있으며, \n      시스템 교체 시 최소 수백억 원의 비용이 발생해 <strong>전면 교체 자체가 사실상 불가능한 상태</strong>로 남아 있다.  \n      금융 IT 교체 주기가 20년 이상 지연되는 대표적인 사례가 바로 이 시장이며, 이로 인해 \n      중소형사는 '유지보수 중심의 운영 구조'에 갇혀 혁신을 시도하기 어려운 현실에 놓여 있다.\n    </p>\n    <img width=\"1920\" height=\"1080\" alt=\"image\" src=\"https://github.com/user-attachments/assets/f3b37ee9-0b1f-4803-8deb-429e642d2b88\" />\n    <p>\n      금융당국은 이러한 문제를 완화하기 위해 2023년 자본금 15억 원만으로도 설립 가능한 \n      <strong>중개전문증권사 규제 완화</strong> 정책을 발표했다.  \n      그러나 이는 겉으로만 완화된 조치이다.  \n      실제로는 전산 구축비가 여전히 수십~수백억 원에 달해 <strong>신규 진입은 거의 불가능한 환경</strong>이라는 점에서 \n      핀테크 기업들이 사업을 포기하는 사례도 다수 발생하고 있다.\n    </p>\n    <img width=\"1920\" height=\"1080\" alt=\"image\" src=\"https://github.com/user-attachments/assets/632d0260-0fe5-42ed-a608-1898023823f8\" />\n    <p>\n      또 하나의 핵심 문제는 <strong>비표준화된 시스템 구조</strong>이다.  \n      각 증권사는 주문 시스템, 계좌 시스템, 공모·배정 시스템, 리스크 관리, 공시·심사 시스템 등을 제각각 구축해 운영하고 있으며,  \n      이로 인해 데이터 정합성이 자주 깨지고, 필수적인 <strong>투명성·추적성·감사 가능성</strong>이 기술 구조 상 충분히 확보되지 않는다.  \n      하나의 매매가 체결되기까지 여러 시스템을 거치는 과정에서 데이터가 분절되고 흐름이 끊기는 것이다.\n    </p>\n    <",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 820,
+          "avg_loc_per_file": 20.7,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.015853658536585366,
+        "commit_messages": [
+          "Merge pull request #190 from beyond-sw-camp/readme/sejin01",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "README.md 8번 구성 수정",
+          "Merge pull request #159 from beyond-sw-camp/feature137",
+          "Merge pull request #151 from beyond-sw-camp/feature137",
+          "Merge pull request #129 from beyond-sw-camp/fix/127",
+          "Merge pull request #126 from beyond-sw-camp/fix/81",
+          "Merge pull request #115 from beyond-sw-camp/fix/113",
+          "Merge pull request #102 from beyond-sw-camp/feature/95",
+          "Merge pull request #96 from beyond-sw-camp/feature/74",
+          "Merge pull request #73 from beyond-sw-camp/feature9"
+        ],
+        "distinct_author_count": 4,
+        "repo_type": "team",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "solidify-d",
+          "jinnn12",
+          "JeaPple",
+          "ggj0228"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 16942,
+        "evidence_loc": 1939,
+        "is_fork": true,
+        "duration_days": -43,
+        "active_weeks": 5,
+        "repo_active_weeks": 6,
+        "total_commits": 13,
+        "total_repo_commits": 872,
+        "target_commit_count": 13,
+        "target_commit_ratio": 0.0149,
+        "target_commit_ratio_census": 0.0149,
+        "contribution_role": "협업",
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "웹 프론트엔드",
+          "DevOps/인프라",
+          "ML/AI",
+          "모바일 앱",
+          "빅데이터 엔지니어"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Java",
+              100.0
+            ]
+          ],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "AstroJini/SmartFridge",
+    "username": "AstroJini",
+    "repo": "SmartFridge",
+    "repo_url": "https://github.com/AstroJini/SmartFridge",
+    "label": "풀스택",
+    "profile_for_matching": "Java (84%) 기반 서버/백엔드 경험. Spring Boot 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 배포 환경 구성 경험. 서버, API, database, backend 관련 프로젝트.",
+    "domain_hits_merged": {
+      "서버/백엔드": 5,
+      "DevOps/인프라": 3,
+      "웹 프론트엔드": 1,
+      "ML/AI": 1,
+      "모바일 앱": 1,
+      "블록체인": 1
+    },
+    "detected_domains": [
+      "서버/백엔드",
+      "DevOps/인프라",
+      "웹 프론트엔드",
+      "ML/AI",
+      "모바일 앱",
+      "블록체인"
+    ],
+    "github_score": 35.5,
+    "score_breakdown": {
+      "contribution": 14.2,
+      "quality": 15.0,
+      "consistency": 6.3
+    },
+    "metrics_summary": {
+      "total_valid_loc": 4240,
+      "total_evidence_loc": 627,
+      "top_languages": "Java (84%), HTML (15%)",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 34
+    },
+    "warnings": [
+      "repo 'SmartFridge' GitHub 계정 미연결 커밋 10개 — 서비스 자동 커밋(Streamlit 등) 또는 이메일 미연결 커밋으로 팀/개인 판정에서 제외됨",
+      "Fork 소극적 기여: 기여 비율 9.3% < 공정 기준의 50% → 기본 패널티 0.3"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "SmartFridge (develop)",
+        "repo_total_score": 35.5,
+        "score_breakdown": {
+          "contribution": 14.2,
+          "quality": 15.0,
+          "consistency": 6.3,
+          "quality_mode": "team"
+        },
+        "readme": "스마트 냉장고: 공용 냉장고 관리 웹 서비스 --- 💡 프로젝트 기획 **프로젝트 한 줄 소개** 공용 냉장고 청결과 사용자 소통을 돕는 음식 등록·관리 웹 서비스 주제 선정 배경 공동 냉장고 사용 시 식자재 관리의 어려움 여러 사람이 함께 사용하는 냉장고에서는 누가 어떤 식재료를 넣었는지, 유통기한이 언제인지 파악하기 어렵습니다. 유통기한이 지난 음식물이 방치되거나, 중복 구입으로 인한 자원 낭비가 빈번히 발생합니다. 책임 소재 불분명으로 인한 불편 음식이 상하거나 냄새가 날 경우, 누구의 물건인지 몰라 처리하지 못하고 갈등이 생깁니다. 공동 냉장고의 청결 및 관리 문제로 생활의 질이 저하됩니다. 기록 부재로 인한 비효율 메모지나 마커 등 수기로 남기는 방식은 지속되기 어렵고, 정보 공유가 제한적입니다. 디지털 시스템을 통해 실시간 등록, 조회, 유통기한 알림이 가능한 관리 시스템이 필요합니다. 소규모 공동체 내 자원 순환 및 협력 문화 조성 남은 재료를 등록하고 필요한 사람이 활용하는 환경을 조성하여 식자재 낭비를 줄이고 상호 협력을 강화합니다. 기대 효과 냉장고 관리 효율성 향상 식자재의 등록, 조회, 삭제를 웹에서 간편하게 처리하여 유통기한, 수량 등을 한눈에 확인할 수 있습니다. 불필요한 중복 구매 및 음식물 방치를 방지하고, 관리자의 공지사항 기능으로 사용 규칙을 쉽게 전파할 수 있습니다. 유통기한 기반 자동 알림으로 낭비 감소 유통기한 임박 시 알림 기능을 통해 음식물 폐기를 줄이고 자원의 낭비를 최소화합니다. 책임소재 명확화로 갈등 감소 사용자별로 등록된 식자재 정보를 관리하여, '이건 누구 음식?'과 같은 문제를 해결하고 불필요한 갈등을 예방합니다. 자원 순환 및 공유 문화 확산 사용하지 않는 식자재를 공유함으로써 자원 재사용을 촉진하고, ‘냉털(냉장고 털기)’ 문화 정착에 기여합니다. 사용자 간 채팅 기능으로 소통 강화 식자재 공유 여부, 사용 문의 등을 위한 채팅 기능으로 협업 및 관리 효율을 증대합니다. 예: \"이 우유 써도 될까요?\", \"오늘까지 먹어야 하는 김밥 있어요\" 등의 대화로 소통을 원활하게 합니다. --- **💻 Tech Stacks** **Backend** **Frontend** **Database & Storage** **Real-time Communication** **DevOps & Infrastructure** **Tools & Collaboration** --- ✨ 주요 기능 및 기술 상세 | 기술 | 설명 | | :--- | :--- | | **JWT (JSON Web Token)** | Stateless 환경의 API 보안을 위해 표준 기술인 JWT를 도입했습니다. 세션 방식과 달리 서버의 상태를 저장할 필요가 없어 **수평적 확장에 유리**하며, 경로별 접근 권한을 중앙에서 관리하여 **유지보수 효율을 높였습니다.** | | **WebSocket & STOMP** | 사용자 간의 즉각적인 소통을 위해 WebSocket 기반의 실시간 채팅 기능을 구현했습니다. STOMP 프로토콜을 함께 사",
+        "readme_raw": "# 스마트 냉장고: 공용 냉장고 관리 웹 서비스\n\n<div align=\"left\">\n  <img src=\"https://cdn.discordapp.com/attachments/1386519346293112972/1409777259983667230/image.png?ex=68ae9ce3&is=68ad4b63&hm=dd69c7da78d11a8ad7f81a7af192bb618700e1b8ee175619885ee15d05ba4b8c&\" alt=\"Smart Fridge Project Banner\" width=\"800\"/>\n</div>\n\n\n---\n\n## 💡 프로젝트 기획\n\n### **프로젝트 한 줄 소개**\n공용 냉장고 청결과 사용자 소통을 돕는 음식 등록·관리 웹 서비스\n\n<details>\n<summary><strong>주제 선정 배경</strong></summary>\n<br>\n<ul>\n    <li>\n        <strong>공동 냉장고 사용 시 식자재 관리의 어려움</strong>\n        <ul>\n            <li>여러 사람이 함께 사용하는 냉장고에서는 누가 어떤 식재료를 넣었는지, 유통기한이 언제인지 파악하기 어렵습니다.</li>\n            <li>유통기한이 지난 음식물이 방치되거나, 중복 구입으로 인한 자원 낭비가 빈번히 발생합니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>책임 소재 불분명으로 인한 불편</strong>\n        <ul>\n            <li>음식이 상하거나 냄새가 날 경우, 누구의 물건인지 몰라 처리하지 못하고 갈등이 생깁니다.</li>\n            <li>공동 냉장고의 청결 및 관리 문제로 생활의 질이 저하됩니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>기록 부재로 인한 비효율</strong>\n        <ul>\n            <li>메모지나 마커 등 수기로 남기는 방식은 지속되기 어렵고, 정보 공유가 제한적입니다.</li>\n            <li>디지털 시스템을 통해 실시간 등록, 조회, 유통기한 알림이 가능한 관리 시스템이 필요합니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>소규모 공동체 내 자원 순환 및 협력 문화 조성</strong>\n        <ul>\n            <li>남은 재료를 등록하고 필요한 사람이 활용하는 환경을 조성하여 식자재 낭비를 줄이고 상호 협력을 강화합니다.</li>\n        </ul>\n    </li>\n</ul>\n</details>\n\n<details>\n<summary><strong>기대 효과</strong></summary>\n<br>\n<ul>\n    <li>\n        <strong>냉장고 관리 효율성 향상</strong>\n        <ul>\n            <li>식자재의 등록, 조회, 삭제를 웹에서 간편하게 처리하여 유통기한, 수량 등을 한눈에 확인할 수 있습니다.</li>\n            <li>불필요한 중복 구매 및 음식물 방치를 방지하고, 관리자의 공지사항 기능으로 사용 규칙을 쉽게 전파할 수 있습니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>유통기한 기반 자동 알림으로 낭비 감소</strong>\n        <ul>\n            <li>유통기한 임박 시 알림 기능을 통해 음식물 폐기를 줄이고 자원의 낭비를 최소화합니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>책임소재 명확화로 갈등 감소</strong>\n        <ul>\n            <li>사용자별로 등록된 식자재 정보를 관리하여, '이건 누구 음식?'과 같은 문제를 해결하고 불필요한 갈등을 예방합니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>자원 순환 및 공유 문화 확산</strong>\n        <ul>\n            <li>사용하지 않는 식자재를 공유함으로써 자원 재사용을 촉진하고, ‘냉털(냉장고 털기)’ 문화 정착에 기여합니다.</li>\n        </ul>\n    </li>\n    <li>\n        <strong>사용자 간 채팅 기능으로 소통 강화</strong>\n        <ul>\n            <li>식자재 공유 여부, 사용 문의 등을 위한 채팅 기능으로 협업 및 관리 효율을 증대합니다.</li>\n            <li>예: \"이 우유 써도 될까요?\", \"오늘까지 먹어야 하는 김밥 있어요\" 등의 대화로 소통을 원활하게 합니다.</li>\n        </ul>\n    </li>\n</ul>\n</details>\n\n---\n\n### **💻 Tech Stacks**\n\n#### **Backend**\n![Java](https://img.shields.io/badge/java-007396?style=for-the-badge&logo=openjdk&logoColor=white)\n![Spring Boot](https://img.shields.io/badge/spring_boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)\n![JWT](https://img.shields.io/badge/jwt-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)\n\n#### **Frontend**\n![Vue.js](https://img.shields.io/badge/vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)\n![Vuetify](https://img.shields.io/badge/vuetify-1867C0?style=for-the-badge&logo=vuetify&logoColor=white)\n![Vuex](https://img.shields.io/badge/vuex-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)\n![Vue Router](https://img.shields.io/badge/vue_router-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)\n![Axios](https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)\n![JavaScript](https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)\n![CSS3](https://img.shields.io/badge/css3-1572B6?style=for-the-badge&logo=css3&logoColor=white)\n\n#### **Database & Storage**\n![MariaDB](https://img.shields.io/badge/mariadb-003545?style=for-the-badge&logo=mariadb&logoColor=white)\n![Redis](https://img.shields.io/badge/redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)\n![Amazon S3](https://img.shields.io/badge/amazon_s3-569A31?style=for-the-badge&logo=amazon-s3&logoColor=white)\n\n#### **Real-time Communication**\n![WebSocket](https://img.shields.io/badge/WebSocket-019533?style=for-the-badge&logo=websocket&logoColor=white)\n![StompJS](https://img.shields.io/badge/StompJS-F05032?style=for-the-badge)\n![RabbitMQ](https://img.shields.io/badge/rabbitmq-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)\n![SSE](https://img.shields.io/badge/SSE-000000?style=for-the-badge)\n\n#### **DevOps & Infrastructure**\n![Amazon EC2](https://img.shields.io/badge/amazon_ec2-FF9900?style=for-the-badge&logo=amazon-ec2&logoColor=white)\n![Amazon EKS](https://img.shields.io/badge/amazon_eks-FF9900?style=for-the-badge&logo=amazon-eks&logoColor=white)\n![Docker](https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)\n![Nginx](https://img.shields.io/badge/nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)\n![GitHub Actions](https://img.shields.io/badge/github_actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)\n\n#### **Tools & Collaboration**\n![Gradle](https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)\n![Git](https://img.s",
+        "readme_has_image": true,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 202,
+          "avg_loc_per_file": 21.0,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.0049504950495049506,
+        "commit_messages": [
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "fix (#103)",
+          "Mofidy/member (#102)",
+          "[수정/추가] memer ontomany 해결 (#100)",
+          "fix (#90)",
+          "modify (#89)",
+          "fix (#87)",
+          "feat/adminModify (#80)",
+          "[수정/추가] myPage, admin 기능 구분  (#79)",
+          "[수정] updatePw 로직 수정 (#72)",
+          "[추가] 비밀번호 찾기 로직 생성 (#71)",
+          "member delete delYn update (#69)",
+          "naver 로그인 에러 수정 (#68)",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "Update README.md",
+          "[수정] Post, Member도메인 컬럼 수정",
+          "[수정/추가] 이메일 인증 로직 구현 (#56)",
+          "[추가] inquiry crud 및 member controller 수정 (#49)",
+          "Hotfix/MemberCreateDto (#40)",
+          "[추가] Oauth 로그인 기능 구현 (#34)",
+          "[추가/수정] Fridge, Member 기능 추가 및 수정",
+          "[수정/추가] member 컬럼 수정, 문의, 문의 답변, 냉장고 Entity생성",
+          "Merge pull request #8 from beyond-sw-camp/sejin",
+          "[추가] 로그인 기능, Common,Member 패키지 추가 (#7)"
+        ],
+        "distinct_author_count": 4,
+        "repo_type": "team",
+        "has_team_experience": true,
+        "repo_author_names": [
+          "Jihyeon0804",
+          "YoungKwanK",
+          "Chanjin629",
+          "AstroJini"
+        ],
+        "dominance_ratio": 0.095,
+        "is_dominance_override": false,
+        "valid_loc": 4240,
+        "evidence_loc": 627,
+        "is_fork": true,
+        "duration_days": 0,
+        "active_weeks": 7,
+        "repo_active_weeks": 6,
+        "total_commits": 34,
+        "total_repo_commits": 367,
+        "target_commit_count": 34,
+        "target_commit_ratio": 0.0926,
+        "target_commit_ratio_census": 0.0926,
+        "contribution_role": "협업",
+        "frameworks": [
+          "Spring Boot"
+        ],
+        "detected_domains": [
+          "서버/백엔드",
+          "DevOps/인프라",
+          "웹 프론트엔드",
+          "ML/AI",
+          "모바일 앱",
+          "블록체인"
+        ],
+        "language_category": {
+          "main": [
+            [
+              "Java",
+              84.15942769545222
+            ]
+          ],
+          "sub": [
+            [
+              "HTML",
+              15.840572304547775
+            ]
+          ],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  },
+  {
+    "repo_key": "chjnett/my-sports-ai",
+    "username": "chjnett",
+    "repo": "my-sports-ai",
+    "repo_url": "https://github.com/chjnett/my-sports-ai",
+    "label": "인공지능/머신러닝",
+    "profile_for_matching": "Streamlit 활용 경험. CI/CD 파이프라인 구축 경험 (GitHub Actions 또는 Docker). 배포 환경 구성 경험. 학습, 데이터셋, dataset, ai, yolo 관련 프로젝트.",
+    "domain_hits_merged": {
+      "ML/AI": 4,
+      "빅데이터 엔지니어": 2,
+      "게임 개발": 1,
+      "웹 프론트엔드": 1,
+      "모바일 앱": 1,
+      "DevOps/인프라": 1
+    },
+    "detected_domains": [
+      "ML/AI",
+      "빅데이터 엔지니어",
+      "게임 개발",
+      "웹 프론트엔드",
+      "모바일 앱",
+      "DevOps/인프라"
+    ],
+    "github_score": 8.8,
+    "score_breakdown": {
+      "contribution": 1.8,
+      "quality": 7.0,
+      "consistency": 0.0
+    },
+    "metrics_summary": {
+      "total_valid_loc": 0,
+      "total_evidence_loc": 84,
+      "top_languages": "N/A",
+      "scanned_repos": 1,
+      "total_commits_analyzed": 3
+    },
+    "warnings": [
+      "repo 'my-sports-ai' GitHub 계정 미연결 커밋 25개 — 서비스 자동 커밋(Streamlit 등) 또는 이메일 미연결 커밋으로 팀/개인 판정에서 제외됨"
+    ],
+    "per_repo": [
+      {
+        "repo_name": "my-sports-ai (main)",
+        "repo_total_score": 8.8,
+        "score_breakdown": {
+          "contribution": 1.8,
+          "quality": 7.0,
+          "consistency": 0.0,
+          "quality_mode": "personal"
+        },
+        "readme": "my-sports-ai SoccerNet 축구 중계 영상을 내려받고, 스코어보드와 중계 그래픽 OCR을 이용해 설명 가능한 하이라이트 생성 연구를 진행하는 프로젝트입니다. 핵심 목표 ```text 축구 중계 화면의 스코어보드, 점수 변화, 경기 시간, 리플레이/VAR/선수명 자막 같은 그래픽 OCR 정보는 설명 가능한 하이라이트 생성의 시간적 단서로 활용될 수 있는가? ``` 최종 연구 주제: ```text 축구 중계 영상의 그래픽 OCR 이벤트 그래프를 이용한 설명 가능한 하이라이트 생성 ``` 현재 구현 상태 현재는 연구 데이터 수집을 위한 Streamlit GUI가 구현되어 있습니다. 주요 기능: * SoccerNet split별 경기 목록 조회 * 리그, 시즌, 날짜, 검색어 기반 경기 필터링 * `Labels-v2.json`, 224p 영상, 720p 영상 다운로드 * 선택한 경기 기준 동일/유사 split 후보 탐색 * Docker 기반 실행 * SoccerNet 연결 검증 스크립트 빠른 시작 Docker Desktop을 실행한 뒤 프로젝트 루트에서 실행합니다. ```bash docker compose up --build ``` 브라우저에서 접속합니다. ```text http://localhost:8501 ``` 이미 빌드가 끝난 뒤에는 다음 명령으로 실행합니다. ```bash docker compose up ``` 환경 변수 SoccerNet 비밀번호는 `.env` 파일에서 관리합니다. ```text SOCCERNET_PW= ``` 메일로 받은 실제 SoccerNet 비밀번호를 입력하세요. Broadcast video 다운로드는 SoccerNet NDA 승인과 올바른 비밀번호가 필요합니다. 데이터 저장 위치 다운로드된 데이터는 `data/spotting/` 아래에 저장됩니다. ```text data/ └── spotting/ └── spain_laliga/ └── 2016-2017/ └── 2017-02-11 - 18-15 Alaves 0 - 6 Barcelona/ ├── Labels-v2.json ├── 1_720p.mkv └── 2_720p.mkv ``` `data/` 폴더는 대용량 파일 저장소이므로 Git 추적 대상에서 제외합니다. 문서 구조 | 문서 | 역할 | |---|---| | [PROJECT_MASTER_PLAN.md](PROJECT_MASTER_PLAN.md) | 전체 개발 우선순위와 로드맵 | | [MDGUIDE.md](MDGUIDE.md) | 현재 상황을 이해하기 위한 문서 읽기 순서 | | [SETUP_GUIDE.md](SETUP_GUIDE.md) | 최초 환경 세팅 | | [RUN_GUIDE.md](RUN_GUIDE.md) | GUI 실행과 다운로드 사용법 | | [YOLO_DATASET_TEST_GUIDE.md](YOLO_DATASET_TEST_GUIDE.md) | YOLO 데이터셋 준비/라벨링/학습 테스트 | | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 실제 문제",
+        "readme_raw": "# my-sports-ai\n\nSoccerNet 축구 중계 영상을 내려받고, 스코어보드와 중계 그래픽 OCR을 이용해 설명 가능한 하이라이트 생성 연구를 진행하는 프로젝트입니다.\n\n## 핵심 목표\n\n```text\n축구 중계 화면의 스코어보드, 점수 변화, 경기 시간, 리플레이/VAR/선수명 자막 같은 그래픽 OCR 정보는\n설명 가능한 하이라이트 생성의 시간적 단서로 활용될 수 있는가?\n```\n\n최종 연구 주제:\n\n```text\n축구 중계 영상의 그래픽 OCR 이벤트 그래프를 이용한 설명 가능한 하이라이트 생성\n```\n\n## 현재 구현 상태\n\n현재는 연구 데이터 수집을 위한 Streamlit GUI가 구현되어 있습니다.\n\n주요 기능:\n\n* SoccerNet split별 경기 목록 조회\n* 리그, 시즌, 날짜, 검색어 기반 경기 필터링\n* `Labels-v2.json`, 224p 영상, 720p 영상 다운로드\n* 선택한 경기 기준 동일/유사 split 후보 탐색\n* Docker 기반 실행\n* SoccerNet 연결 검증 스크립트\n\n## 빠른 시작\n\nDocker Desktop을 실행한 뒤 프로젝트 루트에서 실행합니다.\n\n```bash\ndocker compose up --build\n```\n\n브라우저에서 접속합니다.\n\n```text\nhttp://localhost:8501\n```\n\n이미 빌드가 끝난 뒤에는 다음 명령으로 실행합니다.\n\n```bash\ndocker compose up\n```\n\n## 환경 변수\n\nSoccerNet 비밀번호는 `.env` 파일에서 관리합니다.\n\n```text\nSOCCERNET_PW=\n```\n\n메일로 받은 실제 SoccerNet 비밀번호를 입력하세요. Broadcast video 다운로드는 SoccerNet NDA 승인과 올바른 비밀번호가 필요합니다.\n\n## 데이터 저장 위치\n\n다운로드된 데이터는 `data/spotting/` 아래에 저장됩니다.\n\n```text\ndata/\n└── spotting/\n    └── spain_laliga/\n        └── 2016-2017/\n            └── 2017-02-11 - 18-15 Alaves 0 - 6 Barcelona/\n                ├── Labels-v2.json\n                ├── 1_720p.mkv\n                └── 2_720p.mkv\n```\n\n`data/` 폴더는 대용량 파일 저장소이므로 Git 추적 대상에서 제외합니다.\n\n## 문서 구조\n\n| 문서 | 역할 |\n|---|---|\n| [PROJECT_MASTER_PLAN.md](PROJECT_MASTER_PLAN.md) | 전체 개발 우선순위와 로드맵 |\n| [MDGUIDE.md](MDGUIDE.md) | 현재 상황을 이해하기 위한 문서 읽기 순서 |\n| [SETUP_GUIDE.md](SETUP_GUIDE.md) | 최초 환경 세팅 |\n| [RUN_GUIDE.md](RUN_GUIDE.md) | GUI 실행과 다운로드 사용법 |\n| [YOLO_DATASET_TEST_GUIDE.md](YOLO_DATASET_TEST_GUIDE.md) | YOLO 데이터셋 준비/라벨링/학습 테스트 |\n| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 실제 문제 원인과 해결 기록 |\n| [docs/README.md](docs/README.md) | 연구 문서 인덱스 |\n| [docs/RESEARCH_ARCHITECTURE.md](docs/RESEARCH_ARCHITECTURE.md) | 전체 연구 아키텍처 |\n| [docs/PHASE_1_VISION_OCR_PIPELINE.md](docs/PHASE_1_VISION_OCR_PIPELINE.md) | 1순위 OCR 파이프라인 실행 명세 |\n| [docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) | GPU/모델/기술 스택 사양 |\n\n## 자주 쓰는 명령\n\n```bash\n# GUI 실행\ndocker compose up\n\n# 빌드 후 GUI 실행\ndocker compose up --build\n\n# 백그라운드 실행\ndocker compose up -d\n\n# 로그 확인\ndocker compose logs -f soccernet-app\n\n# 종료\ndocker compose down\n\n# SoccerNet 연결 검증\ndocker compose run --rm soccernet-app python verify_setup.py\n```\n\n## 다음 개발 우선순위\n\n다음 단계는 `docs/PHASE_1_VISION_OCR_PIPELINE.md` 기준으로 진행합니다.\n\n```text\nFrame sampling\n-> Manual crop config\n-> OCR CSV\n-> OCR smoothing\n-> Score change detection\n-> Goal label evaluation\n```\n\nPhase 1A는 Docker에서 바로 실행할 수 있습니다.\n\n```bash\ndocker compose run --rm soccernet-app python -m src.phase1a \\\n  --match-dir \"data/spotting/england_epl/2014-2015/2015-02-21 - 18-00 Chelsea 1 - 1 Burnley\" \\\n  --data-root data/spotting \\\n  --fps 1 \\\n  --max-seconds 3\n```\n",
+        "readme_has_image": false,
+        "readme_tier": "long",
+        "tree_stats": {
+          "source_file_count": 64,
+          "avg_loc_per_file": 0.0,
+          "has_gitignore": true
+        },
+        "has_cicd": true,
+        "has_tests": false,
+        "has_deployment": true,
+        "test_ratio": 0.0,
+        "commit_messages": [
+          "feat:reame",
+          "fear:modify env1",
+          "fear:modify env"
+        ],
+        "distinct_author_count": 1,
+        "repo_type": "personal",
+        "has_team_experience": false,
+        "repo_author_names": [
+          "chjnett"
+        ],
+        "dominance_ratio": null,
+        "is_dominance_override": false,
+        "valid_loc": 0,
+        "evidence_loc": 84,
+        "is_fork": false,
+        "duration_days": 7,
+        "active_weeks": 1,
+        "repo_active_weeks": 2,
+        "total_commits": 3,
+        "total_repo_commits": 28,
+        "target_commit_count": 3,
+        "target_commit_ratio": 0.1071,
+        "target_commit_ratio_census": 0.1071,
+        "contribution_role": null,
+        "frameworks": [
+          "Streamlit"
+        ],
+        "detected_domains": [
+          "ML/AI",
+          "빅데이터 엔지니어",
+          "게임 개발",
+          "웹 프론트엔드",
+          "모바일 앱",
+          "DevOps/인프라"
+        ],
+        "language_category": {
+          "main": [],
+          "sub": [],
+          "trivial": []
+        },
+        "sub_language_host": null,
+        "is_config_repo": false,
+        "mod_platform": null,
+        "matching_included": true
+      }
+    ]
+  }
+]

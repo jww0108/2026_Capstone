@@ -1,0 +1,20 @@
+# Default deny: do not publish datasets, caches, env files, model/vector assets, or binaries.
+*
+
+# Keep directory traversal possible for allowlisted paths below.
+!*/
+
+# Keep ignore rules themselves.
+!.gitignore
+
+# Root source/docs only.
+!/*.py
+!/*.md
+!/*.txt
+
+# Explicitly allowed project folders.
+!/tests/**
+!/response_sample/**
+!/ml/**
+!/experiments/**
+!/md/**

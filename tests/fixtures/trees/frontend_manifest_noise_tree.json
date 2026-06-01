@@ -1,0 +1,8 @@
+{
+  "tree": [
+    { "path": "src/components/PluginCard.tsx", "type": "blob" },
+    { "path": "src/page/HomePage.tsx", "type": "blob" },
+    { "path": "public/manifest.json", "type": "blob" },
+    { "path": "README.md", "type": "blob" }
+  ]
+}

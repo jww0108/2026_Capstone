@@ -1,0 +1,64 @@
+﻿method,true_label,pred_label,count,ratio
+ai_classifier_rerank,게임 개발,게임 서버,2,0.4
+ai_classifier_rerank,게임 개발,게임 클라이언트,2,0.4
+ai_classifier_rerank,게임 개발,서버/백엔드,1,0.2
+ai_classifier_rerank,모바일 앱,크로스플랫폼 앱,1,0.5
+ai_classifier_rerank,모바일 앱,서버/백엔드,1,0.5
+ai_classifier_rerank,모바일 앱,SW/솔루션,0,0.0
+ai_classifier_rerank,블록체인,프론트엔드,2,0.6666666666666666
+ai_classifier_rerank,블록체인,devops/시스템 엔지니어,1,0.3333333333333333
+ai_classifier_rerank,블록체인,SW/솔루션,0,0.0
+ai_classifier_rerank,빅데이터 엔지니어,빅데이터 엔지니어,3,0.6
+ai_classifier_rerank,빅데이터 엔지니어,SW/솔루션,1,0.2
+ai_classifier_rerank,빅데이터 엔지니어,인공지능/머신러닝,1,0.2
+ai_classifier_rerank,서버/백엔드,서버/백엔드,4,1.0
+ai_classifier_rerank,서버/백엔드,SW/솔루션,0,0.0
+ai_classifier_rerank,서버/백엔드,devops/시스템 엔지니어,0,0.0
+ai_classifier_rerank,인공지능/머신러닝,인공지능/머신러닝,5,1.0
+ai_classifier_rerank,인공지능/머신러닝,SW/솔루션,0,0.0
+ai_classifier_rerank,인공지능/머신러닝,devops/시스템 엔지니어,0,0.0
+ai_classifier_rerank,프론트엔드,프론트엔드,5,1.0
+ai_classifier_rerank,프론트엔드,SW/솔루션,0,0.0
+ai_classifier_rerank,프론트엔드,devops/시스템 엔지니어,0,0.0
+domain_rerank,게임 개발,게임 서버,2,0.4
+domain_rerank,게임 개발,QA 엔지니어,1,0.2
+domain_rerank,게임 개발,서버/백엔드,1,0.2
+domain_rerank,모바일 앱,서버/백엔드,1,0.5
+domain_rerank,모바일 앱,크로스플랫폼 앱,1,0.5
+domain_rerank,모바일 앱,SW/솔루션,0,0.0
+domain_rerank,블록체인,프론트엔드,2,0.6666666666666666
+domain_rerank,블록체인,devops/시스템 엔지니어,1,0.3333333333333333
+domain_rerank,블록체인,SW/솔루션,0,0.0
+domain_rerank,빅데이터 엔지니어,빅데이터 엔지니어,3,0.6
+domain_rerank,빅데이터 엔지니어,SW/솔루션,2,0.4
+domain_rerank,빅데이터 엔지니어,QA 엔지니어,0,0.0
+domain_rerank,서버/백엔드,서버/백엔드,3,0.75
+domain_rerank,서버/백엔드,프론트엔드,1,0.25
+domain_rerank,서버/백엔드,SW/솔루션,0,0.0
+domain_rerank,인공지능/머신러닝,인공지능/머신러닝,3,0.6
+domain_rerank,인공지능/머신러닝,SW/솔루션,1,0.2
+domain_rerank,인공지능/머신러닝,프론트엔드,1,0.2
+domain_rerank,프론트엔드,프론트엔드,5,1.0
+domain_rerank,프론트엔드,QA 엔지니어,0,0.0
+domain_rerank,프론트엔드,SW/솔루션,0,0.0
+faiss_only,게임 개발,게임 서버,2,0.4
+faiss_only,게임 개발,QA 엔지니어,1,0.2
+faiss_only,게임 개발,서버/백엔드,1,0.2
+faiss_only,모바일 앱,SW/솔루션,1,0.5
+faiss_only,모바일 앱,크로스플랫폼 앱,1,0.5
+faiss_only,모바일 앱,QA 엔지니어,0,0.0
+faiss_only,블록체인,프론트엔드,2,0.6666666666666666
+faiss_only,블록체인,devops/시스템 엔지니어,1,0.3333333333333333
+faiss_only,블록체인,SW/솔루션,0,0.0
+faiss_only,빅데이터 엔지니어,SW/솔루션,3,0.6
+faiss_only,빅데이터 엔지니어,서버/백엔드,2,0.4
+faiss_only,빅데이터 엔지니어,QA 엔지니어,0,0.0
+faiss_only,서버/백엔드,서버/백엔드,3,0.75
+faiss_only,서버/백엔드,웹 풀스택,1,0.25
+faiss_only,서버/백엔드,SW/솔루션,0,0.0
+faiss_only,인공지능/머신러닝,인공지능/머신러닝,3,0.6
+faiss_only,인공지능/머신러닝,SW/솔루션,2,0.4
+faiss_only,인공지능/머신러닝,QA 엔지니어,0,0.0
+faiss_only,프론트엔드,프론트엔드,3,0.6
+faiss_only,프론트엔드,서버/백엔드,1,0.2
+faiss_only,프론트엔드,웹 풀스택,1,0.2

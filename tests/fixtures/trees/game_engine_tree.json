@@ -1,0 +1,9 @@
+{
+  "tree": [
+    { "path": "Assets/Scripts/PlayerController.cs", "type": "blob" },
+    { "path": "Assets/Scenes/Main.unity", "type": "blob" },
+    { "path": "Assets/Prefabs/Enemy.prefab", "type": "blob" },
+    { "path": "ProjectSettings/ProjectSettings.asset", "type": "blob" },
+    { "path": "Assets/Scripts/GameManager.cs", "type": "blob" }
+  ]
+}

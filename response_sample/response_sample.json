@@ -1,0 +1,343 @@
+# Git2Value POST /v1/analyze 성공(HTTP 200) 응답과 동일한 키만 포함
+# 처리: '#'으로 시작하는 줄 전부 삭제 후 아래부터 JSON 단일 객체로 파싱
+#
+# ● = 항상 존재하는 키(값은 null·[] 가능)  ○ = 상황에 따라 null 또는 생략된 내용 가능
+#
+
+{
+# ● status · error (성공 시 null)
+  "status": "success",
+  "error": null,
+# ● github_score
+  "github_score": {
+    "total": 74.2,
+    "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+    "breakdown": {
+      "contribution": 40.0,
+      "quality": 25.5,
+      "consistency": 8.7
+    },
+    "breakdown_note": "최고 레포 기준"
+  },
+
+# ● per_repo: 레포별 메타 + diagnosis (팀 1 + 개인 1 = 2개)
+
+  "per_repo": [
+    {
+
+# ○ 팀 레포 — extra_items에 테스트/CI/CD/배포/커밋리듬 필수 점검 형태로 채워지는 경우 많음
+
+      "repo_name": "acme-corp/order-api (main)",
+      "repo_type": "team",
+      "distinct_author_count": 4,
+      "repo_author_names": ["kimdev", "leedev", "parkdev"],
+      "is_fork": false,
+      "fork_penalty": null,
+      "dominance_ratio": 0.28,
+      "is_dominance_override": false,
+      "repo_total_score": 78.5,
+      "score_breakdown": {
+        "contribution": 44.0,
+        "quality": 26.0,
+        "consistency": 8.5,
+        "quality_mode": "team_standard"
+      },
+      "target_commit_count": 56,
+      "total_repo_commits": 620,
+      "target_commit_ratio": 0.0903,
+      "active_weeks": 16,
+      "repo_active_weeks": 48,
+      "detected_domains": ["서버/백엔드"],
+      "frameworks": ["FastAPI", "PostgreSQL", "Docker"],
+      "language_category": {
+        "main": [["Python", 85.0]],
+        "sub": [["Shell", 10.0], ["Dockerfile", 5.0]],
+        "trivial": []
+      },
+      "diagnosis": {
+        "core_items": {
+
+# readme_quality ○ llm_* 필드는 LLM 가용 시에만
+
+          "readme_quality": {
+            "status": "양호",
+            "detail": "목적·설치·사용 예시가 정리되어 있음",
+            "action": null,
+            "llm_used": true,
+            "llm_scores": {
+              "purpose": 4,
+              "tech": 4,
+              "setup": 4,
+              "visual": 2,
+              "overall": 4
+            },
+            "llm_suggestions": ["시퀀스 다이어그램 추가"]
+          },
+          "project_structure": {
+            "status": "양호",
+            "detail": "app/domain 계층 분리",
+            "action": null
+          },
+          "commit_quality": {
+            "status": "보통",
+            "detail": "feat/fix 혼재",
+            "action": "Conventional Commits 통일 권장"
+          }
+        },
+        "extra_items": {
+          "test_coverage": {
+            "status": "양호",
+            "detail": "pytest 커버리지 감지",
+            "action": null
+          },
+          "cicd": {
+            "status": "양호",
+            "detail": "GitHub Actions 배포 파이프",
+            "action": null
+          },
+          "deployment": {
+            "status": "보통",
+            "detail": "docker-compose만 존재",
+            "action": null
+          },
+          "commit_pattern": {
+            "status": "규칙적",
+            "detail": "주 단위 커밋 유지",
+            "action": null
+          }
+        }
+      }
+    },
+
+# ○ 개인 레포 — extra는 가산·참고 위주 상태가 많음
+
+    {
+      "repo_name": "jdoe/my-dashboard",
+      "repo_type": "personal",
+      "distinct_author_count": 1,
+      "repo_author_names": ["jdoe"],
+      "is_fork": false,
+      "fork_penalty": null,
+      "dominance_ratio": 1.0,
+      "is_dominance_override": false,
+      "repo_total_score": 63.8,
+      "score_breakdown": {
+        "contribution": 32.0,
+        "quality": 22.0,
+        "consistency": 9.8,
+        "quality_mode": "personal_focus"
+      },
+      "target_commit_count": 84,
+      "total_repo_commits": 84,
+      "target_commit_ratio": 1.0,
+      "active_weeks": 10,
+      "repo_active_weeks": 10,
+      "detected_domains": ["웹 프론트엔드"],
+      "frameworks": ["React", "TypeScript", "Vite"],
+      "language_category": {
+        "main": [["TypeScript", 70.0], ["CSS", 22.0]],
+        "sub": [],
+        "trivial": []
+      },
+      "diagnosis": {
+        "core_items": {
+
+# readme_quality 가 ○ llm_used:false 예시(LLM 미연결 또는 해당 레포 미평가)
+
+          "readme_quality": {
+            "status": "보통",
+            "detail": "스크린샷 부족",
+            "action": null,
+            "llm_used": false
+          },
+          "project_structure": {
+            "status": "양호",
+            "detail": "표준 SPA 구조",
+            "action": null
+          },
+          "commit_quality": {
+            "status": "양호",
+            "detail": "메시지 일관성 양호",
+            "action": null
+          }
+        },
+        "extra_items": {
+          "test_coverage": {
+            "status": "선택 가점",
+            "detail": "개인 레포 테스트 미감지",
+            "action": null
+          },
+          "cicd": {
+            "status": "없음",
+            "detail": "CI 워크플로 없음",
+            "action": null
+          },
+          "deployment": {
+            "status": "없음",
+            "detail": "배포 시그널 없음",
+            "action": null
+          },
+          "commit_pattern": {
+            "status": "보통",
+            "detail": "간헐적 커밋",
+            "action": null
+          }
+        }
+      }
+    }
+  ],
+
+# ● level: grade←expected_level.level, description←summary
+
+  "level": {
+    "grade": "Competitive",
+    "description": "팀 프로젝트에서 운영 항목이 충족된 경우 요약 텍스트"
+  },
+
+# ● summary: 종합 문자열 블록 + 포지셔닝 파싱 + 강점/퀵윈 리스트
+
+  "summary": {
+    "text": "[종합 분석]\n  GitHub 점수  : 74.2점 / 100점\n  포지셔닝     : 서버/백엔드 Competitive 수준 포트폴리오\n\n  강점:\n    · README 품질\n\n  실행 가능한 개선 (Quick Wins):\n    1. 개인 레포에 CI 파이프라인 추가",
+    "positioning": "서버/백엔드 Competitive 수준 포트폴리오",
+    "strengths": ["README 품질", "프로젝트 구조"],
+    "quick_wins": ["개인 레포에 CI 파이프라인 추가", "README에 화면 캡처 보강"]
+  },
+
+# ● job_matching: 도메인·리랭크 노트·상위 매칭 5건·○ multi_domain_picks 등
+
+  "job_matching": {
+    "primary_domain": "서버/백엔드",
+    "detected_domains": ["서버/백엔드", "웹 프론트엔드"],
+    "rerank_note": "도메인 감지: '서버/백엔드' → 기대 직무와 일치하는 공고에 +0.05 가산 후 유효 점수로 재정렬했습니다.",
+    "is_multi_domain": false,
+
+# ● eligible_matches: 최대 5건; ○ experience_warning 경력 미달 시 문자열
+
+    "eligible_matches": [
+      {
+        "rank": 1,
+        "position": "백엔드 개발자 (Java/Spring)",
+        "company_name": "테크코퍼레이션",
+        "category": "서버/백엔드",
+        "similarity": 0.831,
+        "effective_score": 0.881,
+        "domain_boosted": true,
+        "similarity_label": "강함",
+        "experience_warning": null
+      },
+      {
+        "rank": 2,
+        "position": "서버 개발자 (Python)",
+        "company_name": "스타트업랩",
+        "category": "서버/백엔드",
+        "similarity": 0.798,
+        "effective_score": 0.848,
+        "domain_boosted": true,
+        "similarity_label": "강함",
+        "experience_warning": null
+      },
+      {
+        "rank": 3,
+        "position": "API 플랫폼 엔지니어",
+        "company_name": "클라우드플",
+        "category": "서버/백엔드",
+        "similarity": 0.762,
+        "effective_score": 0.762,
+        "domain_boosted": false,
+        "similarity_label": "보통",
+        "experience_warning": null
+      },
+      {
+        "rank": 4,
+        "position": "풀스택 개발자",
+        "company_name": "에이전시X",
+        "category": "웹 풀스택",
+        "similarity": 0.721,
+        "effective_score": 0.721,
+        "domain_boosted": false,
+        "similarity_label": "보통",
+        "experience_warning": null
+      },
+      {
+        "rank": 5,
+        "position": "시니어 백엔드 (5년+)",
+        "company_name": "엔터프라이즈Y",
+        "category": "서버/백엔드",
+        "similarity": 0.705,
+        "effective_score": 0.705,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": "요구 경력 5년 이상 — 지원 가능 경력에 미달"
+      }
+    ],
+
+# ○ domain_mismatch: 일치 진단 타입별 메시지 객체 또는 null
+
+    "domain_mismatch": null,
+
+# ● domain_check: 도메인 vs 매칭 일치 여부·○ 경고·○ 권장 카테고리
+
+    "domain_check": {
+      "consistent": true,
+      "warning": null,
+      "suggested_category": null
+    },
+
+# ○ multi_domain_picks: 다중 도메인 균형 추천 시 객체만 채움, 단일 도메인이면 null
+
+    "multi_domain_picks": null,
+
+# ● jumpit_category: 연봉 라우팅 직무(1순위 공고 기준 카테고리)
+
+    "jumpit_category": "서버/백엔드",
+
+# ● company_types: JD 분류 문자열 목록 tech_analysis.company_types 와 종종 동일
+
+    "company_types": ["백엔드/서버 유사 공고 2건", "웹 서비스 1건"]
+  },
+
+# ● salary_band: 직무·연봉구간·realistic_range·참고 직무·○ 대안 밴드
+
+  "salary_band": {
+    "matched_category": "서버/백엔드",
+    "experience_level": "신입~3년",
+    "salary_range": {
+      "jumpit_median": 52000000,
+      "wanted_median": 51000000,
+      "combined_range": "5,100만원~5,400만원"
+    },
+    "realistic_range": {
+      "median": 51500000,
+      "p25_estimate": 43775000,
+      "p75_estimate": 61800000
+    },
+    "source": "점핏·원티드 교차 (샘플)",
+    "note": "GitHub 점수 미반영 — 시장 참고용",
+    "reference_categories": [
+      {
+        "category": "웹 풀스택",
+        "combined_range": "5,000만원~5,300만원"
+      }
+    ],
+    "alt_category_band": null
+  },
+
+# ● tech_analysis: 보유/부족 기술·학습 추천·공고 유형 태그
+
+  "tech_analysis": {
+    "matched_techs": ["Python", "FastAPI", "Docker", "PostgreSQL", "React"],
+    "missing_techs": ["Kubernetes", "Redis", "AWS"],
+    "learning_suggestions": ["Spring Boot", "AWS", "Redis"],
+    "company_types": ["백엔드/서버 유사 공고 2건", "웹 서비스 1건"]
+  },
+
+# ● meta: 버전·LLM 가능·소요시간(sec)·분석 레포 수·신청 경력년수
+
+  "meta": {
+    "version": "v7.0",
+    "llm_available": true,
+    "analysis_time_seconds": 21.4,
+    "repos_analyzed": 2,
+    "applicant_years": 0
+  }
+}

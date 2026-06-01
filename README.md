@@ -2,7 +2,7 @@
 
 # Git2Value — 프로젝트 개요서
 
-> 최종 갱신: 2026.04.06 | 스펙 버전: v4.0
+> 최종 갱신: 2026.06.01 | 스펙 버전: v4.0 | 구현 버전: v7.2-upgrade.7
 > 대상 독자: 팀원 전원 (기획·개발·발표 준비용)
 
 日本人の方はこの[文書](https://github.com/jww0108/2026_Capstone/blob/tekyung/README_JAPAN.md)を開いてください
@@ -14,7 +14,7 @@
 
 GitHub 레포지토리를 분석하여 취준생에게 세 가지를 알려줍니다:
 1. 어떤 직무 공고와 매칭되는가
-2. 포트폴리오의 강점과 약점은 무엇인가
+2. 포트폴리오의 강점·약점·개선 우선순위는 무엇인가
 3. 해당 직무의 시장 연봉 범위는 얼마인가
 
 ---
@@ -33,15 +33,15 @@ GitHub 레포지토리를 분석하여 취준생에게 세 가지를 알려줍�
 ## 3. 서비스 전체 구조
 
 ```
-GitHub Username + 레포 URL 리스트
+GitHub Username + 레포 URL 리스트 (최대 3개)
         ↓
 ┌─────────────────────────────────────────────┐
 │           GitHubExtractor                   │
 │  - GitHub API 비동기 수집                    │
 │  - 균등 커밋 샘플링 + SHA 중복 제거          │
-│  - 점수 산출 (기여도 / 성숙도 / 일관성)      │
-│  - 의존성 파일 파싱                          │
-│  - 파일명/폴더명 도메인 감지                  │
+│  - 점수 산출 (Contribution 60 / Quality 30 / Consistency 10) │
+│  - 커밋 품질 계수 + Fork/기여 비율 보정       │
+│  - 의존성 파일 파싱 + 트리 기반 도메인 감지    │
 └─────────────────────────────────────────────┘
         ↓
 ┌─────────────────────────────────────────────┐
@@ -62,20 +62,20 @@ GitHub Username + 레포 URL 리스트
 ┌────────────────┬────────────────┬────────────────┐
 │  모듈 A        │  모듈 B        │  모듈 C        │
 │  직무 매칭     │  포트폴리오 진단 │  시장 연봉 밴드 │
-│  (상위 5개 공고)│  (체크리스트)   │  (독립 조회)   │
+│  (상위 5개 공고)│  (레포별 카드)  │  (독립 조회)   │
 └────────────────┴────────────────┴────────────────┘
         ↓
       최종 통합 리포트
 ```
 
-**핵심 설계 원칙:** 세 모듈은 완전히 독립적입니다. 하나가 부정확해도 나머지를 오염시키지 않습니다.
+**핵심 설계 원칙:** 세 모듈은 완전히 독립적입니다. GitHub 점수는 합격/불합격 판정이나 연봉 산식이 아니라, 공개 포트폴리오 신호를 해석하는 진단 지표입니다.
 
 ---
 
 ## 4. 모듈 A: 직무 매칭
 
 ### 하는 일
-지원자의 깃허브 프로필을 채용 공고 3,400개와 비교하여, 가장 유사한 공고 상위 5개를 추천합니다.
+지원자의 깃허브 프로필을 채용 공고 벡터 인덱스와 비교하여, 경력 조건을 거른 뒤 가장 유사한 공고 상위 5개를 추천합니다.
 
 ### 기술 구성
 
@@ -138,51 +138,61 @@ DOMAIN_SIGNALS = {
 ## 5. 모듈 B: 포트폴리오 진단
 
 ### 하는 일
-깃허브 레포를 분석하여 항목별 체크리스트, 개선 가이드, 그리고 시장 기대 수준을 알려줍니다.
+깃허브 레포를 분석하여 레포별 카드 진단, 개선 가이드, GitHub Portfolio Tier를 알려줍니다.
 
 ### 진단 항목
 
 | 진단 항목 | 판별 방법 | 데이터 소스 |
 |---|---|---|
-| README 품질 | 정제 후 텍스트 길이, 스크린샷/GIF 포함 여부 | readme_data |
+| README 품질 | 길이, 목적/기술/실행/환경/시각화 근거, 선택적 로컬 LLM 평가 | readme_data |
 | 프로젝트 구조 | 디렉토리 모듈화, .gitignore 존재, 파일당 평균 LOC | tree_data |
 | 테스트 작성 | test 파일 / 전체 소스 파일 비율 | tree_data |
 | CI/CD 구성 | GitHub Actions / Dockerfile 존재 + 파일 크기 > 200B | tree_data |
-| 커밋 습관 | 커밋 메시지 평균 길이, 무의미 메시지("fix", "update") 비율 | commits API |
+| 커밋 메시지 | 무의미 메시지("fix", "update") 비율, Conventional Commits 개선 힌트 | commits API |
 | 배포 경험 | Dockerfile, docker-compose, Vercel/Netlify 설정 존재 | tree_data |
-| 협업 경험 | 팀 프로젝트 레포에서 PR/이슈 참여 패턴 | commits API |
+| 커밋 리듬 | 지원자 기준 활성 주, 주당 커밋 빈도 | commits API |
+| 성장성/활동 지속성 | active_weeks, duration_days, total_commits, repo_active_weeks | commits API |
 
 ### 출력 예시
 
 ```json
 {
-  "readme_quality": {
-    "status": "양호",
-    "detail": "평균 680자, 2개 레포에 스크린샷 포함",
-    "action": null
+  "core_items": {
+    "readme_quality": {
+      "status": "개선 필요",
+      "detail": "길이는 충분하지만 실행 방법과 기술 설명 근거가 부족합니다.",
+      "action": "README에 실행 커맨드, 환경 변수, 기술 스택 설명을 추가하세요."
+    },
+    "project_structure": {
+      "status": "양호",
+      "detail": "디렉터리 구성과 .gitignore 존재 여부가 적절합니다.",
+      "action": null
+    },
+    "commit_quality": {
+      "status": "보통",
+      "detail": "일부 커밋 메시지가 추상적입니다.",
+      "action": "변경 의도가 드러나도록 한 줄 설명을 덧붙이세요."
+    }
   },
-  "test_coverage": {
-    "status": "미흡",
-    "detail": "3개 레포 중 테스트 파일 존재 0개",
-    "action": "주력 프로젝트에 pytest/Jest 테스트를 추가하세요."
-  },
-  "commit_quality": {
-    "status": "개선 필요",
-    "detail": "커밋 메시지 중 42%가 무의미 메시지",
-    "action": "Conventional Commits 형식(feat:, fix:, refactor:)을 적용해보세요."
+  "extra_items": {
+    "growth_signal": {
+      "status": "성장 신호",
+      "detail": "활동 주와 커밋 수 기준 지속 성장 흐름이 보입니다.",
+      "action": "주 단위 기록을 유지하세요."
+    }
   }
 }
 ```
 
 ### 기대 수준 가이드
 
-포트폴리오 완성도에 따라 시장에서 어느 수준인지 안내합니다.
+공개 GitHub 포트폴리오 성숙도에 따라 어느 수준인지 안내합니다. 개발자 역량 전체 등급이 아니라, 분석된 GitHub 활동과 문서화/운영 신호 기준입니다.
 
 | 레벨 | 충족 조건 | 설명 |
 |---|---|---|
-| **Entry** | README 존재, 프로젝트 1~2개 | 중소/중견 SI, 일반 스타트업 지원 가능 수준 |
-| **Competitive** | + 테스트 코드 + CI/CD + 배포 경험 | 시리즈B+ 스타트업, IT 서비스 기업 경쟁력 있는 수준 |
-| **Top** | + 오픈소스 기여 + 기술 블로그 + 복수 완성 프로젝트 | 대형 테크 기업 서류 통과 가능 수준 |
+| **Entry** | 기본 README/구조 신호 일부 존재 | 공개 GitHub 포트폴리오가 아직 보강 필요한 상태 |
+| **Competitive** | 팀 경험 또는 운영 신호 + 복수 프로젝트 | 지원 직무와 연결 가능한 포트폴리오 신호가 있는 상태 |
+| **Top** | README/구조/운영/활동 신호가 고르게 충족 | 공개 포트폴리오 운영·협업 신호가 매우 충실한 상태 |
 
 ---
 
@@ -206,7 +216,7 @@ DOMAIN_SIGNALS = {
 
 ```json
 {
-  "market_salary_band": {
+  "salary_band": {
     "matched_category": "서버/백엔드",
     "experience_level": "신입 (0~3년)",
     "salary_range": {
@@ -214,14 +224,17 @@ DOMAIN_SIGNALS = {
       "wanted_median": 38354225,
       "combined_range": "3,500만 ~ 3,800만원"
     },
-    "source": "점핏·원티드 2025 채용공고 기반"
+    "realistic_range": {
+      "p25": 35000000,
+      "p75": 42000000
+    },
+    "source": "점핏·원티드 2025 채용공고 기반",
+    "reference_categories": [
+      {"category": "인공지능/머신러닝", "combined_range": "3,900만 ~ 4,100만원"},
+      {"category": "프론트엔드", "combined_range": "3,400만 ~ 3,500만원"}
+    ]
   },
-  "category_comparison": [
-    {"category": "인공지능/머신러닝", "junior_range": "3,900만 ~ 4,100만원"},
-    {"category": "서버/백엔드",      "junior_range": "3,500만 ~ 3,800만원"},
-    {"category": "프론트엔드",       "junior_range": "3,400만 ~ 3,500만원"},
-    {"category": "QA 엔지니어",     "junior_range": "3,100만 ~ 3,300만원"}
-  ]
+  "note": "연봉 밴드는 GitHub 점수와 독립적인 시장 참고값입니다."
 }
 ```
 
@@ -235,14 +248,17 @@ DOMAIN_SIGNALS = {
 
 | 축 | 배점 | 산출 방식 |
 |---|---|---|
-| contribution (기여도) | 최대 60점 | LOC 70% + 커밋 수 30% 블렌딩 |
-| quality (성숙도) | 최대 30점 | CI/CD 실질성 + 테스트 비율 + 유지보수 기간 |
-| consistency (일관성) | 최대 10점 | 커밋 간격 표준편차 기반 |
+| contribution (개발 활동량) | 최대 60점 | LOC/evidence LOC + 커밋 활동 이력, 커밋 품질 계수, Fork 보정 |
+| quality (프로젝트 운영도) | 최대 30점 | 팀/개인 레포 기준별 CI/CD, 테스트, 활성 주 |
+| consistency (작업 일관성) | 최대 10점 | 커밋 간격 표준편차 기반 |
+
+`score_detail`에는 축별 세부 항목의 현재 점수, 만점, 개선 여지, 원시값이 포함됩니다.
+커밋 항목은 `commit_score_100`에 `commit_quality_factor`를 적용한 `adjusted_commit_score_100` 기준으로 계산됩니다.
 
 ### 안티 치팅
 
-- **Fork 감지:** fork 레포는 기여도에만 70% 감산 (오픈소스 기여 인정)
-- **오너십 확인:** 최초 커밋일과 레포 생성일 비교 → 30일 이상 차이 시 경고
+- **Fork 감지:** fork 레포는 지원자 기여 비율에 따라 contribution 축만 보정
+- **작성자 분리 수집:** 지원자 author 커밋과 레포 전체 커밋을 분리해 팀/개인 판정
 - **SHA 중복 제거:** 레포 간 동일 커밋 중복 집계 방지
 - **보일러플레이트 제거:** CRA, 프레임워크 기본 텍스트 자동 필터링
 
@@ -263,7 +279,7 @@ DOMAIN_SIGNALS = {
 ```
 _clean_markdown() 후 텍스트 길이
     ↓
-[200자 이상] → 정제 텍스트 + 구조화 데이터로 프로필 생성
+[200자 이상] → 키워드 추출 성공 시 매칭용 프로필 보강
     ↓
 [50~200자]  → 구조화 데이터(언어, 의존성, 도메인 감지) 기반 템플릿 프로필
     ↓
@@ -272,7 +288,7 @@ _clean_markdown() 후 텍스트 길이
               └─ 시그널 없음 → "상세 분석 불가"로 정직하게 표시
 ```
 
-**원칙:** 없는 정보를 만들어내지 않습니다. 정보가 부족하면 부족하다고 표시합니다.
+**원칙:** 없는 정보를 만들어내지 않습니다. 정보가 부족하면 부족하다고 표시합니다. README는 100점 점수축에 직접 배점되지 않고, 진단/Tier gate/매칭 보조/evidence LOC에 간접 반영됩니다.
 
 ---
 
@@ -286,12 +302,14 @@ _clean_markdown() 후 텍스트 길이
 | 벡터 검색 | FAISS (CPU) |
 | 채용 공고 데이터 | 원티드 2,000 + 점핏 1,000 + 리멤버 400건 |
 | 연봉 데이터 | 점핏·원티드 2025 직무별 연차별 중앙값 |
-| 환경 | RTX 4090, Windows, Docker, PyTorch |
+| API 서버 | FastAPI (`main.py`) |
+| README 선택 평가 | 로컬 vLLM + `ReadmeEvaluator` |
+| 환경 | Windows, Docker, PyTorch |
 
 ### 외부 API 의존성
 
-**없음.** 전체 파이프라인이 로컬에서 동작합니다.
-GitHub API(데이터 수집)를 제외하면 외부 서비스 호출이 없습니다.
+**외부 LLM API 없음.** 전체 분석·매칭·진단 파이프라인은 로컬에서 동작합니다.
+GitHub API(데이터 수집)와 Hugging Face 모델 다운로드를 제외하면 외부 서비스 호출이 없습니다.
 
 ---
 
@@ -300,23 +318,32 @@ GitHub API(데이터 수집)를 제외하면 외부 서비스 호출이 없습�
 ```
 basic/
 ├── github_extractor.py      # GitHub 분석 엔진 (핵심)
+├── profile_builder.py       # 도메인·엔진 시그니처 감지, 매칭용 프로필 생성
+├── portfolio_diagnosis.py   # 레포별 카드 진단 + Portfolio Tier
 ├── valuation_engine.py      # 시장 연봉 밴드 조회
-├── run_git2value.py         # E2E 파이프라인 실행
+├── experience_filter.py     # 경력 요건 필터링
+├── run_git2value.py         # E2E 파이프라인 실행 + Git2ValuePipeline
+├── main.py                  # FastAPI 분석/README 평가 API
+├── llm_readme_evaluator.py  # 로컬 LLM README 평가
 ├── requirements.txt         # 의존성
 ├── .env                     # GitHub API 토큰 (버전 관리 제외)
 │
 ├── vector/
 │   ├── git2value_faiss.index   # FAISS 인덱스 (3,400개 공고)
 │   ├── git2value_metadata.json # 공고 메타데이터
-│   └── unified_jd_corpus.jsonl # JD 원문 코퍼스
+│   ├── unified_jd_corpus.jsonl # JD 원문 코퍼스
+│   └── experience_cache.json   # 경력 필터 캐시
 │
 ├── data/
 │   ├── jumpit_data/          # 점핏 연봉 룩업 테이블
 │   ├── wanted_data/          # 원티드 연봉 데이터
 │   └── *.py                  # 데이터 수집/파싱 스크립트
 │
-├── kaggle/   (비활성)
-└── used/     (비활성)
+├── tests/              # 도메인/회귀 테스트
+├── response_sample/    # 프론트 응답 예시 JSON
+├── ml/                 # AI 직무 분류 연구용 (프로덕션 도입 보류)
+├── experiments/        # FAISS/룰/AI 리랭킹 비교 실험
+└── md/                 # 보조 문서
 ```
 
 ---
@@ -332,6 +359,9 @@ basic/
 ```bash
 # E2E 파이프라인 (전체 흐름)
 python run_git2value.py
+
+# FastAPI 서버
+python main.py
 
 # GitHub 분석만 단독 실행
 python github_extractor.py
@@ -377,9 +407,10 @@ python valuation_engine.py
 
 | 확장 방향 | 설명 |
 |---|---|
-| B2B 전환 | 동일 엔진을 채용담당자 대상 스크리닝 도구로 제공 |
+| B2B 전환 | 채용담당자 대상 기능은 현재 로드맵으로 분리 |
 | 실시간 공고 연동 | 채용 플랫폼 API 연동으로 공고 DB 실시간 갱신 |
 | 경력직 확장 | LinkedIn/이력서 결합 시 경력직 분석 가능 |
+| 직무별 독립 Tier | Backend/DevOps/AI/Data 등 직무별 포트폴리오 티어 분리 |
 
 ---
 
@@ -394,7 +425,8 @@ python valuation_engine.py
 | 정확한 연봉 예측 불가 | 깃허브 점수와 연봉 사이 검증된 상관관계 부재 |
 | 깃허브를 안 쓰는 개발자 커버 불가 | 신입 중에서도 깃허브를 적극 관리하는 비율은 일부 |
 | 면접 합격 여부 예측 불가 | 컬쳐핏, 면접 퍼포먼스 등 깃허브 밖 변수 |
+| 직무별 독립 티어 미지원 | 현재는 Primary Domain Portfolio Tier 중심 |
 
 ---
 
-*Git2Value — 프로젝트 개요서 v4.0 — 2026.04.06*
+*Git2Value — 프로젝트 개요서 v4.0 / 구현 v7.2-upgrade.7 — 2026.06.01*

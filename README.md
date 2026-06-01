@@ -5,7 +5,7 @@
 > 최종 갱신: 2026.06.01 | 스펙 버전: v4.0 | 구현 버전: v7.2-upgrade.7
 > 대상 독자: 팀원 전원 (기획·개발·발표 준비용)
 
-日本人の方はこの[文書](https://github.com/jww0108/2026_Capstone/blob/tekyung/README_JAPAN.md)を開いてください
+日本人の方はこの[文書](https://github.com/jww0108/2026_Capstone/blob/develop/README_JAPAN.md)を開いてください
 ---
 
 ## 1. 한 줄 소개

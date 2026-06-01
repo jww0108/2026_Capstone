@@ -12,6 +12,7 @@ from urllib.parse import quote
 from dotenv import load_dotenv
 
 import profile_builder
+from portfolio_diagnosis import analyze_commit_message_quality
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -430,22 +431,232 @@ class GitHubExtractor:
 
     def _calc_consistency_score(self, commit_objects: List[Dict[str, Any]]) -> float:
         """max(0, 10 - std * 0.5); 커밋 수 < 5면 0."""
+        return self._calc_consistency_detail(commit_objects)["score"]
+
+    def _calc_consistency_detail(self, commit_objects: List[Dict[str, Any]]) -> Dict[str, float]:
+        """일관성 상세(점수/표준편차/커밋수) 반환."""
         if len(commit_objects) < 5:
-            return 0.0
+            return {"score": 0.0, "std_days": 0.0, "commit_count": float(len(commit_objects))}
         times: List[datetime] = []
         for o in commit_objects:
             t = self._commit_timestamp(o)
             if t:
                 times.append(t)
         if len(times) < 5:
-            return 0.0
+            return {"score": 0.0, "std_days": 0.0, "commit_count": float(len(times))}
         times.sort()
         deltas = [(times[i + 1] - times[i]).days for i in range(len(times) - 1)]
         if len(deltas) < 2:
             std = 0.0
         else:
             std = float(statistics.pstdev(deltas))
-        return round(max(0.0, 10.0 - std * 0.5), 1)
+        return {
+            "score": round(max(0.0, 10.0 - std * 0.5), 1),
+            "std_days": round(std, 2),
+            "commit_count": float(len(times)),
+        }
+
+    @staticmethod
+    def _build_score_detail(
+        *,
+        contribution_axis: float,
+        quality_axis: float,
+        consistency_axis: float,
+        loc_score: float,
+        commit_score: float,
+        adjusted_commit_score: float,
+        commit_quality_factor: float,
+        bad_message_ratio: float,
+        loc_w: float,
+        commit_w: float,
+        fork_penalty: float,
+        quality_mode: str,
+        cicd_pts: float,
+        test_pts: float,
+        duration_pts: float,
+        cicd_bonus: float,
+        test_bonus: float,
+        duration_personal: float,
+        consistency_std_days: float,
+        consistency_commit_count: float,
+        valid_loc: int,
+        evidence_loc: int,
+        analyzed_commit_count: int,
+        active_weeks: int,
+        test_ratio: float,
+        has_cicd: bool,
+    ) -> Dict[str, Any]:
+        pre_penalty_contrib = round((loc_score * loc_w + adjusted_commit_score * commit_w) * 0.6, 1)
+        loc_points = round((loc_score * loc_w) * 0.6, 1)
+        commit_points = round((adjusted_commit_score * commit_w) * 0.6, 1)
+        fork_penalty_loss = round(pre_penalty_contrib - contribution_axis, 1)
+
+        contribution_items: List[Dict[str, Any]] = [
+            {
+                "key": "loc_evidence_blend",
+                "label": "코드/증거 LOC 기여",
+                "score": loc_points,
+                "max_score": round(60.0 * loc_w, 1),
+                "raw_value": {
+                    "valid_loc": valid_loc,
+                    "evidence_loc": evidence_loc,
+                    "loc_score_100": round(loc_score, 1),
+                    "weight": loc_w,
+                },
+                "explanation": "유효 LOC + evidence LOC 로그 스케일 점수.",
+                "improvement_hint": "핵심 코드와 설정/문서 증거를 함께 늘리면 상승.",
+                "potential_gain": round(max(0.0, round(60.0 * loc_w, 1) - loc_points), 1),
+            },
+            {
+                "key": "commit_activity",
+                "label": "개발 활동 이력",
+                "score": commit_points,
+                "max_score": round(60.0 * commit_w, 1),
+                "raw_value": {
+                    "analyzed_commits": analyzed_commit_count,
+                    "commit_score_100": round(commit_score, 1),
+                    "adjusted_commit_score_100": round(adjusted_commit_score, 1),
+                    "commit_quality_factor": round(commit_quality_factor, 2),
+                    "bad_message_ratio": round(bad_message_ratio, 4),
+                    "weight": commit_w,
+                },
+                "explanation": "커밋 활동량(로그 스케일)에 메시지 품질 계수를 반영한 점수.",
+                "improvement_hint": "의미 있는 메시지(feat/fix/refactor 등) 유지 시 점수 손실 감소.",
+                "potential_gain": round(max(0.0, round(60.0 * commit_w, 1) - commit_points), 1),
+            },
+        ]
+        if fork_penalty < 1.0:
+            contribution_items.append(
+                {
+                    "key": "fork_penalty",
+                    "label": "Fork 패널티",
+                    "score": -abs(fork_penalty_loss),
+                    "max_score": 0.0,
+                    "raw_value": {"fork_penalty": fork_penalty},
+                    "explanation": "Fork 레포는 기여 비율 기반 패널티 적용.",
+                    "improvement_hint": "본인 주도 기여 비율이 높을수록 패널티 완화.",
+                    "potential_gain": abs(fork_penalty_loss),
+                }
+            )
+
+        if quality_mode == "team":
+            quality_items = [
+                {
+                    "key": "cicd",
+                    "label": "CI/CD",
+                    "score": round(cicd_pts, 1),
+                    "max_score": 10.0,
+                    "raw_value": {"has_cicd": has_cicd},
+                    "explanation": "워크플로우/배포 파이프라인 신호.",
+                    "improvement_hint": "GitHub Actions 1개라도 추가하면 개선.",
+                    "potential_gain": round(max(0.0, 10.0 - cicd_pts), 1),
+                },
+                {
+                    "key": "tests",
+                    "label": "테스트",
+                    "score": round(test_pts, 1),
+                    "max_score": 10.0,
+                    "raw_value": {"test_ratio": round(test_ratio, 4)},
+                    "explanation": "테스트 비율 구간 점수.",
+                    "improvement_hint": "핵심 로직 단위 테스트 추가.",
+                    "potential_gain": round(max(0.0, 10.0 - test_pts), 1),
+                },
+                {
+                    "key": "active_weeks",
+                    "label": "활동 주 수",
+                    "score": round(duration_pts, 1),
+                    "max_score": 10.0,
+                    "raw_value": {"active_weeks": active_weeks},
+                    "explanation": "주차 단위 지속 활동 신호.",
+                    "improvement_hint": "짧은 기간 몰아치기보다 주 단위 유지.",
+                    "potential_gain": round(max(0.0, 10.0 - duration_pts), 1),
+                },
+            ]
+        else:
+            quality_items = [
+                {
+                    "key": "active_weeks",
+                    "label": "활동 주 수",
+                    "score": round(duration_personal, 1),
+                    "max_score": 20.0,
+                    "raw_value": {"active_weeks": active_weeks},
+                    "explanation": "개인 레포는 지속 활동 가중치가 큼.",
+                    "improvement_hint": "주기적 커밋으로 8주 이상 이력 확보.",
+                    "potential_gain": round(max(0.0, 20.0 - duration_personal), 1),
+                },
+                {
+                    "key": "cicd_bonus",
+                    "label": "CI/CD 보너스",
+                    "score": round(cicd_bonus, 1),
+                    "max_score": 5.0,
+                    "raw_value": {"has_cicd": has_cicd},
+                    "explanation": "개인 레포에서도 운영 자동화 가산점.",
+                    "improvement_hint": "빌드/테스트 자동화 워크플로우 추가.",
+                    "potential_gain": round(max(0.0, 5.0 - cicd_bonus), 1),
+                },
+                {
+                    "key": "test_bonus",
+                    "label": "테스트 보너스",
+                    "score": round(test_bonus, 1),
+                    "max_score": 5.0,
+                    "raw_value": {"test_ratio": round(test_ratio, 4)},
+                    "explanation": "테스트 비율에 따른 가산점.",
+                    "improvement_hint": "테스트 비율 10% 이상 목표.",
+                    "potential_gain": round(max(0.0, 5.0 - test_bonus), 1),
+                },
+            ]
+
+        consistency_items = [
+            {
+                "key": "commit_rhythm",
+                "label": "커밋 리듬 안정성",
+                "score": round(consistency_axis, 1),
+                "max_score": 10.0,
+                "raw_value": {
+                    "std_days": consistency_std_days,
+                    "commit_count": int(consistency_commit_count),
+                },
+                "explanation": "커밋 간격 표준편차 기반 점수.",
+                "improvement_hint": "꾸준한 간격의 작은 커밋 유지.",
+                "potential_gain": round(max(0.0, 10.0 - consistency_axis), 1),
+            }
+        ]
+
+        axes = [
+            {
+                "key": "contribution",
+                "label": "개발 활동량",
+                "score": round(contribution_axis, 1),
+                "max_score": 60.0,
+                "items": contribution_items,
+                "potential_gain": round(max(0.0, 60.0 - contribution_axis), 1),
+            },
+            {
+                "key": "quality",
+                "label": "프로젝트 운영도",
+                "score": round(quality_axis, 1),
+                "max_score": 30.0,
+                "items": quality_items,
+                "potential_gain": round(max(0.0, 30.0 - quality_axis), 1),
+                "mode": quality_mode,
+            },
+            {
+                "key": "consistency",
+                "label": "작업 일관성",
+                "score": round(consistency_axis, 1),
+                "max_score": 10.0,
+                "items": consistency_items,
+                "potential_gain": round(max(0.0, 10.0 - consistency_axis), 1),
+            },
+        ]
+
+        return {
+            "total_score": round(contribution_axis + quality_axis + consistency_axis, 1),
+            "max_score": 100.0,
+            "axes": axes,
+            "potential_gain_total": round(max(0.0, 100.0 - (contribution_axis + quality_axis + consistency_axis)), 1),
+            "score_model": "contribution(60) + quality(30) + consistency(10)",
+        }
 
     def _cicd_and_test_ratio_from_tree(self, tree_data: Dict[str, Any]) -> Tuple[bool, float]:
         """
@@ -742,6 +953,9 @@ class GitHubExtractor:
             line = msg.split("\n")[0].strip()[:240]
             if line:
                 commit_messages.append(line)
+        commit_quality = analyze_commit_message_quality(commit_messages)
+        commit_quality_factor = max(0.8, float(commit_quality.get("factor", 1.0)))
+        bad_message_ratio = float(commit_quality.get("bad_ratio", 0.0))
 
         ok_readme, readme_data, _ = await self._fetch_with_retry(session, readme_url)
         if not ok_readme:
@@ -890,17 +1104,19 @@ class GitHubExtractor:
             100.0,
             math.log(analyzed_commit_count / 5.0 + 1.0) / math.log(21.0) * 100.0,
         )
+        adjusted_commit_score = min(100.0, commit_score * commit_quality_factor)
         if analyzed_commit_count < 5:
             loc_w, commit_w = 0.9, 0.1
         elif analyzed_commit_count < 15:
             loc_w, commit_w = 0.6, 0.4
         else:
             loc_w, commit_w = 0.5, 0.5
-        blend_100 = loc_score * loc_w + commit_score * commit_w
+        blend_100 = loc_score * loc_w + adjusted_commit_score * commit_w
         contribution_axis = round((blend_100 / 100.0) * 60.0, 1)
 
         # 일관성: 균등 샘플이 아닌 전체 author 커밋 목록 타임스탬프 (샘플링 인위 갭 제거)
-        consistency_axis = self._calc_consistency_score(all_author_commits)
+        consistency_detail = self._calc_consistency_detail(all_author_commits)
+        consistency_axis = float(consistency_detail["score"])
 
         # v6.2: Fork 패널티 기여 비율 기반 3단계 완화 (기존 일괄 0.3배 → 비율 연동)
         fork_penalty, fork_log = self._calc_fork_penalty(
@@ -915,6 +1131,34 @@ class GitHubExtractor:
                 repo_warnings.append(fork_log)
 
         repo_score = round(contribution_axis + quality_axis + consistency_axis, 1)
+        score_detail = self._build_score_detail(
+            contribution_axis=contribution_axis,
+            quality_axis=quality_axis,
+            consistency_axis=consistency_axis,
+            loc_score=loc_score,
+            commit_score=commit_score,
+            adjusted_commit_score=adjusted_commit_score,
+            commit_quality_factor=commit_quality_factor,
+            bad_message_ratio=bad_message_ratio,
+            loc_w=loc_w,
+            commit_w=commit_w,
+            fork_penalty=fork_penalty,
+            quality_mode=repo_type,
+            cicd_pts=cicd_pts,
+            test_pts=test_pts,
+            duration_pts=duration_pts,
+            cicd_bonus=cicd_bonus if repo_type != "team" else 0.0,
+            test_bonus=test_bonus if repo_type != "team" else 0.0,
+            duration_personal=duration_personal if repo_type != "team" else 0.0,
+            consistency_std_days=float(consistency_detail["std_days"]),
+            consistency_commit_count=float(consistency_detail["commit_count"]),
+            valid_loc=valid_loc,
+            evidence_loc=evidence_loc,
+            analyzed_commit_count=analyzed_commit_count,
+            active_weeks=active_weeks,
+            test_ratio=test_ratio,
+            has_cicd=has_cicd,
+        )
 
         has_tests_proxy = test_ratio >= 0.05
 
@@ -966,6 +1210,7 @@ class GitHubExtractor:
                 "consistency": consistency_axis,
                 "quality_mode": repo_type,          # v6.2: "team" 또는 "personal"
             },
+            "score_detail": score_detail,
             "commits_analyzed": analyzed_commit_count,
             "warnings": repo_warnings,
         }
@@ -1049,6 +1294,7 @@ class GitHubExtractor:
             # score_breakdown은 최고 레포 기준으로 표시
             best_idx = repo_scores.index(best_score)
             best_bd = valid_results[best_idx].get("score_breakdown") or {}
+            best_score_detail = valid_results[best_idx].get("score_detail") or {}
             agg_breakdown = {
                 "contribution": round(best_bd.get("contribution", 0), 1),
                 "quality": round(best_bd.get("quality", 0), 1),
@@ -1057,6 +1303,13 @@ class GitHubExtractor:
         else:
             final_score = 0.0
             agg_breakdown = {"contribution": 0.0, "quality": 0.0, "consistency": 0.0}
+            best_score_detail = {
+                "total_score": 0.0,
+                "max_score": 100.0,
+                "axes": [],
+                "potential_gain_total": 100.0,
+                "score_model": "contribution(60) + quality(30) + consistency(10)",
+            }
 
         total_loc_cnt = sum(global_languages.values())
         lang_str = ", ".join(
@@ -1150,6 +1403,7 @@ class GitHubExtractor:
                     "repo_name": res.get("repo_name", ""),
                     "repo_total_score": res_total_score,        # v6.2
                     "score_breakdown": res_bd,                  # v6.2: 레포별 breakdown
+                    "score_detail": res.get("score_detail") or {},
                     "readme": rm,
                     "readme_raw": res.get("readme_raw") or rm,  # v6.3: 원본 없으면 정제본 폴백
                     "readme_has_image": bool(res.get("readme_has_image")),
@@ -1191,6 +1445,8 @@ class GitHubExtractor:
         return {
             "github_score": final_score,
             "score_breakdown": agg_breakdown,
+            "score_axes": best_score_detail.get("axes") or [],
+            "score_detail": best_score_detail,
             "applicant_resume": applicant_resume,
             "profile_for_matching": profile_for_matching,
             "domain_hits_merged": merged_domain_hits_dict,

@@ -298,6 +298,27 @@ def evaluate_readme_quality(readme_text: str) -> Dict[str, Any]:
     return {"status": "미흡", "indicators": indicators, "found_count": found_count}
 
 
+def _extract_readme_doc_signals(readme_text: str) -> Dict[str, bool]:
+    """README 내 실행/환경/기술/시각화 근거 존재 여부를 보조 진단한다."""
+    patterns = {
+        "execution_guide": [
+            r"##\s*(quick\s*start|getting\s*started|installation|install|usage|run)",
+            r"```(?:bash|sh|zsh)?[\s\S]{0,240}(pip|npm|pnpm|yarn|docker|python|uvicorn|streamlit)",
+            r"(python|npm|pnpm|yarn|docker)\s+(install|run|start|test|build)",
+        ],
+        "environment_guide": [
+            r"(\.env|environment variables?|환경 변수|requirements\.txt|package\.json|docker-compose)",
+            r"##\s*(environment|개발\s*환경|환경\s*설정|requirements|dependencies)",
+        ],
+        "tech_explanation": README_QUALITY_INDICATORS["기술 스택 설명"],
+        "visual_evidence": README_QUALITY_INDICATORS["결과물 시각화"],
+    }
+    return {
+        key: any(re.search(p, readme_text, re.I | re.M) for p in regexes)
+        for key, regexes in patterns.items()
+    }
+
+
 # ---------------------------------------------------------------------------
 # v6.1: 레포별 단건 진단 함수들 (per-repo)
 # ---------------------------------------------------------------------------
@@ -345,29 +366,43 @@ def _readme_diagnosis_single(
 
     # LLM 미사용 → 기존 v6.4 룰베이스 로직
     quality = evaluate_readme_quality(readme_raw)       # v6.3: 원본으로 평가
+    doc_signals = _extract_readme_doc_signals(readme_raw)
     missing_dims = [k for k, v in quality["indicators"].items() if not v]
     missing_hint = f" (부족: {', '.join(missing_dims)})" if missing_dims else ""
+    missing_doc = [
+        label for key, label in (
+            ("execution_guide", "실행 방법"),
+            ("environment_guide", "환경 설정"),
+            ("tech_explanation", "기술 설명"),
+            ("visual_evidence", "시각 자료"),
+        ) if not doc_signals[key]
+    ]
+    doc_hint = f" 문서 근거 부족: {', '.join(missing_doc)}." if missing_doc else ""
 
     if n >= 200:
         if quality["status"] == "양호":
             img_hint = " · 이미지 포함" if has_image else ""
             return _item(
                 "양호",
-                f"길이 {n:,}자{img_hint}. 목적·기술스택·시각화 항목이 충실합니다.",
+                f"길이 {n:,}자{img_hint}. 목적·기술스택·시각화 항목이 충실합니다."
+                f" 실행/환경 안내도 {'확인됨' if doc_signals['execution_guide'] or doc_signals['environment_guide'] else '보강 필요'}합니다.",
                 None,
                 llm_used=False,
             )
         return _item(
             "개선 필요",
-            f"길이는 충분({n:,}자)하지만 구성이 아쉽습니다{missing_hint}.",
-            f"README에 {', '.join(missing_dims) if missing_dims else '목적·기술 스택·스크린샷'}을 추가하면 완성도가 높아집니다.",
+            f"길이는 충분({n:,}자)하지만 구성이 아쉽습니다{missing_hint}.{doc_hint}",
+            (
+                f"README에 {', '.join(missing_dims) if missing_dims else '목적·기술 스택·스크린샷'}을 보완하고, "
+                f"{'실행 커맨드/환경 변수 안내를 명시하세요.' if missing_doc else '핵심 실행 커맨드와 결과 화면을 유지하세요.'}"
+            ),
             llm_used=False,
         )
 
     return _item(
         "개선 필요",
-        f"README가 짧습니다 ({n:,}자){missing_hint}.",
-        "프로젝트 목적, 기술 스택, 실행 방법, 데모 GIF/스크린샷을 README에 정리하세요.",
+        f"README가 짧습니다 ({n:,}자){missing_hint}.{doc_hint}",
+        "프로젝트 목적, 기술 스택, 실행 방법(명령어/환경 변수), 데모 GIF/스크린샷을 README에 정리하세요.",
         llm_used=False,
     )
 
@@ -419,18 +454,50 @@ def get_rewrite_hint(msg: str) -> str:
     return "feat/fix/refactor: 변경 내용 구체적으로 기술"
 
 
+def analyze_commit_message_quality(messages: List[str]) -> Dict[str, Any]:
+    """커밋 메시지 품질 분석(공용). 점수 보정/진단에서 함께 사용."""
+    if not messages:
+        return {
+            "total": 0,
+            "bad_count": 0,
+            "bad_ratio": 0.0,
+            "factor": 1.0,
+            "status": "알 수 없음",
+            "bad_samples": [],
+        }
+    bad_msgs = [m for m in messages if MEANINGLESS_COMMIT_PATTERNS.search(m.strip())]
+    bad_ratio = len(bad_msgs) / len(messages)
+    if bad_ratio < 0.15:
+        status = "양호"
+        factor = 1.0
+    elif bad_ratio < 0.35:
+        status = "보통"
+        factor = 0.9
+    else:
+        status = "개선 필요"
+        factor = 0.8
+    return {
+        "total": len(messages),
+        "bad_count": len(bad_msgs),
+        "bad_ratio": round(bad_ratio, 4),
+        "factor": factor,
+        "status": status,
+        "bad_samples": bad_msgs[:3],
+    }
+
+
 def _commit_quality_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
     msgs = repo.get("commit_messages") or []
-    if not msgs:
+    analysis = analyze_commit_message_quality(msgs)
+    if analysis["total"] == 0:
         return _item(
             "알 수 없음",
             "커밋 메시지 샘플이 없습니다.",
             None,
         )
-    bad = sum(1 for m in msgs if MEANINGLESS_COMMIT_PATTERNS.search(m.strip()))
-    ratio = bad / len(msgs)
+    ratio = float(analysis["bad_ratio"])
     if ratio >= 0.35:
-        bad_samples = [m for m in msgs if MEANINGLESS_COMMIT_PATTERNS.search(m.strip())][:1]
+        bad_samples = analysis["bad_samples"][:1]
         hint = get_rewrite_hint(bad_samples[0]) if bad_samples else "feat/fix/refactor: 변경 내용 구체적으로 기술"
         example = f"\n      예) '{bad_samples[0]}' → 권장: '{hint}'" if bad_samples else ""
         return _item(
@@ -524,6 +591,41 @@ def _commit_pattern_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
     )
 
 
+def _growth_signal_diagnosis_single(repo: Dict[str, Any]) -> Dict[str, Any]:
+    """성장성/활동 지속성 신호(점수 미반영, 진단 전용)."""
+    active_weeks = int(repo.get("active_weeks") or 0)
+    repo_active_weeks = int(repo.get("repo_active_weeks") or 0)
+    duration_days = int(repo.get("duration_days") or 0)
+    total_commits = int(repo.get("target_commit_count") or repo.get("total_commits") or 0)
+
+    if total_commits == 0 or (active_weeks == 0 and duration_days == 0):
+        return _item(
+            "확인 필요",
+            "성장성 판단에 필요한 활동 기간/커밋 데이터가 부족합니다.",
+            "최근 4~8주 동안 작은 단위 커밋 이력을 꾸준히 남겨보세요.",
+        )
+
+    recent_window_ok = active_weeks >= 6 and duration_days >= 45
+    sustained_ok = repo_active_weeks > 0 and (active_weeks / max(repo_active_weeks, 1)) >= 0.5
+    if total_commits >= 30 and recent_window_ok and sustained_ok:
+        return _item(
+            "성장 신호",
+            f"활동 주 {active_weeks}주, 기간 {duration_days}일, 커밋 {total_commits}건으로 지속 성장 흐름이 보입니다.",
+            "현재처럼 주 단위 기록을 유지하고, 의미 단위 커밋/PR 설명을 함께 남기세요.",
+        )
+    if total_commits >= 12 and active_weeks >= 3:
+        return _item(
+            "유지",
+            f"활동 주 {active_weeks}주, 기간 {duration_days}일, 커밋 {total_commits}건으로 기본 지속성은 확인됩니다.",
+            "활동 공백을 줄이고, 주차별 변경 목적을 README/커밋 메시지에 남기면 성장 신호가 강화됩니다.",
+        )
+    return _item(
+        "확인 필요",
+        f"활동 주 {active_weeks}주, 기간 {duration_days}일, 커밋 {total_commits}건으로 신호가 약합니다.",
+        "짧은 개선 단위를 주 단위로 누적해 활동 지속성을 만들어 보세요.",
+    )
+
+
 def _team_required_items(extra_items: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
     """팀 레포에서는 4개 운영/협업 항목을 필수 점검 항목으로 승격한다."""
     out: Dict[str, Dict[str, Any]] = {}
@@ -568,6 +670,7 @@ def diagnose_single_repo(
         "cicd": _cicd_diagnosis_single(repo, game_engines),
         "deployment": _deployment_diagnosis_single(repo, game_engines),
         "commit_pattern": _commit_pattern_diagnosis_single(repo),
+        "growth_signal": _growth_signal_diagnosis_single(repo),
     }
     if repo_type == "team":
         extra_items = _team_required_items(extra_items)
@@ -688,12 +791,18 @@ def expected_level(
     if readme_ok and multi_proj and team_repo_count >= 1 and has_test and has_cicd and has_deploy and score >= 8:
         return {
             "level": "Top",
-            "summary": "대형 테크·우수 스타트업 서류에서 경쟁력을 기대할 수 있는 완성도(참고 기준)입니다.",
+            "summary": (
+                "Top GitHub Portfolio Tier — 공개 GitHub 포트폴리오 기준으로 "
+                "운영 신호와 협업 신호가 매우 충실한 상태입니다."
+            ),
         }
     if readme_ok and team_repo_count >= 1 and (has_cicd or has_deploy) and multi_proj and score >= 5:
         return {
             "level": "Competitive",
-            "summary": "중견 IT·시리즈 B급 이상 스타트업에 맞설 만한 포트폴리오 완성도로 볼 수 있습니다.",
+            "summary": (
+                "Competitive GitHub Portfolio Tier — 주요 운영/협업 신호가 확보된 상태이며 "
+                "보강 시 상위 수준으로 개선 가능합니다."
+            ),
         }
     # v6.2: 개인 레포 전용 Competitive 경로
     if team_repo_count == 0 and n_repos >= 2:
@@ -711,21 +820,21 @@ def expected_level(
             return {
                 "level": "Competitive (개인)",
                 "summary": (
-                    "팀 프로젝트 경험은 감지되지 않았으나, 개인 프로젝트의 완성도가 "
-                    "Competitive 수준입니다. 팀 프로젝트 추가 시 더 강한 어필이 가능합니다."
+                    "Competitive (개인) GitHub Portfolio Tier — 팀 경험 신호는 약하지만 "
+                    "개인 프로젝트 공개 완성도는 높은 상태입니다."
                 ),
             }
         return {
             "level": "Entry",
             "summary": (
-                "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준. "
-                "현재 팀 프로젝트 경험이 감지되지 않아 Competitive 이상 등급에는 도달하지 않습니다. "
-                "팀 프로젝트 1개 이상 확보 시 더 높은 등급에 도전할 수 있습니다."
+                "Entry GitHub Portfolio Tier — 공개 포트폴리오 신호가 기초 수준이며 "
+                "현재 팀 프로젝트 경험이 부족해 상위 티어 진입이 제한됩니다. "
+                "팀 프로젝트 1개 이상 확보 시 티어 개선 가능성이 큽니다."
             ),
         }
     return {
         "level": "Entry",
-        "summary": "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준입니다.",
+        "summary": "Entry GitHub Portfolio Tier — 공개 GitHub 포트폴리오 신호가 기초 수준입니다.",
     }
 
 
@@ -886,17 +995,17 @@ def generate_summary_block(
     # v6.2: 팀 레포 부재 + Competitive(개인) 경우 포지셔닝 문구 강화
     team_count = sum(1 for d in per_repo_diags if d.get("repo_type") == "team")
     if level == "Top":
-        pos_suffix = "대형 테크·우수 스타트업까지 도전 가능한 완성도입니다."
+        pos_suffix = "공개 포트폴리오 운영/협업 신호가 매우 충실한 상태입니다."
     elif level == "Competitive":
-        pos_suffix = "주요 항목 보강 시 상위 직군 도전이 가능한 수준입니다."
+        pos_suffix = "주요 항목 보강 시 상위 GitHub Portfolio Tier로 개선 가능합니다."
     elif level == "Competitive (개인)":
-        pos_suffix = "개인 프로젝트 완성도가 우수합니다. 팀 프로젝트 추가 시 더 강한 어필이 가능합니다."
+        pos_suffix = "개인 프로젝트 신호는 강하며, 팀 프로젝트 추가 시 균형이 좋아집니다."
     elif team_count == 0:
-        pos_suffix = "경쟁력 있는 지원을 위해 팀 프로젝트 경험 확보가 권장됩니다."
+        pos_suffix = "상위 티어 진입을 위해 팀 프로젝트 경험 확보가 권장됩니다."
     else:
-        pos_suffix = "경쟁력 있는 지원을 위해 보강이 필요한 단계입니다."
+        pos_suffix = "GitHub 포트폴리오 신호 보강이 필요한 단계입니다."
 
-    positioning = f"{pd_str} {level} 수준 포트폴리오 — {pos_suffix}"
+    positioning = f"{pd_str} Primary Domain Portfolio Tier: {level} — {pos_suffix}"
 
     contrib = score_breakdown.get("contribution", 0)
     quality = score_breakdown.get("quality", 0)
@@ -910,9 +1019,11 @@ def generate_summary_block(
         "─" * 60,
         "[종합 분석]",
         "─" * 60,
-        f"  GitHub 종합 점수: {github_score}점 / 100점",
+        f"  GitHub 포트폴리오 진단 점수: {github_score}점 / 100점",
         f"    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%",
         f"    (개발 활동량 {contrib} / 프로젝트 운영도 {quality} / 작업 일관성 {consistency}) — 최고 레포 기준",
+        "    점수는 합격/불합격 판정이 아니라 개선 우선순위 안내용 진단 지표입니다.",
+        "    세부 항목별 만점/획득점/개선 여지는 score_detail(응답)에서 확인할 수 있습니다.",
         "",
     ]
 

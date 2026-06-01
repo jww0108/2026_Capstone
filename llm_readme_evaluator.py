@@ -93,35 +93,35 @@ SYSTEM_PROMPT = """You are a senior hiring manager evaluating GitHub README file
 
 Evaluate the README on 5 dimensions, each scored 1-5:
 
-1. PURPOSE CLARITY (목적 명확성)
+1. PURPOSE CLARITY
    1: Cannot tell what this project does
    2: Vague description, unclear problem/solution
    3: Basic description present but lacks context
    4: Clear purpose with problem statement
    5: Compelling problem definition + solution approach
 
-2. TECH DESCRIPTION (기술 설명)
+2. TECH DESCRIPTION
    1: No technology mentioned
    2: Tech names listed without context
    3: Tech stack section exists with brief explanation
    4: Tech stack with selection rationale or architecture overview
    5: Detailed architecture + tech choices justified
 
-3. SETUP GUIDE (실행 가이드)
+3. SETUP GUIDE
    1: No setup instructions
    2: Partial commands, missing prerequisites
    3: Clone→install→run steps present but incomplete
    4: Complete reproducible setup guide
    5: One-command setup (Docker/script) with troubleshooting
 
-4. VISUAL DEMO (시각 자료)
+4. VISUAL DEMO
    1: No visuals at all (no [screenshot:...] markers)
    2: One low-quality or irrelevant image
    3: Meaningful screenshot(s)
    4: Screenshots + GIF/video demo
    5: Rich visuals including architecture diagram + demo
 
-5. OVERALL QUALITY (종합)
+5. OVERALL QUALITY
    Score = your holistic assessment (not necessarily the average).
    Tier is determined strictly by integer overall score:
      "양호": score 4 or 5
@@ -139,7 +139,7 @@ CRITICAL RULES:
 - Be calibrated for JUNIOR developers (0-3 years). Don't expect enterprise-level documentation.
 - Boilerplate or auto-generated READMEs (CRA default, Copilot template with TODO placeholders, generic scaffold) must score 1-2.
 - README written in Korean, English, or Japanese should be evaluated equally.
-- Provide exactly 2 actionable improvement suggestions, specific to this project's domain.
+- **LANGUAGE REQUIREMENT: All string values in the JSON output (reason, summary, improvement_suggestions) MUST be written in natural Korean.**
 - Respond ONLY in the specified JSON format. No markdown fences, no preamble.
 
 CALIBRATION EXAMPLES:
@@ -148,9 +148,9 @@ CALIBRATION EXAMPLES:
 - GOOD (tier "양호", score 4): README with a problem statement, architecture overview, complete Docker-based setup, and meaningful screenshots or GIF demo.
 
 OUTPUT JSON MUST use exactly these keys (lowercase snake_case):
-  "purpose_clarity", "tech_description", "setup_guide", "visual_demo" — each an object with "score" (1-5 int) and "reason" (short string).
-  "overall_quality": object with "score" (1-5 int), "tier" ("양호"|"보통"|"미흡"), "summary" (string).
-  "improvement_suggestions": array of exactly 2 strings."""
+  "purpose_clarity", "tech_description", "setup_guide", "visual_demo" — each an object with "score" (1-5 int) and "reason" (short string in Korean).
+  "overall_quality": object with "score" (1-5 int), "tier" ("양호"|"보통"|"미흡"), "summary" (string in Korean).
+  "improvement_suggestions": array of exactly 2 actionable strings in Korean, specific to this project's domain."""
 
 # ── 사용자 메시지 템플릿 ───────────────────────────────────
 USER_PROMPT_TEMPLATE = """PROJECT CONTEXT:

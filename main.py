@@ -141,16 +141,51 @@ class AnalyzeRequest(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
-    status: str
-    error: Optional[str] = None
-    github_score: Optional[Dict[str, Any]] = None
-    per_repo: Optional[List[Dict[str, Any]]] = None
-    level: Optional[Dict[str, Any]] = None
-    summary: Optional[Dict[str, Any]] = None
-    job_matching: Optional[Dict[str, Any]] = None
-    salary_band: Optional[Dict[str, Any]] = None
-    tech_analysis: Optional[Dict[str, Any]] = None
-    meta: Optional[Dict[str, Any]] = None
+    status: str = Field(..., description="요청 처리 상태: success 또는 error")
+    error: Optional[str] = Field(default=None, description="오류 메시지 (status=error일 때)")
+    github_score: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description=(
+            "GitHub 포트폴리오 종합 점수. "
+            "breakdown(60/30/10), axes, score_detail 포함. "
+            "commit_activity 항목에는 commit_quality_factor/보정 전후 점수가 포함될 수 있음."
+        ),
+    )
+    per_repo: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description=(
+            "레포별 진단/점수 상세. "
+            "score_breakdown과 score_detail(세부 항목/만점/개선 여지), "
+            "diagnosis.extra_items.growth_signal, README 문서 근거 진단을 포함할 수 있음."
+        ),
+    )
+    level: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description=(
+            "Portfolio Tier 정보. "
+            "기존 grade/description + tier_label/tier_context/primary_domain_tier/caveat 포함."
+        ),
+    )
+    summary: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="종합 분석 텍스트와 강점/개선 항목 요약.",
+    )
+    job_matching: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="주요 직무 매칭 결과(FAISS + 도메인 리랭킹).",
+    )
+    salary_band: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="시장 연봉 밴드(점수 미반영, 참고용).",
+    )
+    tech_analysis: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="보유 기술과 공고 요구 기술 간 매칭 분석.",
+    )
+    meta: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="버전/분석 시간/LLM 가용 여부 등 메타 정보.",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +406,11 @@ async def evaluate_readme_url(
     response_model=AnalyzeResponse,
     summary="GitHub 포트폴리오 E2E 분석",
     description=(
-        "GitHub 사용자명과 레포 URL 목록을 받아 포트폴리오 진단 / 직무 매칭 / 연봉 밴드를 JSON으로 반환."
+        "GitHub 사용자명과 레포 URL 목록을 받아 "
+        "GitHub 포트폴리오 해석·진단 / 주요 직무 매칭 / 시장 연봉 밴드를 JSON으로 반환. "
+        "점수는 개발자 합불 판정이 아니라 공개 포트폴리오 신호 기준이며, "
+        "github_score.axes와 per_repo[].score_detail로 세부 근거를 확인할 수 있습니다. "
+        "커밋 항목은 commit_quality_factor가 반영된 값이며, 성장성(growth_signal)·문서화 근거는 진단 항목으로 제공됩니다."
     ),
 )
 async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:

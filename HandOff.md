@@ -1,6 +1,6 @@
 # Git2Value — 프로젝트 HandOff 문서
 
-> 작성일: 2026.04.01 | 최종 갱신: 2026.05.30 | 현재 스펙 버전: v4.0 | 현재 구현 버전: **v7.2-upgrade.5**
+> 작성일: 2026.04.01 | 최종 갱신: 2026.06.01 | 현재 스펙 버전: v4.0 | 현재 구현 버전: **v7.2-upgrade.7**
 
 새 컨텍스트에서 이 프로젝트를 이어받을 경우 이 문서를 먼저 읽으세요.
 
@@ -77,7 +77,7 @@ Git2Value는 **GitHub API**(데이터 수집)를 제외하면 외부 서비스 �
 basic/
 ├── github_extractor.py      # GitHubExtractor (수집·점수·per_repo 집계)
 ├── profile_builder.py       # 도메인·엔진 시그니처 감지, 의존성 파싱, build_profile_text()
-├── portfolio_diagnosis.py   # 레포별 카드 진단 (v7.0: LLM 통합, core 3 + extra 4 항목)
+├── portfolio_diagnosis.py   # 레포별 카드 진단 (v7.2-upgrade.7: LLM 통합, core 3 + extra 5 항목)
 ├── valuation_engine.py      # v4.0: get_market_band() + v6.0 realistic_range
 ├── experience_filter.py     # v6.0/v6.1: 경력 요건 필터링 (사이드카 캐시)
 ├── run_git2value.py         # E2E: Git2ValuePipeline 클래스 + analyze() + CLI 래퍼 (v7.1)
@@ -324,6 +324,7 @@ diagnose_single_repo(repo) →
       "cicd": {...},                # 팀 레포에서만 필수, 개인은 가산점
       "deployment": {...},          # 팀 레포에서만 필수, 개인은 가산점
       "commit_pattern": {...},      # 지원자 본인 기준 (팀 레포에서 필수)
+      "growth_signal": {...},       # 성장성/활동 지속성 신호 (점수 미반영 진단)
     },
   }
 ```
@@ -334,12 +335,15 @@ diagnose_single_repo(repo) →
 | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | `classify_repo_type(repo)` (v6.1)                                                                        | `repo.repo_type` 우선 사용, 폴백으로 `distinct_author_count >= 2` 판정    |
 | `_readme_diagnosis_single(repo)` (v6.1)                                                                  | 단일 레포 README 평가 (3차원 + 길이)                                      |
+| `_extract_readme_doc_signals(readme_text)` (v7.2-upgrade.7)                                             | README 실행/환경/기술/시각화 근거 보조 진단                              |
+| `analyze_commit_message_quality(messages)` (v7.2-upgrade.7)                                              | 무의미 커밋 비율 + 점수 보정 계수(1.0/0.9/0.8) 공용 계산                  |
 | `_structure_diagnosis_single(repo)` (v6.1)                                                               | 단일 레포 구조 평가                                                       |
 | `_commit_quality_diagnosis_single(repo)` (v6.1)                                                          | 무의미 커밋 비율 + Conventional Commits 변환 힌트                         |
 | `_test_diagnosis_single(repo, game_engines)` (v6.1)                                                      | 단일 레포 테스트 (게임 엔진 맥락 반영)                                    |
 | `_cicd_diagnosis_single(repo, game_engines)` (v6.1)                                                      | 단일 레포 CI/CD                                                           |
 | `_deployment_diagnosis_single(repo, game_engines)` (v6.1)                                                | 단일 레포 배포                                                            |
 | `_commit_pattern_diagnosis_single(repo)` (v6.1)                                                          | **지원자 본인 기준** 커밋 리듬 (`target_commit_count` / `active_weeks`)   |
+| `_growth_signal_diagnosis_single(repo)` (v7.2-upgrade.7)                                                | 성장성/활동 지속성 신호 (`growth_signal`) 진단 (점수 미반영)              |
 | `_team_required_items(extra_items)` (v6.1)                                                               | 팀 레포의 extra를 "필수 미흡"으로 격상                                    |
 | `diagnose_single_repo(repo)` (v6.1)                                                                      | 레포 1개 진단 결과 반환                                                   |
 | `expected_level(per_repo_diags, team_repo_count)` (v6.1)                                                 | 등급 판정. **팀 레포가 없으면 Competitive 이상 도달 불가**                |
@@ -878,6 +882,53 @@ LOC 가중 평균. **연봉 모듈 C에는 github_score를 사용하지 않음.*
 ---
 
 ## 6. 버전 이력 및 주요 결정 사항
+
+### v7.2-upgrade.7 (2026.06.01 — 커밋 품질 계수 + 성장성/문서화 진단 보강)
+
+**60/30/10 축은 유지하면서, 커밋 점수에 메시지 품질 보정 계수를 연결하고 성장성/문서화는 점수 미반영 진단 신호로 확장.**
+
+- **`portfolio_diagnosis.py`**:
+  - `analyze_commit_message_quality()` 공용 함수 추가(무의미 커밋 비율, 계수 1.0/0.9/0.8, 샘플 메시지).
+  - `_commit_quality_diagnosis_single()`이 공용 분석 결과를 재사용하도록 변경.
+  - `_growth_signal_diagnosis_single()` 추가, `diagnose_single_repo().extra_items.growth_signal`로 노출.
+  - README 룰베이스 진단에 `_extract_readme_doc_signals()`을 추가해 실행 방법/환경 설정/기술 설명/시각화 근거를 detail/action에 반영.
+- **`github_extractor.py`**:
+  - `commit_score` 산출 후 `commit_quality_factor`를 적용한 `adjusted_commit_score` 도입.
+  - `blend_100 = loc_score*loc_w + adjusted_commit_score*commit_w`로 contribution 계산.
+  - `score_detail.axes[].items[key=commit_activity].raw_value`에
+    `commit_score_100`, `adjusted_commit_score_100`, `commit_quality_factor`, `bad_message_ratio` 추가.
+- **`run_git2value.py`**:
+  - CLI `[점수 해석 가이드]`에 커밋 품질 계수 반영 사실 명시.
+  - `EXTRA_LABELS`에 `growth_signal` 추가해 성장성 진단을 카드 출력 경로에 포함.
+- **`main.py`**:
+  - `AnalyzeResponse` 및 `/v1/analyze` description에
+    `commit_quality_factor`, `growth_signal`, 문서화 근거 진단 포함 가능성을 명시.
+- **문서 동기화**:
+  - `SCORING_CONTRIBUTION_LOGIC.md`에 커밋 품질 계수 수식/해석 및 성장성(점수 미반영) 정책 기록.
+
+---
+
+### v7.2-upgrade.6 (2026.05.31 — 티어 의미 정렬 + 점수 해석/응답 문서화 강화)
+
+**티어/점수 문구를 “개발자 등급 판정”이 아니라 “GitHub 포트폴리오 해석·진단” 의미로 정렬하고, API 응답 설명을 확장.**
+
+- **`portfolio_diagnosis.py`**:
+  - `expected_level()` 요약 문구를 `Top/Competitive/Entry GitHub Portfolio Tier` 의미로 조정.
+  - `generate_summary_block()`의 포지셔닝 문구를 `Primary Domain Portfolio Tier` 관점으로 정리.
+- **`run_git2value.py`**:
+  - `level` 응답에 하위 호환 유지(`grade`/`description`) + 확장 키 추가:
+    - `tier_label`, `tier_context`, `primary_domain_tier`, `caveat`
+  - CLI `[점수 해석 가이드]`에 커밋 항목이 단순 개수 평가가 아니라 **개발 활동 이력**(지속성·리듬 포함)임을 명시.
+- **`main.py`**:
+  - `AnalyzeResponse` 필드 설명 보강 (`github_score.axes`, `score_detail`, `per_repo[].score_detail`, `level` 확장 키).
+  - `/v1/analyze` description을 “GitHub 포트폴리오 해석·진단/주요 직무 매칭/시장 연봉 밴드” 관점으로 조정.
+- **문서 정리**:
+  - `# Portfolio Tier System 개선 제안.md`: **현재 구현(Primary Domain Tier)** vs **로드맵(직무별 독립 티어)** 분리.
+  - `SCORING_CONTRIBUTION_LOGIC.md`:
+    - README는 100점 직접 배점이 아니라 진단/gate/매칭 보조 및 evidence LOC 간접 반영임을 명시.
+    - `score_detail` 응답 구조와 커밋 항목 해석(개발 활동 이력)을 문서화.
+
+---
 
 ### v7.2-upgrade.5 (2026.05.30 — 팀 경험 정합 완성 + 모바일/게임 과검출 완화)
 
@@ -1462,6 +1513,7 @@ v6.1 검증 중 발견된 필수 패치 1건 + 권장 보강 4건 + 정리 1건 
 29. **`CORS_ORIGINS` 환경변수 미설정 시 Vercel 도메인 하드코딩** — 실제 프로덕션 배포 전 `CORS_ORIGINS` 확인 필요.
 30. **AI 직무 분류 리랭킹 (`ml/` + `experiments/`)** — **도입 보류 (2026.05.30 재확인, 현상 유지)**. ex2 3-way 재실험(eval_v2·comments_refined·gpt_domain) 결과 AI 일관 우위 없음 → 프로덕션 **`rerank_by_domain` 유지**. 시험본 `run_git2value_trying_reranking.py`는 메인 미대체. 상세 수치·결정: **§2.1**. 재개 전 §2.1 체크리스트·프로덕션 로직 반영 재실험 필요. **에이전트는 당분간 본 항목을 구현 대상으로 삼지 않음.**
 31. **풀스택/이중 hit primary disambiguation** — v7.2-upgrade에서 기존 히트 비율 가드 유지, 추가 규칙은 재현 데이터 축적 후 판단.
+32. **직무별 독립 Portfolio Tier 산정** — 현재는 `Primary Domain Portfolio Tier` 중심. `Backend/DevOps/AI/Data` 독립 티어는 점수 규칙 분리 설계 후 단계적 도입 필요.
 
 ---
 
@@ -1606,4 +1658,4 @@ v6.1 적용 시 다음 문서들도 함께 갱신해야 함:
 
 ---
 
-_Git2Value HandOff v7.2-upgrade.5 — 2026.05.30 (팀 경험 정합 완성 + 모바일/게임 과검출 완화 + 도메인 회귀 테스트 확장)_
+_Git2Value HandOff v7.2-upgrade.7 — 2026.06.01 (커밋 품질 계수 + 성장성/문서화 진단 보강)_

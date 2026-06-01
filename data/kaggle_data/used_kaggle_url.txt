@@ -1,5 +1,0 @@
-https://www.kaggle.com/datasets/muhammadaqeelkabir/top-github-repositories?resource=download
-https://www.kaggle.com/datasets/alitaqishah/ai-jobs-market-2025-2026-salaries
-https://www.kaggle.com/datasets/abhaykumar2812/ai-and-ml-jobs
-https://www.kaggle.com/code/princekhunt19/jobs-data-of-ai-data-fields-eda-author
-https://www.kaggle.com/datasets/batuhanmutlu/job-skill-set

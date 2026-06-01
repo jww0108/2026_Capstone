@@ -1,0 +1,794 @@
+{
+  "status": "success",
+  "error": null,
+  "github_score": {
+    "total": 70.8,
+    "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+    "breakdown": {
+      "contribution": 52.3,
+      "quality": 10.0,
+      "consistency": 8.5
+    },
+    "breakdown_note": "최고 레포 기준",
+    "axes": [
+      {
+        "key": "contribution",
+        "label": "개발 활동량",
+        "score": 52.3,
+        "max_score": 60.0,
+        "items": [
+          {
+            "key": "loc_evidence_blend",
+            "label": "코드/증거 LOC 기여",
+            "score": 30.0,
+            "max_score": 30.0,
+            "raw_value": {
+              "valid_loc": 34224,
+              "evidence_loc": 5368,
+              "loc_score_100": 100.0,
+              "weight": 0.5
+            },
+            "explanation": "유효 LOC + evidence LOC 로그 스케일 점수.",
+            "improvement_hint": "핵심 코드와 설정/문서 증거를 함께 늘리면 상승.",
+            "potential_gain": 0.0
+          },
+          {
+            "key": "commit_activity",
+            "label": "개발 활동 이력",
+            "score": 22.3,
+            "max_score": 30.0,
+            "raw_value": {
+              "analyzed_commits": 43,
+              "commit_score_100": 74.3,
+              "adjusted_commit_score_100": 74.3,
+              "commit_quality_factor": 1.0,
+              "bad_message_ratio": 0.0465,
+              "weight": 0.5
+            },
+            "explanation": "커밋 활동량(로그 스케일)에 메시지 품질 계수를 반영한 점수.",
+            "improvement_hint": "의미 있는 메시지(feat/fix/refactor 등) 유지 시 점수 손실 감소.",
+            "potential_gain": 7.7
+          }
+        ],
+        "potential_gain": 7.7
+      },
+      {
+        "key": "quality",
+        "label": "프로젝트 운영도",
+        "score": 10.0,
+        "max_score": 30.0,
+        "items": [
+          {
+            "key": "cicd",
+            "label": "CI/CD",
+            "score": 0.0,
+            "max_score": 10.0,
+            "raw_value": {
+              "has_cicd": false
+            },
+            "explanation": "워크플로우/배포 파이프라인 신호.",
+            "improvement_hint": "GitHub Actions 1개라도 추가하면 개선.",
+            "potential_gain": 10.0
+          },
+          {
+            "key": "tests",
+            "label": "테스트",
+            "score": 0.0,
+            "max_score": 10.0,
+            "raw_value": {
+              "test_ratio": 0.0025
+            },
+            "explanation": "테스트 비율 구간 점수.",
+            "improvement_hint": "핵심 로직 단위 테스트 추가.",
+            "potential_gain": 10.0
+          },
+          {
+            "key": "active_weeks",
+            "label": "활동 주 수",
+            "score": 10.0,
+            "max_score": 10.0,
+            "raw_value": {
+              "active_weeks": 9
+            },
+            "explanation": "주차 단위 지속 활동 신호.",
+            "improvement_hint": "짧은 기간 몰아치기보다 주 단위 유지.",
+            "potential_gain": 0.0
+          }
+        ],
+        "potential_gain": 20.0,
+        "mode": "team"
+      },
+      {
+        "key": "consistency",
+        "label": "작업 일관성",
+        "score": 8.5,
+        "max_score": 10.0,
+        "items": [
+          {
+            "key": "commit_rhythm",
+            "label": "커밋 리듬 안정성",
+            "score": 8.5,
+            "max_score": 10.0,
+            "raw_value": {
+              "std_days": 2.95,
+              "commit_count": 43
+            },
+            "explanation": "커밋 간격 표준편차 기반 점수.",
+            "improvement_hint": "꾸준한 간격의 작은 커밋 유지.",
+            "potential_gain": 1.5
+          }
+        ],
+        "potential_gain": 1.5
+      }
+    ],
+    "score_detail": {
+      "total_score": 70.8,
+      "max_score": 100.0,
+      "axes": [
+        {
+          "key": "contribution",
+          "label": "개발 활동량",
+          "score": 52.3,
+          "max_score": 60.0,
+          "items": [
+            {
+              "key": "loc_evidence_blend",
+              "label": "코드/증거 LOC 기여",
+              "score": 30.0,
+              "max_score": 30.0,
+              "raw_value": {
+                "valid_loc": 34224,
+                "evidence_loc": 5368,
+                "loc_score_100": 100.0,
+                "weight": 0.5
+              },
+              "explanation": "유효 LOC + evidence LOC 로그 스케일 점수.",
+              "improvement_hint": "핵심 코드와 설정/문서 증거를 함께 늘리면 상승.",
+              "potential_gain": 0.0
+            },
+            {
+              "key": "commit_activity",
+              "label": "개발 활동 이력",
+              "score": 22.3,
+              "max_score": 30.0,
+              "raw_value": {
+                "analyzed_commits": 43,
+                "commit_score_100": 74.3,
+                "adjusted_commit_score_100": 74.3,
+                "commit_quality_factor": 1.0,
+                "bad_message_ratio": 0.0465,
+                "weight": 0.5
+              },
+              "explanation": "커밋 활동량(로그 스케일)에 메시지 품질 계수를 반영한 점수.",
+              "improvement_hint": "의미 있는 메시지(feat/fix/refactor 등) 유지 시 점수 손실 감소.",
+              "potential_gain": 7.7
+            }
+          ],
+          "potential_gain": 7.7
+        },
+        {
+          "key": "quality",
+          "label": "프로젝트 운영도",
+          "score": 10.0,
+          "max_score": 30.0,
+          "items": [
+            {
+              "key": "cicd",
+              "label": "CI/CD",
+              "score": 0.0,
+              "max_score": 10.0,
+              "raw_value": {
+                "has_cicd": false
+              },
+              "explanation": "워크플로우/배포 파이프라인 신호.",
+              "improvement_hint": "GitHub Actions 1개라도 추가하면 개선.",
+              "potential_gain": 10.0
+            },
+            {
+              "key": "tests",
+              "label": "테스트",
+              "score": 0.0,
+              "max_score": 10.0,
+              "raw_value": {
+                "test_ratio": 0.0025
+              },
+              "explanation": "테스트 비율 구간 점수.",
+              "improvement_hint": "핵심 로직 단위 테스트 추가.",
+              "potential_gain": 10.0
+            },
+            {
+              "key": "active_weeks",
+              "label": "활동 주 수",
+              "score": 10.0,
+              "max_score": 10.0,
+              "raw_value": {
+                "active_weeks": 9
+              },
+              "explanation": "주차 단위 지속 활동 신호.",
+              "improvement_hint": "짧은 기간 몰아치기보다 주 단위 유지.",
+              "potential_gain": 0.0
+            }
+          ],
+          "potential_gain": 20.0,
+          "mode": "team"
+        },
+        {
+          "key": "consistency",
+          "label": "작업 일관성",
+          "score": 8.5,
+          "max_score": 10.0,
+          "items": [
+            {
+              "key": "commit_rhythm",
+              "label": "커밋 리듬 안정성",
+              "score": 8.5,
+              "max_score": 10.0,
+              "raw_value": {
+                "std_days": 2.95,
+                "commit_count": 43
+              },
+              "explanation": "커밋 간격 표준편차 기반 점수.",
+              "improvement_hint": "꾸준한 간격의 작은 커밋 유지.",
+              "potential_gain": 1.5
+            }
+          ],
+          "potential_gain": 1.5
+        }
+      ],
+      "potential_gain_total": 29.2,
+      "score_model": "contribution(60) + quality(30) + consistency(10)"
+    }
+  },
+  "per_repo": [
+    {
+      "repo_name": "Ttakji_lab-mobile_development_dep (M1_milestone)",
+      "repo_type": "team",
+      "has_team_experience": true,
+      "distinct_author_count": 6,
+      "repo_author_names": [
+        "jamgi",
+        "tekyung",
+        "RWKHB",
+        "Crorom",
+        "SeaDomain",
+        "sosung0825-dotcom"
+      ],
+      "is_fork": false,
+      "fork_penalty": null,
+      "dominance_ratio": 0.216,
+      "is_dominance_override": false,
+      "repo_total_score": 70.8,
+      "score_breakdown": {
+        "contribution": 52.3,
+        "quality": 10.0,
+        "consistency": 8.5,
+        "quality_mode": "team"
+      },
+      "score_detail": {
+        "total_score": 70.8,
+        "max_score": 100.0,
+        "axes": [
+          {
+            "key": "contribution",
+            "label": "개발 활동량",
+            "score": 52.3,
+            "max_score": 60.0,
+            "items": [
+              {
+                "key": "loc_evidence_blend",
+                "label": "코드/증거 LOC 기여",
+                "score": 30.0,
+                "max_score": 30.0,
+                "raw_value": {
+                  "valid_loc": 34224,
+                  "evidence_loc": 5368,
+                  "loc_score_100": 100.0,
+                  "weight": 0.5
+                },
+                "explanation": "유효 LOC + evidence LOC 로그 스케일 점수.",
+                "improvement_hint": "핵심 코드와 설정/문서 증거를 함께 늘리면 상승.",
+                "potential_gain": 0.0
+              },
+              {
+                "key": "commit_activity",
+                "label": "개발 활동 이력",
+                "score": 22.3,
+                "max_score": 30.0,
+                "raw_value": {
+                  "analyzed_commits": 43,
+                  "commit_score_100": 74.3,
+                  "adjusted_commit_score_100": 74.3,
+                  "commit_quality_factor": 1.0,
+                  "bad_message_ratio": 0.0465,
+                  "weight": 0.5
+                },
+                "explanation": "커밋 활동량(로그 스케일)에 메시지 품질 계수를 반영한 점수.",
+                "improvement_hint": "의미 있는 메시지(feat/fix/refactor 등) 유지 시 점수 손실 감소.",
+                "potential_gain": 7.7
+              }
+            ],
+            "potential_gain": 7.7
+          },
+          {
+            "key": "quality",
+            "label": "프로젝트 운영도",
+            "score": 10.0,
+            "max_score": 30.0,
+            "items": [
+              {
+                "key": "cicd",
+                "label": "CI/CD",
+                "score": 0.0,
+                "max_score": 10.0,
+                "raw_value": {
+                  "has_cicd": false
+                },
+                "explanation": "워크플로우/배포 파이프라인 신호.",
+                "improvement_hint": "GitHub Actions 1개라도 추가하면 개선.",
+                "potential_gain": 10.0
+              },
+              {
+                "key": "tests",
+                "label": "테스트",
+                "score": 0.0,
+                "max_score": 10.0,
+                "raw_value": {
+                  "test_ratio": 0.0025
+                },
+                "explanation": "테스트 비율 구간 점수.",
+                "improvement_hint": "핵심 로직 단위 테스트 추가.",
+                "potential_gain": 10.0
+              },
+              {
+                "key": "active_weeks",
+                "label": "활동 주 수",
+                "score": 10.0,
+                "max_score": 10.0,
+                "raw_value": {
+                  "active_weeks": 9
+                },
+                "explanation": "주차 단위 지속 활동 신호.",
+                "improvement_hint": "짧은 기간 몰아치기보다 주 단위 유지.",
+                "potential_gain": 0.0
+              }
+            ],
+            "potential_gain": 20.0,
+            "mode": "team"
+          },
+          {
+            "key": "consistency",
+            "label": "작업 일관성",
+            "score": 8.5,
+            "max_score": 10.0,
+            "items": [
+              {
+                "key": "commit_rhythm",
+                "label": "커밋 리듬 안정성",
+                "score": 8.5,
+                "max_score": 10.0,
+                "raw_value": {
+                  "std_days": 2.95,
+                  "commit_count": 43
+                },
+                "explanation": "커밋 간격 표준편차 기반 점수.",
+                "improvement_hint": "꾸준한 간격의 작은 커밋 유지.",
+                "potential_gain": 1.5
+              }
+            ],
+            "potential_gain": 1.5
+          }
+        ],
+        "potential_gain_total": 29.2,
+        "score_model": "contribution(60) + quality(30) + consistency(10)"
+      },
+      "target_commit_count": 43,
+      "total_repo_commits": 199,
+      "target_commit_ratio": 0.2161,
+      "target_commit_ratio_census": 0.2161,
+      "contribution_role": "적극 기여",
+      "active_weeks": 9,
+      "repo_active_weeks": 12,
+      "detected_domains": [
+        "게임 개발",
+        "서버/백엔드",
+        "ML/AI",
+        "DevOps/인프라"
+      ],
+      "frameworks": [
+        "Unity"
+      ],
+      "language_category": {
+        "main": [
+          [
+            "C#",
+            100.0
+          ]
+        ],
+        "sub": [],
+        "trivial": []
+      },
+      "diagnosis": {
+        "core_items": {
+          "readme_quality": {
+            "status": "개선 필요",
+            "detail": "길이는 충분(1,500자)하지만 구성이 아쉽습니다 (부족: 기술 스택 설명, 결과물 시각화). 문서 근거 부족: 실행 방법, 환경 설정, 기술 설명, 시각 자료.",
+            "action": "README에 기술 스택 설명, 결과물 시각화을 보완하고, 실행 커맨드/환경 변수 안내를 명시하세요.",
+            "llm_used": false
+          },
+          "project_structure": {
+            "status": "양호",
+            "detail": "디렉터리 구성과 .gitignore 존재 여부가 적절합니다.",
+            "action": null,
+            "llm_used": false
+          },
+          "commit_quality": {
+            "status": "양호",
+            "detail": "커밋 메시지가 비교적 구체적으로 보입니다.",
+            "action": null,
+            "llm_used": false
+          }
+        },
+        "extra_items": {
+          "test_coverage": {
+            "status": "필수 미흡",
+            "detail": "테스트 파일이 감지되지 않았습니다.",
+            "action": "Unity Test Framework 또는 PlayMode 테스트 추가를 검토해 보세요.",
+            "llm_used": false
+          },
+          "cicd": {
+            "status": "필수 미흡",
+            "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+            "action": "Unity Cloud Build 또는 GameCI GitHub Action을 검토해보세요.",
+            "llm_used": false
+          },
+          "deployment": {
+            "status": "필수 미흡",
+            "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+            "action": "빌드 결과물(APK/EXE) 또는 itch.io 배포 경험을 README에 명시하세요.",
+            "llm_used": false
+          },
+          "commit_pattern": {
+            "status": "보통",
+            "detail": "지원자 기준 활성 주당 평균 약 4.8회 — 큰 단위 커밋 위주입니다.",
+            "action": null,
+            "llm_used": false
+          },
+          "growth_signal": {
+            "status": "성장 신호",
+            "detail": "활동 주 9주, 기간 100일, 커밋 43건으로 지속 성장 흐름이 보입니다.",
+            "action": "현재처럼 주 단위 기록을 유지하고, 의미 단위 커밋/PR 설명을 함께 남기세요.",
+            "llm_used": false
+          }
+        }
+      }
+    }
+  ],
+  "level": {
+    "grade": "Entry",
+    "description": "Entry GitHub Portfolio Tier — 공개 GitHub 포트폴리오 신호가 기초 수준입니다.",
+    "tier_label": "Entry GitHub Portfolio",
+    "tier_context": "공개 GitHub 포트폴리오 성숙도 기준",
+    "primary_domain_tier": {
+      "domain": "게임 개발",
+      "grade": "Entry",
+      "label": "게임 개발 GitHub Portfolio Tier"
+    },
+    "caveat": "개발자 역량 전체 판정이 아니라 공개 GitHub 활동과 포트폴리오 구성 신호 기준입니다."
+  },
+  "summary": {
+    "text": "────────────────────────────────────────────────────────────\n[종합 분석]\n────────────────────────────────────────────────────────────\n  GitHub 포트폴리오 진단 점수: 70.8점 / 100점\n    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%\n    (개발 활동량 52.3 / 프로젝트 운영도 10.0 / 작업 일관성 8.5) — 최고 레포 기준\n    점수는 합격/불합격 판정이 아니라 개선 우선순위 안내용 진단 지표입니다.\n    세부 항목별 만점/획득점/개선 여지는 score_detail(응답)에서 확인할 수 있습니다.\n\n  레포별 점수:\n    1. Ttakji_lab-mobile_development_dep (M1_milestone) (팀): 70.8점  (개발 활동량 52.3 / 프로젝트 운영도 10.0 / 작업 일관성 8.5)\n\n  포지셔닝     : 게임 개발 Primary Domain Portfolio Tier: Entry — GitHub 포트폴리오 신호 보강이 필요한 단계입니다.\n\n  포트폴리오 구성:\n    · 레포 구성: 팀 1개 (총 1개)\n    · 주요 도메인: 게임 개발\n    · 개인 사이드 프로젝트 추가로 독립 완성 능력도 어필해 보세요.\n\n  강점:\n    · 프로젝트 구조\n    · 커밋 메시지\n\n  실행 가능한 개선 (Quick Wins):\n    1. README에 프로젝트 목적 + 기술 스택 + 스크린샷/GIF 1장 추가 (1시간 이내)\n    2. GameCI GitHub Action 또는 엔진 빌드 자동화 파이프라인 추가\n    3. 빌드 결과물(APK/EXE) 또는 itch.io/스토어 배포 링크를 README에 명시",
+    "positioning": "게임 개발 Primary Domain Portfolio Tier: Entry — GitHub 포트폴리오 신호 보강이 필요한 단계입니다.",
+    "strengths": [
+      "프로젝트 구조",
+      "커밋 메시지"
+    ],
+    "quick_wins": [
+      "README에 프로젝트 목적 + 기술 스택 + 스크린샷 1장 추가 (1시간 이내)",
+      "GitHub Actions 워크플로우 1개 추가 (Python: pytest, Node: jest)",
+      "Dockerfile + docker-compose.yml로 로컬 실행 가능하게 구성"
+    ]
+  },
+  "job_matching": {
+    "primary_domain": "게임 개발",
+    "detected_domains": [
+      "게임 개발",
+      "서버/백엔드",
+      "ML/AI",
+      "DevOps/인프라"
+    ],
+    "rerank_note": "다중 도메인 감지: 게임 개발, 서버/백엔드, ML/AI, … (히트 비율 근접) — 혼합 프로젝트로 판단, 리랭킹 미적용. FAISS 유사도 순서 유지.",
+    "is_multi_domain": true,
+    "eligible_matches": [
+      {
+        "rank": 1,
+        "position": "c#, db 관련 개발자",
+        "company_name": "카를로",
+        "category": "SW/솔루션",
+        "similarity": 0.6411886215209961,
+        "effective_score": 0.6412,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 2,
+        "position": "WEBFRONT-K GUI 개발",
+        "company_name": "파이오링크",
+        "category": "SW/솔루션",
+        "similarity": 0.6341589093208313,
+        "effective_score": 0.6342,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 3,
+        "position": "응용 SW 개발 모집",
+        "company_name": "비솔",
+        "category": "SW/솔루션",
+        "similarity": 0.6286666393280029,
+        "effective_score": 0.6287,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 4,
+        "position": "반도체 전공정장비 SW 개발 (신입)",
+        "company_name": "아이엠티",
+        "category": "SW/솔루션",
+        "similarity": 0.6252260804176331,
+        "effective_score": 0.6252,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 5,
+        "position": "SW 개발자 신입 [Android, C, C++, QT]",
+        "company_name": "모비루스",
+        "category": "안드로이드",
+        "similarity": 0.6240842342376709,
+        "effective_score": 0.6241,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      }
+    ],
+    "domain_mismatch": {
+      "type": "db_coverage",
+      "message": "'게임 개발' 도메인이 명확히 감지되었으나 채용 공고 DB에 해당 직무 공고가 적습니다. 실제 채용 시장에서 '게임 개발' 공고를 별도로 검색하시기 바랍니다."
+    },
+    "domain_check": {
+      "consistent": false,
+      "warning": "도메인 감지 결과는 '게임 개발'이지만, 상위 매칭 공고는 모두 다른 직무(SW/솔루션, 안드로이드)입니다. 공고 DB에 '게임 개발' 관련 공고가 부족하거나, 프로필 텍스트가 다른 직무 키워드에 가까울 수 있습니다.",
+      "suggested_category": "게임 클라이언트"
+    },
+    "multi_domain_picks": {
+      "is_multi_domain": true,
+      "domain_picks": {
+        "게임 개발": [
+          {
+            "meta": {
+              "id": 999,
+              "job_id": 332510,
+              "company_name": "베이글코드(Bagelcode)",
+              "position": "[Platform] 게임 플랫폼 클라이언트(SDK) 개발자",
+              "category": "SW개발/AI",
+              "text": "[Platform] 게임 플랫폼 클라이언트(SDK) 개발자 | Job Title: [Platform] 게임 플랫폼 클라이언트(SDK) 개발자\n\n[Main Tasks - 주요 업무]\n* 이런 일을 함께하고 싶습니다. \n• 서비스에서 사용할 멀티 플랫폼 SDK 개발 (Unity, Android, iOS)\n• 일정 규모 이상의 신규 기능 개발을 위한 코드 아키텍쳐 설계\n• 프로젝트 내에서 제시된 난이도 있는 기술 이슈에 대한 해결\n• 통합 빌드 시스템에 대한 개발과 스토어 기술 지원\n\n[Requirements - 자격 요건]\n* 이런 역량을 가지신 분을 찾습니다.\n• 본인 포함 개발자 3인 이상의 프로젝트 주도 경험이 있으신 분\n• Unity에 대해 깊이 이해하고 개발 시 필요한 기능을 알맞게 찾아 사용할 수 있는 능력이 있으신 분\n• SDK를 직접 개발하고 라이브 해보신 분.\n• 다양한 SDK를 경험하고 좀 더 편리한 SDK를 개발하고 싶으신 분\n\n[Preferred - 우대 사항]\n* 이런 역량을 가지신 분을 우대합니다.\n• 다양한 SDK를 사용해 보신 분\n• 게임 라이브 경력을 가지신 분\n• 각 플랫폼(iOS, Android, Windows, WebGL) 별 네이티브 구현 해보신 분\n• 영어 커뮤니케이션이 능통하신 분\n• Client DevOps 에 관심 및 경험이 있으신 분.\n• 팀 내 개발 문화를 개선해 본 경험이 있으신 분\n• 기술스택 : C#, Git, Github Actions, XCode, Pod, Gradle, Android Studio"
+            },
+            "similarity": 0.603936493396759,
+            "category": "게임 클라이언트",
+            "experience_requirement": {
+              "min_years": 0,
+              "is_junior_friendly": true,
+              "raw_label": null,
+              "requirement_type": "unspecified"
+            }
+          }
+        ],
+        "서버/백엔드": [
+          {
+            "meta": {
+              "id": 1261,
+              "job_id": 349879,
+              "company_name": "에이치투비즈",
+              "position": "백엔드 개발자",
+              "category": "SW개발/AI",
+              "text": "Job Title: 백엔드 개발자\n\n[Main Tasks - 주요 업무]\n• back office 유지보수\n• 자사 어플 보물선 국내 백엔드 유지보수 및 신규기능 개발\n\n[Requirements - 자격 요건]\n• 학력 : 학력무관\n• 원활한 커뮤니케이션 및 협업능력 가능자\n• Node.js(Express, Nest)를 이용한 RESTful API 백엔드 개발경험\n• Maria DB 데이터베이스에 대한 이해 및 데이터 모델링 경험\n• Git을 활용한 버전관리 경험\n\n[Preferred - 우대 사항]\n• 대용량 트래픽 처리 경험\n• 동종업계 근무경력우대(전자상거래 플랫폼, 중개 플랫폼)\n• 꼼꼼하고 세심한 업무처리가 가능하신 분"
+            },
+            "similarity": 0.6223294138908386,
+            "category": "서버/백엔드",
+            "experience_requirement": {
+              "min_years": 0,
+              "is_junior_friendly": true,
+              "raw_label": null,
+              "requirement_type": "unspecified"
+            }
+          },
+          {
+            "meta": {
+              "id": 2047,
+              "job_id": "jumpit_53451271",
+              "company_name": "프라이빗테크놀로지",
+              "position": "백앤드개발 (JAVA)",
+              "category": "",
+              "text": "기술스택: C, C++, Linux, Qt, TCP/IP, Embedded, Network, Flow | 주요업무: [채용파트 - 엣지파트] • 제품 및 플랫폼 서비스 개발 및 유지보수 | 자격요건: • JAVA, MySQL(MariaDB) • Spring, JPA(Hibernate) 기반 웹 어플리케이션 개발 경험 • RestFull 능숙하신 분 • IntelliJ, Git 사용에 어려움이 없으신 분 | 우대사항: • Websocket 사용가능하신 분 • 대용량 데이터 서비스 경험하신 분 • MSA 프로젝트 경험하신 분 • node.js 경험하신 분"
+            },
+            "similarity": 0.6145261526107788,
+            "category": "서버/백엔드",
+            "experience_requirement": {
+              "min_years": 0,
+              "is_junior_friendly": true,
+              "raw_label": null,
+              "requirement_type": "unspecified"
+            }
+          }
+        ]
+      },
+      "raw_top5": [
+        {
+          "meta": {
+            "id": 1857,
+            "job_id": "jumpit_53292179",
+            "company_name": "카를로",
+            "position": "c#, db 관련 개발자",
+            "category": "",
+            "text": "기술스택: .NET, Android OS, C#, iOS, 3D Rendering, DB | 주요업무: • C#/.NET 기반 시뮬레이션 엔진 기능 개발 및 성능 최적화 • 웹 기반 3D 환경 디지털 트윈 개발 • 실시간 DB 연동 관련 개발 | 자격요건: • C# 및 .NET에 대한 이해와 실무 경험 (배우고자 하는 의욕 높으신 지원자) • 웹 애플리케이션 개발에 대한 기본적인 이해 • 팀과의 원활한 협업 능력 | 우대사항: • C#/.NET으로 애플리케이션 개발 경험자 • 웹 애플리케이션 개발 경험자 • 개발에 열정이 있는 엔지니어 • 다양한 분야에서 다양한 경험을 원하는 엔지니어"
+          },
+          "similarity": 0.6411886215209961,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 2282,
+            "job_id": "jumpit_53386404",
+            "company_name": "파이오링크",
+            "position": "WEBFRONT-K GUI 개발",
+            "category": "프론트엔드 개발자",
+            "text": "기술스택: C, C++, Django, Java, Linux, React, REST API, SW, GUI | 주요업무: • 장비의 JAVA 기반 백엔드 및 React 기반 프론트엔드 개발 • 장비 통합관리 솔루션 개발 | 자격요건: • 학사이상 • JAVA Spring 기반 및 react 기반 개발 경험 | 우대사항: • 백엔드 및 프론트엔드 개발 가능한 풀스택 개발 • RESTful API 서비스 개발 경험 • 빅데이터 처리 개발 경험"
+          },
+          "similarity": 0.6341589093208313,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 2329,
+            "job_id": "jumpit_53427784",
+            "company_name": "비솔",
+            "position": "응용 SW 개발 모집",
+            "category": "SW/솔루션",
+            "text": "기술스택: C#, C++, Python, OpenCV, SW | 주요업무: • 응용 SW 개발 | 자격요건: • Computer Vision 분야 SW개발 경험 • Machine Vision 시스템 구성을 위한 Optic System 개념 보유 • 카메라 인터페이스(Area) 구현 경험 • Automation을 위한 Device간 인터페이스 경험 | 우대사항: • C++, Qt 경력 • 프로젝트 수행 경험 다수"
+          },
+          "similarity": 0.6286666393280029,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 1938,
+            "job_id": "jumpit_53332851",
+            "company_name": "아이엠티",
+            "position": "반도체 전공정장비 SW 개발 (신입)",
+            "category": "SW/솔루션",
+            "text": "기술스택: C#, C++, MariaDB, MSSQL, MySQL, Oracle, Socket.IO, Visual Studio, SW, Delphi | 주요업무: 반도체 전공정장비 소프트웨어 개발 업무 - CTC, PMC, FA | 자격요건: 1. 개발언어 - RAD Studio(Delphi), Visual Studio (C#, C++) 2. DB 개발 가능 - MySQL, MariaDB, Oracle, MSSQLServer 3. SECS / GEM 개발 경험 4. EtherCAT / Motion 개발 경험 5. Socket 통신 / Serial 통신 개발 경험 | 우대사항: 1. 관련 전공자 2. C&C 장비 S/W 개발, 유지보수 경험자 3. 인근거주, 운전가능"
+          },
+          "similarity": 0.6252260804176331,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": "신입/주니어",
+            "requirement_type": "junior"
+          }
+        },
+        {
+          "meta": {
+            "id": 1815,
+            "job_id": "jumpit_53234635",
+            "company_name": "모비루스",
+            "position": "SW 개발자 신입 [Android, C, C++, QT]",
+            "category": "SW/솔루션,HW/임베디드",
+            "text": "기술스택: C, C++, GitHub, Qt, SW, MCU, Embedded Linux | 주요업무: • 안드로이드 개발자(Kotlin or JAVA) - Android Application 아키텍쳐 설계 및 개발 - 전장 SW 개발(Android Automotive OS) • C, C++ 개발자 - C/C++ 을 이용한 아키텍쳐 설계 및 Software 개발 - Embedded Linux, Git Hub • Qt 개발자 - Qt/Qml 을 이용한 Application 개발 - Hyundai/Kia 자동차 Navigation 및 자체 Solution 개발 • 제어기 MCU SW 개발자 - Automotive MCU SW 개발 - CAN (CAN2.0A/2.0B/CAN-FD/J1939) interface 개발 | 자격요건: • 경력 : 신입(년수 무관)(연구원, 선임 연구원, 책임 연구원) | 우대사항: • 컴퓨터/시스템 공학 전공 • 해당 직무 근무 경험, AVN(IVI) 시스템 개발 경험, QT 개발 경험, Git 활용 경험"
+          },
+          "similarity": 0.6240842342376709,
+          "category": "안드로이드",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": "신입/주니어",
+            "requirement_type": "junior"
+          }
+        }
+      ]
+    },
+    "jumpit_category": "SW/솔루션",
+    "company_types": [
+      "SW/솔루션 유사 공고 3건",
+      "프론트엔드 개발자 유사 공고 1건",
+      "HW/임베디드 유사 공고 1건"
+    ]
+  },
+  "salary_band": {
+    "matched_category": "SW/솔루션",
+    "experience_level": "신입 (0~3년)",
+    "salary_range": {
+      "jumpit_median": 37246215,
+      "wanted_median": 36777414,
+      "combined_range": "3,677만 ~ 3,724만원"
+    },
+    "realistic_range": {
+      "median": 37011814,
+      "p25_estimate": 31460041,
+      "p75_estimate": 44414176,
+      "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+    },
+    "source": "점핏·원티드 2025 채용공고 기반",
+    "note": "동일 직무 내에서 회사 규모, 지역, 협상력에 따라 차이가 있을 수 있습니다.",
+    "reference_categories": [
+      {
+        "category": "게임 클라이언트",
+        "combined_range": "3,270만 ~ 3,838만원"
+      },
+      {
+        "category": "서버/백엔드",
+        "combined_range": "3,649만 ~ 3,687만원"
+      },
+      {
+        "category": "게임 서버",
+        "combined_range": "3,239만 ~ 3,803만원"
+      },
+      {
+        "category": "VR/AR/3D",
+        "combined_range": "3,539만 ~ 3,788만원"
+      }
+    ],
+    "alt_category_band": {
+      "category": "게임 클라이언트",
+      "realistic_range": {
+        "median": 35545000,
+        "p25_estimate": 30213250,
+        "p75_estimate": 42654000,
+        "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+      }
+    }
+  },
+  "tech_analysis": {
+    "matched_techs": [],
+    "missing_techs": [
+      "Python",
+      "Java",
+      "React"
+    ],
+    "learning_suggestions": [],
+    "company_types": [
+      "SW/솔루션 유사 공고 3건",
+      "프론트엔드 개발자 유사 공고 1건",
+      "HW/임베디드 유사 공고 1건"
+    ]
+  },
+  "meta": {
+    "version": "v7.2",
+    "llm_available": false,
+    "analysis_time_seconds": 15.3,
+    "repos_analyzed": 1,
+    "applicant_years": 0
+  }
+}

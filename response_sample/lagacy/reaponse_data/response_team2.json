@@ -1,0 +1,253 @@
+{
+    "status": "success",
+    "error": null,
+    "github_score": {
+        "total": 17.6,
+        "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+        "breakdown": {
+            "contribution": 7.6,
+            "quality": 0.0,
+            "consistency": 10.0
+        },
+        "breakdown_note": "최고 레포 기준"
+    },
+    "per_repo": [
+        {
+            "repo_name": "2025-2_java_team_project (minseo)",
+            "repo_type": "team",
+            "distinct_author_count": 2,
+            "repo_author_names": [
+                "min2eo",
+                "tekyung"
+            ],
+            "is_fork": false,
+            "fork_penalty": null,
+            "dominance_ratio": 0.5,
+            "is_dominance_override": false,
+            "repo_total_score": 17.6,
+            "score_breakdown": {
+                "contribution": 7.6,
+                "quality": 0.0,
+                "consistency": 10.0,
+                "quality_mode": "team"
+            },
+            "target_commit_count": 8,
+            "total_repo_commits": 16,
+            "target_commit_ratio": 0.5,
+            "active_weeks": 1,
+            "repo_active_weeks": 2,
+            "detected_domains": [],
+            "frameworks": [],
+            "language_category": {
+                "main": [],
+                "sub": [],
+                "trivial": []
+            },
+            "diagnosis": {
+                "core_items": {
+                    "readme_quality": {
+                        "status": "미흡",
+                        "detail": "The README lacks clarity in its purpose, technical details, setup instructions, and visual aids.",
+                        "action": "Add a clear problem statement and solution approach to improve the purpose clarity.",
+                        "llm_used": true,
+                        "llm_scores": {
+                            "purpose": 2,
+                            "tech": 1,
+                            "setup": 1,
+                            "visual": 1,
+                            "overall": 2
+                        },
+                        "llm_suggestions": [
+                            "Add a clear problem statement and solution approach to improve the purpose clarity.",
+                            "Include a section detailing the technologies used and their roles in the project."
+                        ]
+                    },
+                    "project_structure": {
+                        "status": "개선 필요",
+                        "detail": ".gitignore 없음",
+                        "action": "모듈 단위로 파일을 나누고, 불필요한 산출물은 .gitignore로 제외하세요.",
+                        "llm_used": false
+                    },
+                    "commit_quality": {
+                        "status": "개선 필요",
+                        "detail": "샘플 커밋 중 약 62%가 무의미한 메시지입니다.\n      예) 'Fix punctuation in project instructions' → 권장: 'feat/fix/refactor: 변경 내용 구체적으로 기술'",
+                        "action": "기존 커밋은 그대로 두고, Conventional Commits(feat:, fix:, refactor:) 형식을 적용해 보세요.",
+                        "llm_used": false
+                    }
+                },
+                "extra_items": {
+                    "test_coverage": {
+                        "status": "필수 미흡",
+                        "detail": "테스트 파일이 감지되지 않았습니다.",
+                        "action": "핵심 비즈니스 로직부터 단위 테스트를 추가하면 차별화 요소가 됩니다.",
+                        "llm_used": false
+                    },
+                    "cicd": {
+                        "status": "필수 미흡",
+                        "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+                        "action": "간단한 lint/test 워크플로우라도 추가해 보세요.",
+                        "llm_used": false
+                    },
+                    "deployment": {
+                        "status": "필수 미흡",
+                        "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+                        "action": "Vercel, Netlify, Railway 등 간단한 배포부터 시도해 보세요.",
+                        "llm_used": false
+                    },
+                    "commit_pattern": {
+                        "status": "규칙적",
+                        "detail": "지원자 기준 활성 주당 평균 약 8.0회 — 꾸준한 커밋 패턴입니다.",
+                        "action": null,
+                        "llm_used": false
+                    }
+                }
+            }
+        }
+    ],
+    "level": {
+        "grade": "Entry",
+        "description": "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준입니다."
+    },
+    "summary": {
+        "text": "────────────────────────────────────────────────────────────\n[종합 분석]\n────────────────────────────────────────────────────────────\n  GitHub 종합 점수: 17.6점 / 100점\n    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%\n    (개발 활동량 7.6 / 프로젝트 운영도 0.0 / 작업 일관성 10.0) — 최고 레포 기준\n\n  레포별 점수:\n    1. 2025-2_java_team_project (minseo) (팀): 17.6점  (개발 활동량 7.6 / 프로젝트 운영도 0.0 / 작업 일관성 10.0)\n\n  포지셔닝     : 개발 Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 보강이 필요한 단계입니다.\n\n  포트폴리오 구성:\n    · 레포 구성: 팀 1개 (총 1개)\n    · 개인 사이드 프로젝트 추가로 독립 완성 능력도 어필해 보세요.\n\n  강점:\n    · (주요 항목 보강 후 재확인 권장)\n\n  실행 가능한 개선 (Quick Wins):\n    1. Add a clear problem statement and solution approach to improve the purpose clarity.\n    2. Include a section detailing the technologies used and their roles in the project.",
+        "positioning": "개발 Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 보강이 필요한 단계입니다.",
+        "strengths": [],
+        "quick_wins": [
+            "Add a clear problem statement and solution approach to improve the purpose clarity.",
+            "Include a section detailing the technologies used and their roles in the project."
+        ]
+    },
+    "job_matching": {
+        "primary_domain": null,
+        "detected_domains": [],
+        "rerank_note": "도메인 감지: 없음 (FAISS 유사도 순서 그대로 적용)",
+        "is_multi_domain": false,
+        "eligible_matches": [
+            {
+                "rank": 1,
+                "position": "백엔드 개발자",
+                "company_name": "에이치투비즈",
+                "category": "서버/백엔드",
+                "similarity": 0.5323222875595093,
+                "effective_score": 0.5323,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 2,
+                "position": "보안 취약점 분석 담당(6년↑)",
+                "company_name": "파인더갭",
+                "category": "SW/솔루션",
+                "similarity": 0.5185002088546753,
+                "effective_score": 0.5185,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 3,
+                "position": "Full Stack 풀스택 개발자",
+                "company_name": "컨워스",
+                "category": "웹 풀스택",
+                "similarity": 0.5117393732070923,
+                "effective_score": 0.5117,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 4,
+                "position": "Cloud 개발자 모집 (백엔드/DevOps)",
+                "company_name": "파이오링크",
+                "category": "devops/시스템 엔지니어",
+                "similarity": 0.5059536695480347,
+                "effective_score": 0.506,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 5,
+                "position": "엔터프라이즈개발자 (신입)",
+                "company_name": "마드라스체크(플로우)",
+                "category": "SW/솔루션",
+                "similarity": 0.5036414265632629,
+                "effective_score": 0.5036,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            }
+        ],
+        "domain_mismatch": null,
+        "domain_check": {
+            "consistent": true,
+            "warning": null,
+            "suggested_category": null
+        },
+        "multi_domain_picks": null,
+        "jumpit_category": "서버/백엔드",
+        "company_types": [
+            "SW개발/AI 유사 공고 3건",
+            "정보보안 담당자 유사 공고 1건",
+            "SW/솔루션 유사 공고 1건"
+        ]
+    },
+    "salary_band": {
+        "matched_category": "서버/백엔드",
+        "experience_level": "신입 (0~3년)",
+        "salary_range": {
+            "jumpit_median": 36498644,
+            "wanted_median": 36879449,
+            "combined_range": "3,649만 ~ 3,687만원"
+        },
+        "realistic_range": {
+            "median": 36689046,
+            "p25_estimate": 31185689,
+            "p75_estimate": 44026855,
+            "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+        },
+        "source": "점핏·원티드 2025 채용공고 기반",
+        "note": "동일 직무 내에서 회사 규모, 지역, 협상력에 따라 차이가 있을 수 있습니다.",
+        "reference_categories": [
+            {
+                "category": "SW/솔루션",
+                "combined_range": "3,677만 ~ 3,724만원"
+            },
+            {
+                "category": "웹 풀스택",
+                "combined_range": "3,310만 ~ 3,587만원"
+            },
+            {
+                "category": "devops/시스템 엔지니어",
+                "combined_range": "3,708만 ~ 3,807만원"
+            }
+        ],
+        "alt_category_band": null
+    },
+    "tech_analysis": {
+        "matched_techs": [],
+        "missing_techs": [
+            "Python",
+            "Java",
+            "JavaScript"
+        ],
+        "learning_suggestions": [
+            "Spring Boot",
+            "Docker",
+            "AWS"
+        ],
+        "company_types": [
+            "SW개발/AI 유사 공고 3건",
+            "정보보안 담당자 유사 공고 1건",
+            "SW/솔루션 유사 공고 1건"
+        ]
+    },
+    "meta": {
+        "version": "v7.0",
+        "llm_available": true,
+        "analysis_time_seconds": 9.0,
+        "repos_analyzed": 1,
+        "applicant_years": 0
+    }
+}

@@ -1,0 +1,512 @@
+{
+  "status": "success",
+  "error": null,
+  "github_score": {
+    "total": 74.8,
+    "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+    "breakdown": {
+      "contribution": 57.3,
+      "quality": 20,
+      "consistency": 8.8
+    },
+    "breakdown_note": "최고 레포 기준"
+  },
+  "per_repo": [
+    {
+      "repo_name": "Paint (main)",
+      "repo_type": "personal",
+      "distinct_author_count": 2,
+      "repo_author_names": [
+        "honey766",
+        "parkhoboy"
+      ],
+      "is_fork": false,
+      "fork_penalty": null,
+      "dominance_ratio": 0.975,
+      "is_dominance_override": true,
+      "repo_total_score": 86.1,
+      "score_breakdown": {
+        "contribution": 57.3,
+        "quality": 20,
+        "consistency": 8.8,
+        "quality_mode": "personal"
+      },
+      "target_commit_count": 115,
+      "total_repo_commits": 118,
+      "target_commit_ratio": 0.9746,
+      "active_weeks": 14,
+      "repo_active_weeks": 14,
+      "detected_domains": [
+        "게임 개발",
+        "웹 프론트엔드",
+        "서버/백엔드",
+        "빅데이터 엔지니어",
+        "도구 개발"
+      ],
+      "frameworks": [
+        "Unity"
+      ],
+      "language_category": {
+        "main": [
+          [
+            "C#",
+            100
+          ]
+        ],
+        "sub": [],
+        "trivial": []
+      },
+      "diagnosis": {
+        "core_items": {
+          "readme_quality": {
+            "status": "미흡",
+            "detail": "README가 거의 비어 있거나 매우 짧습니다.",
+            "action": "채용 담당자가 처음 보는 문서가 README입니다. 구조화된 설명을 추가하세요.",
+            "llm_used": false
+          },
+          "project_structure": {
+            "status": "개선 필요",
+            "detail": "파일당 평균 LOC 335.3 (모놀리식 의심)",
+            "action": "모듈 단위로 파일을 나누고, 불필요한 산출물은 .gitignore로 제외하세요.",
+            "llm_used": false
+          },
+          "commit_quality": {
+            "status": "양호",
+            "detail": "커밋 메시지가 비교적 구체적으로 보입니다.",
+            "action": null,
+            "llm_used": false
+          }
+        },
+        "extra_items": {
+          "test_coverage": {
+            "status": "없음",
+            "detail": "테스트 파일이 감지되지 않았습니다.",
+            "action": "Unity Test Framework 또는 PlayMode 테스트 추가를 검토해 보세요.",
+            "llm_used": false
+          },
+          "cicd": {
+            "status": "없음",
+            "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+            "action": "Unity Cloud Build 또는 GameCI GitHub Action을 검토해보세요.",
+            "llm_used": false
+          },
+          "deployment": {
+            "status": "없음",
+            "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+            "action": "빌드 결과물(APK/EXE) 또는 itch.io 배포 경험을 README에 명시하세요.",
+            "llm_used": false
+          },
+          "commit_pattern": {
+            "status": "규칙적",
+            "detail": "지원자 기준 활성 주당 평균 약 8.2회 — 꾸준한 커밋 패턴입니다.",
+            "action": null,
+            "llm_used": false
+          }
+        }
+      }
+    },
+    {
+      "repo_name": "Balls-Run (main)",
+      "repo_type": "personal",
+      "distinct_author_count": 1,
+      "repo_author_names": [
+        "honey766"
+      ],
+      "is_fork": false,
+      "fork_penalty": null,
+      "dominance_ratio": null,
+      "is_dominance_override": false,
+      "repo_total_score": 10.6,
+      "score_breakdown": {
+        "contribution": 8.6,
+        "quality": 2,
+        "consistency": 0,
+        "quality_mode": "personal"
+      },
+      "target_commit_count": 2,
+      "total_repo_commits": 2,
+      "target_commit_ratio": 1,
+      "active_weeks": 1,
+      "repo_active_weeks": 1,
+      "detected_domains": [
+        "게임 개발",
+        "웹 프론트엔드",
+        "도구 개발",
+        "서버/백엔드"
+      ],
+      "frameworks": [
+        "Unity"
+      ],
+      "language_category": {
+        "main": [],
+        "sub": [],
+        "trivial": []
+      },
+      "diagnosis": {
+        "core_items": {
+          "readme_quality": {
+            "status": "미흡",
+            "detail": "README가 거의 비어 있거나 매우 짧습니다.",
+            "action": "채용 담당자가 처음 보는 문서가 README입니다. 구조화된 설명을 추가하세요.",
+            "llm_used": false
+          },
+          "project_structure": {
+            "status": "개선 필요",
+            "detail": "파일당 평균 LOC 0.4 (파편화 의심)",
+            "action": "모듈 단위로 파일을 나누고, 불필요한 산출물은 .gitignore로 제외하세요.",
+            "llm_used": false
+          },
+          "commit_quality": {
+            "status": "개선 필요",
+            "detail": "샘플 커밋 중 약 50%가 무의미한 메시지입니다.\n      예) 'Initial commit' → 권장: 'chore: 프로젝트 초기 설정'",
+            "action": "기존 커밋은 그대로 두고, Conventional Commits(feat:, fix:, refactor:) 형식을 적용해 보세요.",
+            "llm_used": false
+          }
+        },
+        "extra_items": {
+          "test_coverage": {
+            "status": "없음",
+            "detail": "테스트 파일이 감지되지 않았습니다.",
+            "action": "Unity Test Framework 또는 PlayMode 테스트 추가를 검토해 보세요.",
+            "llm_used": false
+          },
+          "cicd": {
+            "status": "없음",
+            "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+            "action": "Unity Cloud Build 또는 GameCI GitHub Action을 검토해보세요.",
+            "llm_used": false
+          },
+          "deployment": {
+            "status": "없음",
+            "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+            "action": "빌드 결과물(APK/EXE) 또는 itch.io 배포 경험을 README에 명시하세요.",
+            "llm_used": false
+          },
+          "commit_pattern": {
+            "status": "보통",
+            "detail": "지원자 기준 활성 주당 평균 약 2.0회 — 큰 단위 커밋 위주입니다.",
+            "action": null,
+            "llm_used": false
+          }
+        }
+      }
+    }
+  ],
+  "level": {
+    "grade": "Entry",
+    "description": "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준. 현재 팀 프로젝트 경험이 감지되지 않아 Competitive 이상 등급에는 도달하지 않습니다. 팀 프로젝트 1개 이상 확보 시 더 높은 등급에 도전할 수 있습니다."
+  },
+  "summary": {
+    "text": "────────────────────────────────────────────────────────────\n[종합 분석]\n────────────────────────────────────────────────────────────\n  GitHub 종합 점수: 74.8점 / 100점\n    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%\n    (개발 활동량 57.3 / 프로젝트 운영도 20.0 / 작업 일관성 8.8) — 최고 레포 기준\n\n  레포별 점수:\n    1. Paint (main) (개인): 86.1점  (개발 활동량 57.3 / 프로젝트 운영도 20.0 / 작업 일관성 8.8)\n    2. Balls-Run (main) (개인): 10.6점  (개발 활동량 8.6 / 프로젝트 운영도 2.0 / 작업 일관성 0.0)\n\n  포지셔닝     : 게임 개발 Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 팀 프로젝트 경험 확보가 권장됩니다.\n\n  포트폴리오 구성:\n    · 레포 구성: 개인 2개 (총 2개)\n    · 주요 도메인: 게임 개발\n    · 팀 프로젝트 1개 추가 시 협업 경험 어필에 유리합니다.\n\n  강점:\n    · 커밋 메시지\n\n  실행 가능한 개선 (Quick Wins):\n    1. README에 프로젝트 목적 + 기술 스택 + 스크린샷/GIF 1장 추가 (1시간 이내)\n    2. Conventional Commits 적용 (feat:/fix:/refactor:)",
+    "positioning": "게임 개발 Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 팀 프로젝트 경험 확보가 권장됩니다.",
+    "strengths": [
+      "커밋 메시지"
+    ],
+    "quick_wins": [
+      "README에 프로젝트 목적 + 기술 스택 + 스크린샷 1장 추가 (1시간 이내)",
+      "Conventional Commits 적용 (feat:/fix:/refactor:)"
+    ]
+  },
+  "job_matching": {
+    "primary_domain": "게임 개발",
+    "detected_domains": [
+      "게임 개발",
+      "웹 프론트엔드",
+      "서버/백엔드",
+      "도구 개발",
+      "빅데이터 엔지니어"
+    ],
+    "rerank_note": "다중 도메인 감지: 게임 개발, 웹 프론트엔드, 서버/백엔드, … (히트 비율 근접) — 혼합 프로젝트로 판단, 리랭킹 미적용. FAISS 유사도 순서 유지.",
+    "is_multi_domain": true,
+    "eligible_matches": [
+      {
+        "rank": 1,
+        "position": "c#, db 관련 개발자",
+        "company_name": "카를로",
+        "category": "SW/솔루션",
+        "similarity": 0.5828297138214111,
+        "effective_score": 0.5828,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 2,
+        "position": "WEBFRONT-K GUI 개발",
+        "company_name": "파이오링크",
+        "category": "SW/솔루션",
+        "similarity": 0.5802156925201416,
+        "effective_score": 0.5802,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 3,
+        "position": "비젼개발팀 알고리즘 경력(10년↑)채용",
+        "company_name": "크레셈",
+        "category": "SW/솔루션",
+        "similarity": 0.5740424394607544,
+        "effective_score": 0.574,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 4,
+        "position": "응용 SW 개발 모집",
+        "company_name": "비솔",
+        "category": "SW/솔루션",
+        "similarity": 0.5722390413284302,
+        "effective_score": 0.5722,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      },
+      {
+        "rank": 5,
+        "position": "소프트웨어 엔지니어",
+        "company_name": "에이스웍스코리아",
+        "category": "SW/솔루션",
+        "similarity": 0.5627503991127014,
+        "effective_score": 0.5628,
+        "domain_boosted": false,
+        "similarity_label": "약함",
+        "experience_warning": null
+      }
+    ],
+    "domain_mismatch": {
+      "type": "db_coverage",
+      "message": "'게임 개발' 도메인이 명확히 감지되었으나 채용 공고 DB에 해당 직무 공고가 적습니다. 실제 채용 시장에서 '게임 개발' 공고를 별도로 검색하시기 바랍니다."
+    },
+    "domain_check": {
+      "consistent": false,
+      "warning": "도메인 감지 결과는 '게임 개발'이지만, 상위 매칭 공고는 모두 다른 직무(SW/솔루션)입니다. 공고 DB에 '게임 개발' 관련 공고가 부족하거나, 프로필 텍스트가 다른 직무 키워드에 가까울 수 있습니다.",
+      "suggested_category": "게임 클라이언트"
+    },
+    "multi_domain_picks": {
+      "is_multi_domain": true,
+      "domain_picks": {
+        "웹 프론트엔드": [
+          {
+            "meta": {
+              "id": 1926,
+              "job_id": "jumpit_53415662",
+              "company_name": "클라썸",
+              "position": "웹(React) 개발자_산업기능요원 가능",
+              "category": "프론트엔드 개발자",
+              "text": "기술스택: CSS 3, Git, React, TypeScript | 주요업무: •커넥트의 빠른 성장에 따른 확장성 있고 생산성 있는 웹 개발 •다양한 디바이스 환경을 고려한 반응형 웹 개발 | 자격요건: •HTML, CSS, TypeScript에 능숙한 분 •React를 이용한 UI 개발과 Tanstack Query를 이용한 서버 상태 관리 경험이 있는 분 •Git을 통한 버전 관리에 능숙한 분 •스스로의 목표와 일정을 관리할 수 있는 분 •배움에 대한 열정을 갖고, 지속적이고 효과적으로 피드백을 주고 받는 분 | 우대사항: •모듈화, 테스트, 유지보수가 용이한 코드에 대한 이해를 갖춘 분 •웹 반응형 디자인을 고려한 UI 에 대한 이해를 갖춘 분 •웹 페이지의 퍼포먼스와 최적화에 대한 문제를 경험하고, 이를 해결한 경험이 있는 분 •다국어 개발 경험이 있는 분 •AI를 이용해 어려운 문제를 해결하거나 생산성을 크게 향상시킨 경험이 있는 분"
+            },
+            "similarity": 0.530697226524353,
+            "category": "프론트엔드",
+            "experience_requirement": {
+              "min_years": 0,
+              "is_junior_friendly": true,
+              "raw_label": null,
+              "requirement_type": "unspecified"
+            }
+          }
+        ],
+        "서버/백엔드": [
+          {
+            "meta": {
+              "id": 1261,
+              "job_id": 349879,
+              "company_name": "에이치투비즈",
+              "position": "백엔드 개발자",
+              "category": "SW개발/AI",
+              "text": "Job Title: 백엔드 개발자\n\n[Main Tasks - 주요 업무]\n• back office 유지보수\n• 자사 어플 보물선 국내 백엔드 유지보수 및 신규기능 개발\n\n[Requirements - 자격 요건]\n• 학력 : 학력무관\n• 원활한 커뮤니케이션 및 협업능력 가능자\n• Node.js(Express, Nest)를 이용한 RESTful API 백엔드 개발경험\n• Maria DB 데이터베이스에 대한 이해 및 데이터 모델링 경험\n• Git을 활용한 버전관리 경험\n\n[Preferred - 우대 사항]\n• 대용량 트래픽 처리 경험\n• 동종업계 근무경력우대(전자상거래 플랫폼, 중개 플랫폼)\n• 꼼꼼하고 세심한 업무처리가 가능하신 분"
+            },
+            "similarity": 0.5603797435760498,
+            "category": "서버/백엔드",
+            "experience_requirement": {
+              "min_years": 0,
+              "is_junior_friendly": true,
+              "raw_label": null,
+              "requirement_type": "unspecified"
+            }
+          },
+          {
+            "meta": {
+              "id": 2047,
+              "job_id": "jumpit_53451271",
+              "company_name": "프라이빗테크놀로지",
+              "position": "백앤드개발 (JAVA)",
+              "category": "",
+              "text": "기술스택: C, C++, Linux, Qt, TCP/IP, Embedded, Network, Flow | 주요업무: [채용파트 - 엣지파트] • 제품 및 플랫폼 서비스 개발 및 유지보수 | 자격요건: • JAVA, MySQL(MariaDB) • Spring, JPA(Hibernate) 기반 웹 어플리케이션 개발 경험 • RestFull 능숙하신 분 • IntelliJ, Git 사용에 어려움이 없으신 분 | 우대사항: • Websocket 사용가능하신 분 • 대용량 데이터 서비스 경험하신 분 • MSA 프로젝트 경험하신 분 • node.js 경험하신 분"
+            },
+            "similarity": 0.5603269338607788,
+            "category": "서버/백엔드",
+            "experience_requirement": {
+              "min_years": 0,
+              "is_junior_friendly": true,
+              "raw_label": null,
+              "requirement_type": "unspecified"
+            }
+          }
+        ]
+      },
+      "raw_top5": [
+        {
+          "meta": {
+            "id": 1857,
+            "job_id": "jumpit_53292179",
+            "company_name": "카를로",
+            "position": "c#, db 관련 개발자",
+            "category": "",
+            "text": "기술스택: .NET, Android OS, C#, iOS, 3D Rendering, DB | 주요업무: • C#/.NET 기반 시뮬레이션 엔진 기능 개발 및 성능 최적화 • 웹 기반 3D 환경 디지털 트윈 개발 • 실시간 DB 연동 관련 개발 | 자격요건: • C# 및 .NET에 대한 이해와 실무 경험 (배우고자 하는 의욕 높으신 지원자) • 웹 애플리케이션 개발에 대한 기본적인 이해 • 팀과의 원활한 협업 능력 | 우대사항: • C#/.NET으로 애플리케이션 개발 경험자 • 웹 애플리케이션 개발 경험자 • 개발에 열정이 있는 엔지니어 • 다양한 분야에서 다양한 경험을 원하는 엔지니어"
+          },
+          "similarity": 0.5828297138214111,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 2282,
+            "job_id": "jumpit_53386404",
+            "company_name": "파이오링크",
+            "position": "WEBFRONT-K GUI 개발",
+            "category": "프론트엔드 개발자",
+            "text": "기술스택: C, C++, Django, Java, Linux, React, REST API, SW, GUI | 주요업무: • 장비의 JAVA 기반 백엔드 및 React 기반 프론트엔드 개발 • 장비 통합관리 솔루션 개발 | 자격요건: • 학사이상 • JAVA Spring 기반 및 react 기반 개발 경험 | 우대사항: • 백엔드 및 프론트엔드 개발 가능한 풀스택 개발 • RESTful API 서비스 개발 경험 • 빅데이터 처리 개발 경험"
+          },
+          "similarity": 0.5802156925201416,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 2391,
+            "job_id": "jumpit_53259212",
+            "company_name": "크레셈",
+            "position": "비젼개발팀 알고리즘 경력(10년↑)채용",
+            "category": "",
+            "text": "기술스택: C++, OpenCV, PCB, HALCON | 주요업무: ※비젼 알고리즘 개발 • 영상 처리를 통한 검사 알고리즘 개발 | 자격요건: • VC++(MFC) 사용 가능자 • 팀원과 원활한 의사소통 및 협업 능력 | 우대사항: • 머신비전 관련 개발 경험자 • 비젼 라이브러리 (OpenCV, Halcon, IPP…) 사용 가능자 • 현장(반도체, PCB 생산 라인 등) 개발 경험 • 컴퓨터 공학, 전기 전자 공학, 데이터 과학 등의 관련 전공자 ※공통우대사항 • 전자/전자공학, 컴퓨터공학, 임베디드, 정보통신 등 유관 학과 • 유관업무 경력, 인근 거주자, 즉시출근 가능자, 장기근무 가능자, 차량소지/운전 가능자, 컴퓨터 활용/문서작성 능력 우수자, 외국어 가능자(영어,중국어,일본어 등)"
+          },
+          "similarity": 0.5740424394607544,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 2329,
+            "job_id": "jumpit_53427784",
+            "company_name": "비솔",
+            "position": "응용 SW 개발 모집",
+            "category": "SW/솔루션",
+            "text": "기술스택: C#, C++, Python, OpenCV, SW | 주요업무: • 응용 SW 개발 | 자격요건: • Computer Vision 분야 SW개발 경험 • Machine Vision 시스템 구성을 위한 Optic System 개념 보유 • 카메라 인터페이스(Area) 구현 경험 • Automation을 위한 Device간 인터페이스 경험 | 우대사항: • C++, Qt 경력 • 프로젝트 수행 경험 다수"
+          },
+          "similarity": 0.5722390413284302,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        },
+        {
+          "meta": {
+            "id": 2128,
+            "job_id": "jumpit_53356842",
+            "company_name": "에이스웍스코리아",
+            "position": "소프트웨어 엔지니어",
+            "category": "SW/솔루션",
+            "text": "기술스택: C, C#, C++, Python | 주요업무: • VECTOR(CANoe) 기반 SW 구조 설계, UI 개발 • 자동차 소프트웨어 검증 프로그램 개발 • 소프트웨어 배포 관리 및 필드 이슈 지원 | 자격요건: • 전문 학사 이상 • 메카트로닉스, 전기전자공학, 컴퓨터공학, 제어계측공학 등 전공 • C/C++, C#, Python 등 프로그래밍 언어 1개 이상 활용 가능 하신 분 | 우대사항: • 동종업계 근무 경력자 우대 • VECTOR SW 활용 프로젝트 수행 경험 있으신 분"
+          },
+          "similarity": 0.5627503991127014,
+          "category": "SW/솔루션",
+          "experience_requirement": {
+            "min_years": 0,
+            "is_junior_friendly": true,
+            "raw_label": null,
+            "requirement_type": "unspecified"
+          }
+        }
+      ]
+    },
+    "jumpit_category": "SW/솔루션",
+    "company_types": [
+      "SW/솔루션 유사 공고 2건",
+      "프론트엔드 개발자 유사 공고 1건"
+    ]
+  },
+  "salary_band": {
+    "matched_category": "SW/솔루션",
+    "experience_level": "신입 (0~3년)",
+    "salary_range": {
+      "jumpit_median": 37246215,
+      "wanted_median": 36777414,
+      "combined_range": "3,677만 ~ 3,724만원"
+    },
+    "realistic_range": {
+      "median": 37011814,
+      "p25_estimate": 31460041,
+      "p75_estimate": 44414176,
+      "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+    },
+    "source": "점핏·원티드 2025 채용공고 기반",
+    "note": "동일 직무 내에서 회사 규모, 지역, 협상력에 따라 차이가 있을 수 있습니다.",
+    "reference_categories": [
+      {
+        "category": "프론트엔드",
+        "combined_range": "3,357만 ~ 3,480만원"
+      },
+      {
+        "category": "서버/백엔드",
+        "combined_range": "3,649만 ~ 3,687만원"
+      },
+      {
+        "category": "게임 클라이언트",
+        "combined_range": "3,270만 ~ 3,838만원"
+      },
+      {
+        "category": "게임 서버",
+        "combined_range": "3,239만 ~ 3,803만원"
+      }
+    ],
+    "alt_category_band": {
+      "category": "게임 클라이언트",
+      "realistic_range": {
+        "median": 35545000,
+        "p25_estimate": 30213250,
+        "p75_estimate": 42654000,
+        "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+      }
+    }
+  },
+  "tech_analysis": {
+    "matched_techs": [],
+    "missing_techs": [
+      "Python",
+      "Java",
+      "React"
+    ],
+    "learning_suggestions": [],
+    "company_types": [
+      "SW/솔루션 유사 공고 2건",
+      "프론트엔드 개발자 유사 공고 1건"
+    ]
+  },
+  "meta": {
+    "version": "v7.0",
+    "llm_available": true,
+    "analysis_time_seconds": 11.6,
+    "repos_analyzed": 2,
+    "applicant_years": 0
+  }
+}

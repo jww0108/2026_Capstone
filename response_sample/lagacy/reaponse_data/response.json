@@ -1,0 +1,371 @@
+{
+    "status": "success",
+    "error": null,
+    "github_score": {
+        "total": 65.9,
+        "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+        "breakdown": {
+            "contribution": 45.5,
+            "quality": 12.0,
+            "consistency": 8.6
+        },
+        "breakdown_note": "최고 레포 기준"
+    },
+    "per_repo": [
+        {
+            "repo_name": "ai-server (tekyung)",
+            "repo_type": "personal",
+            "distinct_author_count": 2,
+            "repo_author_names": [
+                "tekyung",
+                "Song-Jihan"
+            ],
+            "is_fork": false,
+            "fork_penalty": null,
+            "dominance_ratio": 0.952,
+            "is_dominance_override": true,
+            "repo_total_score": 64.7,
+            "score_breakdown": {
+                "contribution": 45.9,
+                "quality": 12.0,
+                "consistency": 6.8,
+                "quality_mode": "personal"
+            },
+            "target_commit_count": 20,
+            "total_repo_commits": 21,
+            "target_commit_ratio": 0.9524,
+            "active_weeks": 4,
+            "repo_active_weeks": 5,
+            "detected_domains": [
+                "ML/AI"
+            ],
+            "frameworks": [
+                "FastAPI",
+                "Uvicorn",
+                "Hugging Face Transformers"
+            ],
+            "language_category": {
+                "main": [
+                    [
+                        "Python",
+                        100.0
+                    ]
+                ],
+                "sub": [],
+                "trivial": []
+            },
+            "diagnosis": {
+                "core_items": {
+                    "readme_quality": {
+                        "status": "보통",
+                        "detail": "The README clearly defines the project's purpose and technical details but lacks setup instructions and visual aids.",
+                        "action": "Add a complete setup guide including all necessary prerequisites and step-by-step instructions.",
+                        "llm_used": true,
+                        "llm_scores": {
+                            "purpose": 4,
+                            "tech": 4,
+                            "setup": 2,
+                            "visual": 1,
+                            "overall": 3
+                        },
+                        "llm_suggestions": [
+                            "Add a complete setup guide including all necessary prerequisites and step-by-step instructions.",
+                            "Include visual aids such as screenshots or a video demonstrating the system in action."
+                        ]
+                    },
+                    "project_structure": {
+                        "status": "개선 필요",
+                        "detail": "파일당 평균 LOC 378.5 (모놀리식 의심)",
+                        "action": "모듈 단위로 파일을 나누고, 불필요한 산출물은 .gitignore로 제외하세요.",
+                        "llm_used": false
+                    },
+                    "commit_quality": {
+                        "status": "개선 필요",
+                        "detail": "샘플 커밋 중 약 35%가 무의미한 메시지입니다.\n      예) 'update readme_jp' → 권장: 'feat/fix/refactor: 변경 내용 구체적으로 기술'",
+                        "action": "기존 커밋은 그대로 두고, Conventional Commits(feat:, fix:, refactor:) 형식을 적용해 보세요.",
+                        "llm_used": false
+                    }
+                },
+                "extra_items": {
+                    "test_coverage": {
+                        "status": "없음",
+                        "detail": "테스트 파일이 감지되지 않았습니다.",
+                        "action": "핵심 비즈니스 로직부터 단위 테스트를 추가하면 차별화 요소가 됩니다.",
+                        "llm_used": false
+                    },
+                    "cicd": {
+                        "status": "없음",
+                        "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+                        "action": "간단한 lint/test 워크플로우라도 추가해 보세요.",
+                        "llm_used": false
+                    },
+                    "deployment": {
+                        "status": "없음",
+                        "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+                        "action": "Vercel, Netlify, Railway 등 간단한 배포부터 시도해 보세요.",
+                        "llm_used": false
+                    },
+                    "commit_pattern": {
+                        "status": "규칙적",
+                        "detail": "지원자 기준 활성 주당 평균 약 5.0회 — 꾸준한 커밋 패턴입니다.",
+                        "action": null,
+                        "llm_used": false
+                    }
+                }
+            }
+        },
+        {
+            "repo_name": "2026_Capstone (tekyung)",
+            "repo_type": "personal",
+            "distinct_author_count": 3,
+            "repo_author_names": [
+                "tekyung",
+                "jiwookim925",
+                "jww0108"
+            ],
+            "is_fork": false,
+            "fork_penalty": null,
+            "dominance_ratio": 0.905,
+            "is_dominance_override": true,
+            "repo_total_score": 66.1,
+            "score_breakdown": {
+                "contribution": 45.5,
+                "quality": 12.0,
+                "consistency": 8.6,
+                "quality_mode": "personal"
+            },
+            "target_commit_count": 19,
+            "total_repo_commits": 21,
+            "target_commit_ratio": 0.9048,
+            "active_weeks": 7,
+            "repo_active_weeks": 8,
+            "detected_domains": [
+                "ML/AI"
+            ],
+            "frameworks": [
+                "FastAPI",
+                "Uvicorn"
+            ],
+            "language_category": {
+                "main": [
+                    [
+                        "Python",
+                        97.19164232756684
+                    ]
+                ],
+                "sub": [
+                    [
+                        "HTML",
+                        2.808357672433161
+                    ]
+                ],
+                "trivial": []
+            },
+            "diagnosis": {
+                "core_items": {
+                    "readme_quality": {
+                        "status": "보통",
+                        "detail": "The README provides a clear problem statement and technical details but lacks setup instructions and visual demonstrations, which are crucial for understanding and reproducing the service.",
+                        "action": "Add a comprehensive setup guide including installation and running instructions, ideally with a one-command setup using Docker.",
+                        "llm_used": true,
+                        "llm_scores": {
+                            "purpose": 5,
+                            "tech": 4,
+                            "setup": 2,
+                            "visual": 1,
+                            "overall": 3
+                        },
+                        "llm_suggestions": [
+                            "Add a comprehensive setup guide including installation and running instructions, ideally with a one-command setup using Docker.",
+                            "Include screenshots or a video demonstrating the service in action, particularly showing the output of the modules and how they interact."
+                        ]
+                    },
+                    "project_structure": {
+                        "status": "양호",
+                        "detail": "디렉터리 구성과 .gitignore 존재 여부가 적절합니다.",
+                        "action": null,
+                        "llm_used": false
+                    },
+                    "commit_quality": {
+                        "status": "보통",
+                        "detail": "일부 커밋 메시지가 추상적입니다.",
+                        "action": "변경 의도가 드러나도록 한 줄 설명을 덧붙이세요.",
+                        "llm_used": false
+                    }
+                },
+                "extra_items": {
+                    "test_coverage": {
+                        "status": "없음",
+                        "detail": "테스트 파일이 감지되지 않았습니다.",
+                        "action": "핵심 비즈니스 로직부터 단위 테스트를 추가하면 차별화 요소가 됩니다.",
+                        "llm_used": false
+                    },
+                    "cicd": {
+                        "status": "없음",
+                        "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+                        "action": "간단한 lint/test 워크플로우라도 추가해 보세요.",
+                        "llm_used": false
+                    },
+                    "deployment": {
+                        "status": "없음",
+                        "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+                        "action": "Vercel, Netlify, Railway 등 간단한 배포부터 시도해 보세요.",
+                        "llm_used": false
+                    },
+                    "commit_pattern": {
+                        "status": "보통",
+                        "detail": "지원자 기준 활성 주당 평균 약 2.7회 — 큰 단위 커밋 위주입니다.",
+                        "action": null,
+                        "llm_used": false
+                    }
+                }
+            }
+        }
+    ],
+    "level": {
+        "grade": "Entry",
+        "description": "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준. 현재 팀 프로젝트 경험이 감지되지 않아 Competitive 이상 등급에는 도달하지 않습니다. 팀 프로젝트 1개 이상 확보 시 더 높은 등급에 도전할 수 있습니다."
+    },
+    "summary": {
+        "text": "────────────────────────────────────────────────────────────\n[종합 분석]\n────────────────────────────────────────────────────────────\n  GitHub 종합 점수: 65.9점 / 100점\n    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%\n    (개발 활동량 45.5 / 프로젝트 운영도 12.0 / 작업 일관성 8.6) — 최고 레포 기준\n\n  레포별 점수:\n    1. ai-server (tekyung) (개인): 64.7점  (개발 활동량 45.9 / 프로젝트 운영도 12.0 / 작업 일관성 6.8)\n    2. 2026_Capstone (tekyung) (개인): 66.1점  (개발 활동량 45.5 / 프로젝트 운영도 12.0 / 작업 일관성 8.6)\n\n  포지셔닝     : ML/AI Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 팀 프로젝트 경험 확보가 권장됩니다.\n\n  포트폴리오 구성:\n    · 레포 구성: 개인 2개 (총 2개)\n    · 주요 도메인: ML/AI\n    · 팀 프로젝트 1개 추가 시 협업 경험 어필에 유리합니다.\n\n  강점:\n    · 프로젝트 구조\n\n  실행 가능한 개선 (Quick Wins):\n    1. Add a complete setup guide including all necessary prerequisites and step-by-step instructions.\n    2. Include visual aids such as screenshots or a video demonstrating the system in action.\n    3. Add a comprehensive setup guide including installation and running instructions, ideally with a one-command setup using Docker.",
+        "positioning": "ML/AI Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 팀 프로젝트 경험 확보가 권장됩니다.",
+        "strengths": [
+            "프로젝트 구조"
+        ],
+        "quick_wins": [
+            "Add a complete setup guide including all necessary prerequisites and step-by-step instructions.",
+            "Include visual aids such as screenshots or a video demonstrating the system in action.",
+            "Add a comprehensive setup guide including installation and running instructions, ideally with a one-command setup using Docker."
+        ]
+    },
+    "job_matching": {
+        "primary_domain": "ML/AI",
+        "detected_domains": [
+            "ML/AI"
+        ],
+        "rerank_note": "도메인 감지: 'ML/AI' → 기대 직무와 일치하는 공고에 +0.05 가산 후 유효 점수로 재정렬했습니다.",
+        "is_multi_domain": false,
+        "eligible_matches": [
+            {
+                "rank": 1,
+                "position": "AI기반 RNA 신약 개발 연구원(AI Engineer)",
+                "company_name": "소바젠",
+                "category": "인공지능/머신러닝",
+                "similarity": 0.8172842860221863,
+                "effective_score": 0.8673,
+                "domain_boosted": true,
+                "similarity_label": "강함",
+                "experience_warning": null
+            },
+            {
+                "rank": 2,
+                "position": "LLM RAG 및 AI Agent 개발 신입",
+                "company_name": "바이트사이즈",
+                "category": "인공지능/머신러닝",
+                "similarity": 0.8020029067993164,
+                "effective_score": 0.852,
+                "domain_boosted": true,
+                "similarity_label": "강함",
+                "experience_warning": null
+            },
+            {
+                "rank": 3,
+                "position": "AI 기반 MAPF(Multi Agent Path Finding) 개발",
+                "company_name": "나비프라",
+                "category": "인공지능/머신러닝",
+                "similarity": 0.7961814403533936,
+                "effective_score": 0.8462,
+                "domain_boosted": true,
+                "similarity_label": "강함",
+                "experience_warning": null
+            },
+            {
+                "rank": 4,
+                "position": "AI SW Engineer [신입/병특가능]",
+                "company_name": "보스반도체",
+                "category": "인공지능/머신러닝",
+                "similarity": 0.7944145202636719,
+                "effective_score": 0.8444,
+                "domain_boosted": true,
+                "similarity_label": "강함",
+                "experience_warning": null
+            },
+            {
+                "rank": 5,
+                "position": "언어모델 기반 AI NPC 연구 개발 담당",
+                "company_name": "스마일게이트 캠퍼스 지점",
+                "category": "인공지능/머신러닝",
+                "similarity": 0.7918294668197632,
+                "effective_score": 0.8418,
+                "domain_boosted": true,
+                "similarity_label": "강함",
+                "experience_warning": null
+            }
+        ],
+        "domain_mismatch": null,
+        "domain_check": {
+            "consistent": true,
+            "warning": null,
+            "suggested_category": null
+        },
+        "multi_domain_picks": null,
+        "jumpit_category": "인공지능/머신러닝",
+        "company_types": [
+            "인공지능/머신러닝 유사 공고 2건",
+            "SW개발/AI 유사 공고 2건",
+            "빅데이터 엔지니어 유사 공고 1건",
+            "SW/솔루션 유사 공고 1건"
+        ]
+    },
+    "salary_band": {
+        "matched_category": "인공지능/머신러닝",
+        "experience_level": "신입 (0~3년)",
+        "salary_range": {
+            "jumpit_median": 39778535,
+            "wanted_median": 39582344,
+            "combined_range": "3,958만 ~ 3,977만원"
+        },
+        "realistic_range": {
+            "median": 39680439,
+            "p25_estimate": 33728373,
+            "p75_estimate": 47616526,
+            "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+        },
+        "source": "점핏·원티드 2025 채용공고 기반",
+        "note": "동일 직무 내에서 회사 규모, 지역, 협상력에 따라 차이가 있을 수 있습니다.",
+        "reference_categories": [
+            {
+                "category": "빅데이터 엔지니어",
+                "combined_range": "3,755만 ~ 3,787만원"
+            }
+        ],
+        "alt_category_band": null
+    },
+    "tech_analysis": {
+        "matched_techs": [
+            "Python"
+        ],
+        "missing_techs": [
+            "PyTorch",
+            "TensorFlow",
+            "Redis"
+        ],
+        "learning_suggestions": [
+            "PyTorch",
+            "TensorFlow"
+        ],
+        "company_types": [
+            "인공지능/머신러닝 유사 공고 2건",
+            "SW개발/AI 유사 공고 2건",
+            "빅데이터 엔지니어 유사 공고 1건",
+            "SW/솔루션 유사 공고 1건"
+        ]
+    },
+    "meta": {
+        "version": "v7.0",
+        "llm_available": true,
+        "analysis_time_seconds": 10.5,
+        "repos_analyzed": 2,
+        "applicant_years": 0
+    }
+}

@@ -1,0 +1,273 @@
+{
+    "status": "success",
+    "error": null,
+    "github_score": {
+        "total": 70.8,
+        "method": "대표 프로젝트(최고점) 70% + 전체 평균 30%",
+        "breakdown": {
+            "contribution": 52.3,
+            "quality": 10.0,
+            "consistency": 8.5
+        },
+        "breakdown_note": "최고 레포 기준"
+    },
+    "per_repo": [
+        {
+            "repo_name": "Ttakji_lab-mobile_development_dep (M1_milestone)",
+            "repo_type": "team",
+            "distinct_author_count": 6,
+            "repo_author_names": [
+                "SeaDomain",
+                "jamgi",
+                "tekyung",
+                "Crorom",
+                "RWKHB",
+                "sosung0825-dotcom"
+            ],
+            "is_fork": false,
+            "fork_penalty": null,
+            "dominance_ratio": 0.322,
+            "is_dominance_override": false,
+            "repo_total_score": 70.8,
+            "score_breakdown": {
+                "contribution": 52.3,
+                "quality": 10.0,
+                "consistency": 8.5,
+                "quality_mode": "team"
+            },
+            "target_commit_count": 43,
+            "total_repo_commits": 199,
+            "target_commit_ratio": 0.2161,
+            "active_weeks": 9,
+            "repo_active_weeks": 12,
+            "detected_domains": [
+                "게임 개발",
+                "서버/백엔드",
+                "도구 개발"
+            ],
+            "frameworks": [
+                "Unity"
+            ],
+            "language_category": {
+                "main": [
+                    [
+                        "C#",
+                        100.0
+                    ]
+                ],
+                "sub": [],
+                "trivial": []
+            },
+            "diagnosis": {
+                "core_items": {
+                    "readme_quality": {
+                        "status": "보통",
+                        "detail": "The README provides a clear purpose and detailed technical information about the event-driven architecture. However, it lacks comprehensive setup instructions and any visual aids, which are crucial for understanding and reproducing the project.",
+                        "action": "Add screenshots or GIFs demonstrating the game's UI and event-driven interactions.",
+                        "llm_used": true,
+                        "llm_scores": {
+                            "purpose": 4,
+                            "tech": 4,
+                            "setup": 2,
+                            "visual": 1,
+                            "overall": 3
+                        },
+                        "llm_suggestions": [
+                            "Add screenshots or GIFs demonstrating the game's UI and event-driven interactions.",
+                            "Provide a complete setup guide, including all necessary dependencies and steps to run the project in Unity."
+                        ]
+                    },
+                    "project_structure": {
+                        "status": "양호",
+                        "detail": "디렉터리 구성과 .gitignore 존재 여부가 적절합니다.",
+                        "action": null,
+                        "llm_used": false
+                    },
+                    "commit_quality": {
+                        "status": "양호",
+                        "detail": "커밋 메시지가 비교적 구체적으로 보입니다.",
+                        "action": null,
+                        "llm_used": false
+                    }
+                },
+                "extra_items": {
+                    "test_coverage": {
+                        "status": "필수 미흡",
+                        "detail": "테스트 파일이 감지되지 않았습니다.",
+                        "action": "Unity Test Framework 또는 PlayMode 테스트 추가를 검토해 보세요.",
+                        "llm_used": false
+                    },
+                    "cicd": {
+                        "status": "필수 미흡",
+                        "detail": "GitHub Actions 또는 실질적인 Dockerfile 기반 CI/CD가 감지되지 않았습니다.",
+                        "action": "Unity Cloud Build 또는 GameCI GitHub Action을 검토해보세요.",
+                        "llm_used": false
+                    },
+                    "deployment": {
+                        "status": "필수 미흡",
+                        "detail": "배포 관련 설정(docker-compose, Vercel 등)이 감지되지 않았습니다.",
+                        "action": "빌드 결과물(APK/EXE) 또는 itch.io 배포 경험을 README에 명시하세요.",
+                        "llm_used": false
+                    },
+                    "commit_pattern": {
+                        "status": "보통",
+                        "detail": "지원자 기준 활성 주당 평균 약 4.8회 — 큰 단위 커밋 위주입니다.",
+                        "action": null,
+                        "llm_used": false
+                    }
+                }
+            }
+        }
+    ],
+    "level": {
+        "grade": "Entry",
+        "description": "Entry 수준 — 중견·중소 SI 또는 일반 스타트업 지원 가능 수준입니다."
+    },
+    "summary": {
+        "text": "────────────────────────────────────────────────────────────\n[종합 분석]\n────────────────────────────────────────────────────────────\n  GitHub 종합 점수: 70.8점 / 100점\n    산출 기준: 대표 프로젝트(최고점) 70% + 전체 평균 30%\n    (개발 활동량 52.3 / 프로젝트 운영도 10.0 / 작업 일관성 8.5) — 최고 레포 기준\n\n  레포별 점수:\n    1. Ttakji_lab-mobile_development_dep (M1_milestone) (팀): 70.8점  (개발 활동량 52.3 / 프로젝트 운영도 10.0 / 작업 일관성 8.5)\n\n  포지셔닝     : 게임 개발 Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 보강이 필요한 단계입니다.\n\n  포트폴리오 구성:\n    · 레포 구성: 팀 1개 (총 1개)\n    · 주요 도메인: 게임 개발\n    · 개인 사이드 프로젝트 추가로 독립 완성 능력도 어필해 보세요.\n\n  강점:\n    · 프로젝트 구조\n    · 커밋 메시지\n\n  실행 가능한 개선 (Quick Wins):\n    1. Add screenshots or GIFs demonstrating the game's UI and event-driven interactions.\n    2. Provide a complete setup guide, including all necessary dependencies and steps to run the project in Unity.",
+        "positioning": "게임 개발 Entry 수준 포트폴리오 — 경쟁력 있는 지원을 위해 보강이 필요한 단계입니다.",
+        "strengths": [
+            "프로젝트 구조",
+            "커밋 메시지"
+        ],
+        "quick_wins": [
+            "Add screenshots or GIFs demonstrating the game's UI and event-driven interactions.",
+            "Provide a complete setup guide, including all necessary dependencies and steps to run the project in Unity."
+        ]
+    },
+    "job_matching": {
+        "primary_domain": "게임 개발",
+        "detected_domains": [
+            "게임 개발",
+            "서버/백엔드",
+            "도구 개발"
+        ],
+        "rerank_note": "도메인 감지: '게임 개발' → 기대 직무와 일치하는 공고에 +0.05 가산 후 유효 점수로 재정렬했습니다.",
+        "is_multi_domain": false,
+        "eligible_matches": [
+            {
+                "rank": 1,
+                "position": "[Platform] 게임 플랫폼 클라이언트(SDK) 개발자",
+                "company_name": "베이글코드(Bagelcode)",
+                "category": "게임 클라이언트",
+                "similarity": 0.6039364337921143,
+                "effective_score": 0.6539,
+                "domain_boosted": true,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 2,
+                "position": "c#, db 관련 개발자",
+                "company_name": "카를로",
+                "category": "SW/솔루션",
+                "similarity": 0.6411885023117065,
+                "effective_score": 0.6412,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 3,
+                "position": "WEBFRONT-K GUI 개발",
+                "company_name": "파이오링크",
+                "category": "SW/솔루션",
+                "similarity": 0.6341588497161865,
+                "effective_score": 0.6342,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 4,
+                "position": "응용 SW 개발 모집",
+                "company_name": "비솔",
+                "category": "SW/솔루션",
+                "similarity": 0.6286665201187134,
+                "effective_score": 0.6287,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            },
+            {
+                "rank": 5,
+                "position": "반도체 전공정장비 SW 개발 (신입)",
+                "company_name": "아이엠티",
+                "category": "SW/솔루션",
+                "similarity": 0.6252259612083435,
+                "effective_score": 0.6252,
+                "domain_boosted": false,
+                "similarity_label": "약함",
+                "experience_warning": null
+            }
+        ],
+        "domain_mismatch": null,
+        "domain_check": {
+            "consistent": true,
+            "warning": null,
+            "suggested_category": null
+        },
+        "multi_domain_picks": null,
+        "jumpit_category": "게임 클라이언트",
+        "company_types": [
+            "SW/솔루션 유사 공고 2건",
+            "SW개발/AI 유사 공고 1건",
+            "프론트엔드 개발자 유사 공고 1건"
+        ]
+    },
+    "salary_band": {
+        "matched_category": "게임 클라이언트",
+        "experience_level": "신입 (0~3년)",
+        "salary_range": {
+            "jumpit_median": 35545000,
+            "wanted_median": null,
+            "combined_range": "3,270만 ~ 3,838만원"
+        },
+        "realistic_range": {
+            "median": 35545000,
+            "p25_estimate": 30213250,
+            "p75_estimate": 42654000,
+            "description": "시장 중앙값 기준 ±15%/+20% 추정 분포 (회사 규모·지역·협상에 따라 달라짐)"
+        },
+        "source": "점핏·원티드 2025 채용공고 기반",
+        "note": "동일 직무 내에서 회사 규모, 지역, 협상력에 따라 차이가 있을 수 있습니다.",
+        "reference_categories": [
+            {
+                "category": "SW/솔루션",
+                "combined_range": "3,677만 ~ 3,724만원"
+            },
+            {
+                "category": "게임 서버",
+                "combined_range": "3,239만 ~ 3,803만원"
+            },
+            {
+                "category": "VR/AR/3D",
+                "combined_range": "3,539만 ~ 3,788만원"
+            },
+            {
+                "category": "서버/백엔드",
+                "combined_range": "3,649만 ~ 3,687만원"
+            }
+        ],
+        "alt_category_band": null
+    },
+    "tech_analysis": {
+        "matched_techs": [],
+        "missing_techs": [],
+        "learning_suggestions": [
+            "Shader"
+        ],
+        "company_types": [
+            "SW/솔루션 유사 공고 2건",
+            "SW개발/AI 유사 공고 1건",
+            "프론트엔드 개발자 유사 공고 1건"
+        ]
+    },
+    "meta": {
+        "version": "v7.0",
+        "llm_available": true,
+        "analysis_time_seconds": 13.8,
+        "repos_analyzed": 1,
+        "applicant_years": 0
+    }
+}

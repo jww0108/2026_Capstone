@@ -1525,25 +1525,9 @@ if __name__ == "__main__":
     # ================================================================
     # [입력] 분석할 지원자 정보를 여기서 수정하세요
     # 레포는 최대 3개 (메인 1 + 서브 2 권장)
-    TARGET_USERNAME = "tekyung"#"siheon012"#"AstroJini"#"chjnett"#"honey766"#"tekyung"#"jww0108"#"2026TUKCOMCD"#"Central-MakeUs"#"Project-Guideon"#"AstroJini"#
+    TARGET_USERNAME = "tekyung"
     TARGET_REPOS = [
-        #"AstroJini/SmartFridge/tree/develop",
-        #"AstroJini/SmartFridge-FE/tree/develop",
-        "tekyung/Ttakji_lab-mobile_development_dep/tree/M1_milestone", # unity, C# 게임 개발
-        #"tekyung/kyonggi-university_network-system-laboratory_webpage", # 프론트엔드
-        #"siheon012/Deepsentinel", # ai, 웹 풀스택
-        #"siheon012/langgraph-api",
-        #"siheon012/korean_finetuning",
-        #"Virtual-Company-Mal-Geum/ai-server/tree/tekyung", # ai 백엔드
-        #"jww0108/2026_Capstone/tree/tekyung" # 백엔드
-        #"honey766/Paint", # unity, 게임 개발
-        #"honey766/Balls-Run/tree/main", # unity, 게임 개발
-        #"2026TUKCOMCD/SyncLab", # 웹 풀스택, 모바일
-        #"Central-MakeUs/AZIT_Front/tree/develop", # 프론트엔드
-        #"Project-Guideon/guideon-backend", # 백엔드
-        #"AstroJini/MKX-BE/tree/develop", # 웹 풀스택
-        #"AstroJini/SmartFridge/tree/develop", # 웹 풀스택
-        #"chjnett/my-sports-ai/tree/main", # ai, 머신러닝
+        "jww0108/2026_Capstone/tree/develop" # 백엔드
     ]
     APPLICANT_YEARS = 0
     # ================================================================
